@@ -38,7 +38,7 @@ def get_openai_response(instructions, prompt, model, max_tokens, temperature):
     except Exception as e:
         return f"Error: {str(e)}"
 
-print(openai_response)
+print(get_openai_response)
 
 # Outputs
 # response - what the response of the system was for the instructions and prompt
