@@ -2,6 +2,13 @@
 
 This section provides detailed instructions for setting up and running the Integrated Therapy Software project. Follow these steps to install the necessary dependencies, initialize the Django application, and start both the backend and frontend servers.
 
+### Prerequisites
+
+1. **Install Python**
+    - Download Python 3.13 [HERE](https://www.python.org/downloads/release/python-3130/)
+2. **Install Node.js**
+    - Download Node.js [HERE](https://nodejs.org/en/download/prebuilt-installer)
+
 ### Backend Setup
 
 1. **Install Python Dependencies:**
