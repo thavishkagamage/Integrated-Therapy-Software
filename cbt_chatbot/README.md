@@ -29,17 +29,20 @@ This section provides detailed instructions for setting up and running the Integ
 
 ### Frontend Setup
 
-1. **Navigate to the Frontend Directory:**
+1. **Create a second terminal**
+    Hit the + button on the terminal
+
+2. **Navigate to the Frontend Directory:**
     ```bash
-    cd chatbot_frontend
+    cd cbt_frontend
     ```
 
-2. **Install JavaScript Dependencies:**
+3. **Install JavaScript Dependencies:**
     ```bash
     npm install
     ```
 
-3. **Start the Frontend Development Server:**
+4. **Start the Frontend Development Server:**
     ```bash
     npm start
     ```
