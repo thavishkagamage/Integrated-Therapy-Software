@@ -34,7 +34,7 @@ This section provides detailed instructions for setting up and running the Integ
 
 2. **Navigate to the Frontend Directory:**
     ```bash
-    cd cbt_frontend
+    cd front-end
     ```
 
 3. **Install JavaScript Dependencies:**
