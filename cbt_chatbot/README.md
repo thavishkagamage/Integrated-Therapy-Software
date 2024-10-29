@@ -1,3 +1,22 @@
+### If you have completed these instructions before:
+1. Launch the React client and python server from one terminal
+    ```bash
+    npm run dev
+    ```
+
+    - Your terminal `cwd` must be in the `/front-end` directory. Use `--prefix` to run from any other directory
+
+      ```bash
+      npm --prefix ./path/to/front-end/ run dev
+      ```
+
+    - To run from  the root of the project
+
+      ```bash
+      npm --prefix ./cbt_chatbot/front-end/ run dev
+      ```
+
+
 ## Startup Instructions
 
 This section provides detailed instructions for setting up and running the Integrated Therapy Software project. Follow these steps to install the necessary dependencies, initialize the Django application, and start both the backend and frontend servers.
@@ -49,13 +68,13 @@ This section provides detailed instructions for setting up and running the Integ
 
 By following these steps, you will have both the backend and frontend servers running, allowing you to work on the Integrated Therapy Software project.
 
-Shortened:
+### Shortened:
 
-pip install Django
-pip install openAI
-python manage.py startapp chatbot
-python manage.py runserver
-
-cd chatbot_frontend
-npm install
-npm start
+- pip install Django
+- pip install openAI
+- python manage.py startapp chatbot
+- python manage.py runserver
+---
+- cd chatbot_frontend
+- npm install
+- npm start
