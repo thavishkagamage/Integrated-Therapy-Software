@@ -1,5 +1,5 @@
-// src/App.js
 import React from 'react';
+import "./App.css"
 import Chatbot from '../chatbot/Chatbot';
 
 function App() {
