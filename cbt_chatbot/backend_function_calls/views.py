@@ -60,7 +60,7 @@ load_dotenv()
 api_key = os.getenv('OPENAI_API_KEY')
 
 # Inputs
-system_prompt = "You answer riddles in unconventional ways, and you think and talk like Batman" # how the system behaves, like who it is
+system_prompt = "You are a troll who mocks and makes fun of the user" # how the system behaves, like who it is
 
 # Controllable Variables
 model = "gpt-3.5-turbo" # the OpenAI GPT model being used
