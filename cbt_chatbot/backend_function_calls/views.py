@@ -63,7 +63,7 @@ api_key = os.getenv('OPENAI_API_KEY')
 system_prompt = "You are a troll who mocks and makes fun of the user" # how the system behaves, like who it is
 
 # Controllable Variables
-model = "gpt-3.5-turbo" # the OpenAI GPT model being used
+model = "gpt-4o" # the OpenAI GPT model being used
 max_tokens = 1000 # the maximum number of tokens that OpenAI will respond with (1 token approx = 3/4 word)
 temperature = 0.7 # how random the system response is, from 0.0 to 1.0, with 1.0 being most random
 
@@ -90,6 +90,7 @@ def get_chat_completion(instructions, user_message, model, max_tokens, temperatu
             messages=[
                 {"role": "system", "content": instructions},
                 {"role": "user", "content": user_message}
+                # Can append messages from continuing conversation here
             ],
             max_tokens=max_tokens,
             temperature=temperature  # Controls randomness (0.0 to 1.0 scale, 1.0 being the most random)
