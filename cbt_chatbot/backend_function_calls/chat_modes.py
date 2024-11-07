@@ -22,9 +22,23 @@ class ChatMode:
         "ex_behavior": "You are well behaved, polite, conversational, and friendly"
     }
 
+    goal = {
+        # Goal - The objective of this particular mode and any additional instructions unique to this mode
+
+        # Free chat goals (begin with "fc")
+        "fc_ex_goal": "You must convice the user to eat chocolate chip cookies"
+
+        # CBT goals (begin with "cbt")
+    }
+
     voice = {
         # Voice - How it talks, or who it talks like
         "ex_voice": "You speak like a midwestern high school boy who is calm and collected"
+    }
+
+    format = {
+        # Format - What the format of the reponse is, such as how long responses should be
+        "ex_format": "You give responses that are a couple sentences in length, like a person talking in a conversation"
     }
 
     guardrail = {
@@ -77,18 +91,19 @@ class ChatMode:
     mode_attributes = {
         # The combined instructions for a particular mode
 
-
         # free_chat modes (begin with "fc")
         "fc_general": {
             "identity": identity["ex_identity"],
             "purpose": purpose["ex_purpose"],
             "behavior": behavior["ex_behavior"],
+            "goal": goal["fc_ex_goal"],
             "voice": voice["ex_voice"],
+            "format": format["ex_format"],
             "guardrail": guardrail["ex_guardrail"],
             "functions": functions["ex_function"]
         },
 
-        "fc_checkin": {
+        "fc_troll": {
             "identity": identity["ex_identity"],
             "purpose": purpose["ex_purpose"],
             "behavior": behavior["ex_behavior"],
@@ -126,6 +141,7 @@ class ChatMode:
         functions = attributes['functions']
         return instructions, functions
     
+
 # Test function
 def test_get_mode_instructions():
     # Create an instance of ChatMode
