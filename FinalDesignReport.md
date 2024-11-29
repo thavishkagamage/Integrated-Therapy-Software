@@ -6,7 +6,7 @@
 | -------- | ------- |
 | Alex Gribble | alexander.g.gribble@gmail.com |
 | Grant Guernsey | guernsgd@mail.uc.edu |
-| Kyle Woods    | $woods2ky@mail.uc.edu |
+| Kyle Woods    | woods2ky@mail.uc.edu |
 | Ricky Roberts | roberrf@mail.uc.edu |
 | Thaviska Gamage | gamagetd@gmail.ud.edu |
 
@@ -55,7 +55,7 @@ Please **[CLICK HERE](https://github.com/thavishkagamage/Integrated-Therapy-Soft
 | Research how to publicly host the site and make it indexable by Google | Grant | 
 
 
-## Back End Taskist
+### Back End Taskist
 
 | All Tasks | Responsibility |
 | ----- | -------------- |
@@ -99,6 +99,21 @@ Please **[CLICK HERE](https://github.com/thavishkagamage/Integrated-Therapy-Soft
 - **Requirements** (9/23 - 11/1)
 - **Integration** (10/14 - 3/31)
 
+### Effort Matrix
+
+| Task                           | Thavishka Gamage   | Alex Gribble   | Grant Guernsey   | Richard Roberts   | Kyle Woods     | Total Effort     | Primary Responsibility   |
+|:-------------------------------|:-------------------|:---------------|:-----------------|:------------------|:---------------|:-----------------|:-------------------------|
+| Requirements Gathering         | 20% (or 5 hrs)     | 20% (or 5 hrs) | 20% (or 5 hrs)   | 20% (or 5 hrs)    | 20% (or 5 hrs) | 25 hrs (or 100%) | Thavishka Gamage         |
+| System Architecture Design     | 20% (or 5 hrs)     | 20% (or 5 hrs) | 20% (or 5 hrs)   | 20% (or 5 hrs)    | 20% (or 5 hrs) | 25 hrs (or 100%) | Alex Gribble             |
+| Front-End UI Design            | 20% (or 5 hrs)     | 20% (or 5 hrs) | 20% (or 5 hrs)   | 20% (or 5 hrs)    | 20% (or 5 hrs) | 25 hrs (or 100%) | Grant Guernsey           |
+| Back-End Development           | 20% (or 5 hrs)     | 20% (or 5 hrs) | 20% (or 5 hrs)   | 20% (or 5 hrs)    | 20% (or 5 hrs) | 25 hrs (or 100%) | Richard Roberts          |
+| Data Integration & API Setup   | 20% (or 5 hrs)     | 20% (or 5 hrs) | 20% (or 5 hrs)   | 20% (or 5 hrs)    | 20% (or 5 hrs) | 25 hrs (or 100%) | Kyle Woods               |
+| Testing & Debugging            | 20% (or 5 hrs)     | 20% (or 5 hrs) | 20% (or 5 hrs)   | 20% (or 5 hrs)    | 20% (or 5 hrs) | 25 hrs (or 100%) | Grant Guernsey           |
+| Documentation & Report Writing | 20% (or 5 hrs)     | 20% (or 5 hrs) | 20% (or 5 hrs)   | 20% (or 5 hrs)    | 20% (or 5 hrs) | 25 hrs (or 100%) | Thavishka Gamage         |
+| Presentation Preparation       | 20% (or 3 hrs)     | 20% (or 3 hrs) | 20% (or 3 hrs)   | 20% (or 3 hrs)    | 20% (or 3 hrs) | 15 hrs (or 100%) | Richard Roberts          |
+| Ethical Decision Making        | 20% (or 3 hrs)     | 20% (or 3 hrs) | 20% (or 3 hrs)   | 20% (or 3 hrs)    | 20% (or 3 hrs) | 15 hrs (or 100%) | Alex Gribble             |
+| Prototype Iteration & Testing  | 20% (or 5 hrs)     | 20% (or 5 hrs) | 20% (or 5 hrs)   | 20% (or 5 hrs)    | 20% (or 5 hrs) | 25 hrs (or 100%) | Kyle Woods               |
+
 ## ABET Concerns
 
 ### Security
@@ -122,7 +137,16 @@ Please **[CLICK HERE](https://docs.google.com/presentation/d/1cSRtU_0y11EwSb63RB
 
 ## Professional Bibliographies
 
+- **[Ricky Roberts](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/roberrf.md)**
 
 ## Budget
 
+| Expense   | Cost To-Date |
+| -------- | ------- |
+| OpenAI API Key | $5 |
+
 ## Appendix
+
+- Visit our [project root](https://github.com/thavishkagamage/Integrated-Therapy-Software/tree/main/cbt_chatbot) to learn how to locally run and test our project
+
+- Add Coda Links Here
