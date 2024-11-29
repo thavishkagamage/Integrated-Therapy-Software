@@ -149,4 +149,6 @@ Please **[CLICK HERE](https://docs.google.com/presentation/d/1cSRtU_0y11EwSb63RB
 
 - Visit our [project root](https://github.com/thavishkagamage/Integrated-Therapy-Software/tree/main/cbt_chatbot) to learn how to locally run and test our project
 
+- View our [team Miro board](https://miro.com/app/board/uXjVKmxq8sQ=/?share_link_id=588768285443) to see various diagrams, planning, and prototypes
+
 - Add Coda Links Here
