@@ -2,13 +2,13 @@
 
 ## Our Team
 
-| Contributer   | Email |
-| -------- | ------- |
-| Alex Gribble | alexander.g.gribble@gmail.com |
-| Grant Guernsey | guernsgd@mail.uc.edu |
-| Kyle Woods    | woods2ky@mail.uc.edu |
-| Ricky Roberts | roberrf@mail.uc.edu |
-| Thaviska Gamage | gamagetd@gmail.ud.edu |
+| Contributor | Major | Email |
+| -------- | ------- | --------- |
+| Alex Gribble | BME | alexander.g.gribble@gmail.com |
+| Grant Guernsey | CS | guernsgd@mail.uc.edu |
+| Kyle Woods | EET | woods2ky@mail.uc.edu |
+| Ricky Roberts | CS | roberrf@mail.uc.edu |
+| Thaviska Gamage | CS | gamagetd@gmail.ud.edu |
 
 | Advisor   | Email |
 | -------- | ------- |
