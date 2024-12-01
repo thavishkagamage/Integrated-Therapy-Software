@@ -134,11 +134,11 @@ Please **[CLICK HERE](https://docs.google.com/presentation/d/1cSRtU_0y11EwSb63RB
 
 ## Self Assessment Essays
 - **[Ricky Roberts](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/Individual_Capstone_Assessment_Richard_Roberts.pdf)**
-
+- **[Grant Guernsey](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/Individual%20Capstone%20Assessment%20Grant%20Guernsey.docx)**
 ## Professional Bibliographies
 
 - **[Ricky Roberts](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/roberrf.md)**
-
+- **[Grant Guernsey](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/professionalBibGrantGuernsey.md)**
 ## Budget
 
 | Expense   | Cost To-Date |
