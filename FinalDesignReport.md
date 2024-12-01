@@ -151,4 +151,7 @@ Please **[CLICK HERE](https://docs.google.com/presentation/d/1cSRtU_0y11EwSb63RB
 
 - View our [team Miro board](https://miro.com/app/board/uXjVKmxq8sQ=/?share_link_id=588768285443) to see various diagrams, planning, and prototypes
 
+- This is each of our team members' predicted weekly commitment (based on the beginning of the semester) and our actual commitment hours. These hours can be justified for everyone other than Alex within the Miro board and the git repo.
+-  ![image](https://github.com/user-attachments/assets/d7d08d2b-dfef-45b8-a140-85c48eff8205)
+
 - Add Coda Links Here
