@@ -141,7 +141,7 @@ Please **[CLICK HERE](https://docs.google.com/presentation/d/1cSRtU_0y11EwSb63RB
 
 - **[Ricky Roberts](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/roberrf.md)**
 - **[Grant Guernsey](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/professionalBibGrantGuernsey.md)**
-- - **[Thavishka Gamage - Self Assessment](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/Thavishka%20Gamage%20Individual%20Capstone%20Assessment.pdf)**
+- **[Thavishka Gamage - Self Assessment](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/Thavishka%20Gamage%20Individual%20Capstone%20Assessment.pdf)**
 ## Budget
 
 | Expense   | Cost To-Date |
