@@ -135,13 +135,13 @@ Please **[CLICK HERE](https://docs.google.com/presentation/d/1cSRtU_0y11EwSb63RB
 ## Self Assessment Essays
 - **[Ricky Roberts](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/Individual_Capstone_Assessment_Richard_Roberts.pdf)**
 - **[Grant Guernsey](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/Individual%20Capstone%20Assessment%20Grant%20Guernsey.docx)**
--  **[Thavishka Gamage - Self Assessment](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/Thavishka%20Gamage%20Resume.md)**
+-  **[Thavishka Gamage](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/Thavishka%20Gamage%20Resume.md)**
 
 ## Professional Bibliographies
 
 - **[Ricky Roberts](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/roberrf.md)**
 - **[Grant Guernsey](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/professionalBibGrantGuernsey.md)**
-- **[Thavishka Gamage - Self Assessment](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/Thavishka%20Gamage%20Individual%20Capstone%20Assessment.pdf)**
+- **[Thavishka Gamage](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/Thavishka%20Gamage%20Individual%20Capstone%20Assessment.pdf)**
 ## Budget
 
 | Expense   | Cost To-Date |
