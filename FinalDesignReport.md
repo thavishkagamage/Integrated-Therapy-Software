@@ -130,7 +130,8 @@ Another constraint of our product is the specialized knowledge of cognitive beha
 
 ## Fall Design Presentation
 
-Please **[CLICK HERE](https://docs.google.com/presentation/d/1cSRtU_0y11EwSb63RB_woNr8MLVxLAPDgQR824egSgI/edit#slide=id.g3015c05c7d6_0_58)** to view our Fall Design Presentation
+- Please **[CLICK HERE](https://docs.google.com/presentation/d/1cSRtU_0y11EwSb63RB_woNr8MLVxLAPDgQR824egSgI/edit#slide=id.g3015c05c7d6_0_58)** to view our Fall Design Presentation slides
+- Please **[CLICK HERE](https://docs.google.com/presentation/d/1cSRtU_0y11EwSb63RB_woNr8MLVxLAPDgQR824egSgI/edit#slide=id.g3015c05c7d6_0_58)** to view a rcording of our presentation
 
 ## Self Assessment Essays
 - **[Ricky Roberts](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/Individual_Capstone_Assessment_Richard_Roberts.pdf)**
