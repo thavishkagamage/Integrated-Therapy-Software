@@ -18,7 +18,6 @@ from rest_framework.routers import DefaultRouter
 from database_handler.views import UserViewSet, ConversationViewSet, MessageViewSet
 
 router = DefaultRouter()
-router.register(r'users', UserViewSet)
 router.register(r'conversations', ConversationViewSet)
 router.register(r'messages', MessageViewSet)
 
@@ -26,5 +25,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/chatbot/', chatbot_response, name='chatbot_response'),
     path('api/', include(router.urls)),
-    path("accounts/", include("django.contrib.auth.urls")),
+    path('api/users/', include('users.urls')),
 ]
