@@ -89,13 +89,14 @@ WSGI_APPLICATION = 'backend_server.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cbtdatabase',  
-        'USER': f'postgres',  
-        'PASSWORD': f'password', 
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': 'postgres',  # Default database name
+        'USER': 'postgres',  # Set by POSTGRES_USER
+        'PASSWORD': 'password',  # Set by POSTGRES_PASSWORD
+        'HOST': 'localhost',  # Since the database is running on your local machine
+        'PORT': '5432',  # Default PostgreSQL port
     }
 }
+
 
 
 # Password validation
