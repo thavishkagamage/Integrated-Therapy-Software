@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class UserresponseConfig(AppConfig):
+class ConversationHandlerConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'database_handler'
+    name = 'conversation_handler'

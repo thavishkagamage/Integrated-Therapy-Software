@@ -41,8 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "corsheaders",
     "backend_function_calls",
-    "database_handler",
-    'rest_framework',  
+    'rest_framework',
+    'users',
+    'conversation_handler',
+    'message_handler',  
 ]
 
 MIDDLEWARE = [

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const Login = () => {
+const Login = ({ setIsLoggedIn }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
@@ -14,6 +14,13 @@ const Login = () => {
             });
             localStorage.setItem('accessToken', response.data.access);
             localStorage.setItem('refreshToken', response.data.refresh);
+            // Fetch user ID
+            const userResponse = await axios.get('http://127.0.0.1:8000/api/users/me/', {
+                headers: { Authorization: `Bearer ${response.data.access}` }
+            });
+            localStorage.setItem('userId', userResponse.data.user_id);
+
+            setIsLoggedIn(true);
             alert('Login successful!');
         } catch (error) {
             console.error('Login failed:', error.response.data);

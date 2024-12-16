@@ -15,7 +15,8 @@ from django.urls import path, include
 from backend_function_calls.views import chatbot_response
 
 from rest_framework.routers import DefaultRouter
-from database_handler.views import UserViewSet, ConversationViewSet, MessageViewSet
+from conversation_handler.views import ConversationViewSet
+from message_handler.views import MessageViewSet
 
 router = DefaultRouter()
 router.register(r'conversations', ConversationViewSet)
