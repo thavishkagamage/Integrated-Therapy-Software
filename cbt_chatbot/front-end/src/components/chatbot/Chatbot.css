@@ -6,9 +6,17 @@ h1 {
   min-width: 425px;
   max-width: 768px;
   margin: 25px auto;
-  background: rgb(224, 224, 224);
+  background: rgb(211, 211, 211);
   border-radius: 10px;
   overflow: hidden;
+}
+
+.chat-window h1 {
+  background-color: #259ab8;
+  color: white;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
 }
 
 .chat-messages {
@@ -19,41 +27,47 @@ h1 {
   flex-direction: column;
   height: 750px;
   overflow-y: auto;
+  background-color: #f9f9f9;
 }
+
 .chat-messages::-webkit-scrollbar {
   display: none;
 }
 
 .start-message {
-  opacity: 0.5;
+  display: block;
   text-align: center;
+  margin-bottom: 20px;
+  color: #888;
 }
 
-.user, .AI {
+.user, .ai {
   width: fit-content;
   overflow-wrap: anywhere;
   text-wrap: auto;
 }
-.AI-message, .user-message {
+.ai-message, .user-message {
   width: fit-content;
 }
 
 .message {
-  margin: 10px 0;
-  padding: 0px 10px;
+  padding: 10px 15px;
   border-radius: 20px;
-  position: relative;
+  margin-bottom: 10px;
+  max-width: 70%;
+  word-wrap: break-word;
   color: white;
 }
+
 li::marker {
   display: none;
 }
 
 .user-message {
-  background-color: #383838;
+  background-color: #259ab8;
   align-self: flex-end;
 }
-.AI-message{
+.AI-message, .ai-message{
   background-color: #1a1a1a;
   align-self: flex-start;
 }
@@ -74,6 +88,7 @@ input {
   outline: none;
   cursor: pointer;
   width: 300px;
+  
 }
 
 button {

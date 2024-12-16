@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
-import "./Chatbot.css"
-import axios from "axios";
+import "./Chatbot.css";
+import axiosInstance from "../utils/axios";
 
 const Chatbot = () => {
   const [userInput, setUserInput] = useState("");
@@ -9,7 +9,7 @@ const Chatbot = () => {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    const createConversation = async () => {
+    const createOrFetchConversation = async () => {
       try {
         const token = localStorage.getItem('accessToken');
         const userId = parseInt(localStorage.getItem('userId')); // Assuming you store the user ID in local storage
@@ -17,21 +17,49 @@ const Chatbot = () => {
           console.error("No access token found");
           return;
         }
-        const response = await axios.post(
-          "http://localhost:8000/api/conversations/",
-          { title: "New Conversation", user: userId },
+
+        // Fetch existing conversations
+        const existingConversationsResponse = await axiosInstance.get(
+          "conversations/",
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setConversationId(response.data.id);
+
+        const existingConversation = existingConversationsResponse.data.find(
+          (conv) => conv.title === "New Conversation" && conv.user === userId
+        );
+
+        if (existingConversation) {
+          setConversationId(existingConversation.id);
+          // Load in conversation messages
+          try {
+            const response = await axiosInstance.get(`conversations/${existingConversation.id}/`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setConversation(response.data.messages.map(message => ({
+              text: message.content,
+              sender: message.sender
+            })));
+          } catch (error) {
+            console.error('Error fetching messages:', error.response ? error.response.data : error.message);
+          }
+        } else {
+          // Create a new conversation
+          const response = await axiosInstance.post(
+            "conversations/",
+            { title: "New Conversation", user: userId },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setConversationId(response.data.id);
+        }
       } catch (error) {
-        console.error("Error creating conversation:", error.response ? error.response.data : error.message);
+        console.error("Error creating or fetching conversation:", error.response ? error.response.data : error.message);
       }
     };
 
-    createConversation();
+    createOrFetchConversation();
   }, []);
 
-  const sendMessage = async () => {  
+  const sendMessage = async () => {
     if (userInput.trim() && conversationId) {
       const newConversation = [
         ...conversation,
@@ -45,8 +73,8 @@ const Chatbot = () => {
           console.error("No access token found");
           return;
         }
-        const response = await axios.post(
-          "http://localhost:8000/api/chatbot/",
+        const response = await axiosInstance.post(
+          "chatbot/",
           { message: userInput },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -56,13 +84,13 @@ const Chatbot = () => {
         ]);
 
         // Save the message to the database
-        await axios.post(
-          "http://localhost:8000/api/messages/",
+        await axiosInstance.post(
+          "messages/",
           { conversation: conversationId, sender: "user", content: userInput },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        await axios.post(
-          "http://localhost:8000/api/messages/",
+        await axiosInstance.post(
+          "messages/",
           { conversation: conversationId, sender: "ai", content: response.data.message },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -74,7 +102,7 @@ const Chatbot = () => {
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -94,13 +122,15 @@ const Chatbot = () => {
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <input
-        type="text"
-        value={userInput}
-        onChange={(e) => setUserInput(e.target.value)}
-        onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-      />
-      <button onClick={sendMessage}>Send</button>
+      <div className="input-container">
+        <input
+          type="text"
+          value={userInput}
+          onChange={(e) => setUserInput(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+        />
+        <button onClick={sendMessage}>Send</button>
+      </div>
     </div>
   );
 };

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import axios from 'axios';
-import "./App.css"
+import axiosInstance from '../utils/axios';
+import "./App.css";
 import Chatbot from '../chatbot/Chatbot';
-import Home from '../home/Home'
+import Home from '../home/Home';
 import Login from '../login/Login';
 import Register from '../register/Register';
 import Conversations from '../conversations/Conversations';
@@ -32,7 +32,7 @@ function App() {
       return;
     }
     try {
-      await axios.delete('http://localhost:8000/api/clear_conversations/', {
+      await axiosInstance.delete('clear_conversations/', {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('All conversations cleared!');
