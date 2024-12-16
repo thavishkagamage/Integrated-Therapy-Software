@@ -15,7 +15,7 @@ from django.urls import path, include
 from backend_function_calls.views import chatbot_response
 
 from rest_framework.routers import DefaultRouter
-from conversation_handler.views import ConversationViewSet
+from conversation_handler.views import ConversationViewSet, ClearConversationsView
 from message_handler.views import MessageViewSet
 
 router = DefaultRouter()
@@ -27,4 +27,5 @@ urlpatterns = [
     path('api/chatbot/', chatbot_response, name='chatbot_response'),
     path('api/', include(router.urls)),
     path('api/users/', include('users.urls')),
+    path('clear_conversations/', ClearConversationsView.as_view(), name='clear-conversations'),
 ]
