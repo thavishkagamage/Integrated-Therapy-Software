@@ -73,9 +73,12 @@ const Chatbot = () => {
           console.error("No access token found");
           return;
         }
+
+        const conversationHistory = newConversation.map(message => `${message.sender}: ${message.text}`).join('\n');
+
         const response = await axiosInstance.post(
           "chatbot/",
-          { message: userInput },
+          { message: conversationHistory + 'User: ' + userInput },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setConversation([
