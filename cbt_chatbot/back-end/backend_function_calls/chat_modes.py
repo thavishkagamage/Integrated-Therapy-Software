@@ -1,165 +1,223 @@
-# Owner: Alex Gribble
-# Purpose: Defines the instructions for different chat modes with modular instruction components
-
 class ChatMode:
-    def __init__(self, mode):
-        self.mode = mode
-        return
-        # Voice can be added later as an imported setting
+    def __init__(self, initial_mode="fc_general"):
+        """
+        Initialize a ChatMode instance with a specific mode.
 
-    identity = {
-        # Identity - Who does it believe it is?
-        "ex_identity": "You are a mental health chat bot"
-    }
+        Args:
+            initial_mode (str): The starting mode of the chatbot. Defaults to "fc_general".
+        
+        Raises:
+            ValueError: If the provided initial mode is not valid.
+        """
+        if initial_mode not in self.mode_attributes:
+            raise ValueError(f"Invalid initial mode '{initial_mode}'. Available modes: {list(self.mode_attributes.keys())}")
+        
+        self.current_mode = initial_mode
+        self.conversation_state = {
+            "mode": self.current_mode,
+            "history": []  # To store user interactions and function calls
+        }
 
-    purpose = {
-        # Purpose - Why does it believe it exists?
-        "ex_purpose": "You exist to help a user"
-    }
-
-    behavior = {
-        # Behavior - Relevant behavior and personality traits, as well as conversational tone
-        "ex_behavior": "You are well behaved, polite, conversational, and friendly"
-    }
-
-    goal = {
-        # Goal - The objective of this particular mode and any additional instructions unique to this mode
-
-        # Free chat goals (begin with "fc")
-        "fc_ex_goal": "You must convice the user to eat chocolate chip cookies"
-
-        # CBT goals (begin with "cbt")
-    }
-
-    voice = {
-        # Voice - How it talks, or who it talks like
-        "ex_voice": "You speak like a midwestern high school boy who is calm and collected"
-    }
-
-    format = {
-        # Format - What the format of the reponse is, such as how long responses should be
-        "ex_format": "You give responses that are a couple sentences in length, like a person talking in a conversation"
-    }
-
-    guardrail = {
-        # Guardrails - What should it not do?
-        "ex_guardrail": "You do not give legal, medical, or financial advice"
-    }
-
-    functions = {
-        "ex_function": {
-            "name": "ex_function",
-            "description": "Get how the user is feeling, with options for how long. Do this if they indicate they are not doing well",
+    # Shared functionality for overlapping modes
+    shared_functions = {
+        "get_user_mood": {
+            "name": "get_user_mood",
+            "description": "Get the user's current mood.",
             "parameters": {
                 "mood": {
                     "type": "string",
-                    "description": "How the user is feeling",
+                    "description": "User's mood.",
                     "enum": ["happy", "sad", "despair", "numb"]
-                },
-                "duration": {
-                    "type": "int",
-                    "description": "How long the user has been feeling this way, in days"
                 }
-            },
-            "required": ["mood"],
-            "additionalProperties": False
-        },
-        "ex_function_2": "blank"
-
-        # Example function call response
-            # Choice(
-            #     finish_reason='tool_calls', 
-            #     index=0, 
-            #     logprobs=None, 
-            #     message=chat.completionsMessage(
-            #         content=None, 
-            #         role='assistant', 
-            #         function_call=None, 
-            #         tool_calls=[
-            #             chat.completionsMessageToolCall(
-            #                 id='call_62136354', 
-            #                 function=Function(
-            #                     arguments='{"mood":"sad"}', 
-            #                     name='ex_function'), 
-            #                 type='function')
-            #         ])
-            # )
-
-        # Code will need to determine that the response is a function
+            }
+        }
     }
 
+    # Mode-specific attributes
     mode_attributes = {
-        # The combined instructions for a particular mode
-
-        # free_chat modes (begin with "fc")
         "fc_general": {
-            "identity": identity["ex_identity"],
-            "purpose": purpose["ex_purpose"],
-            "behavior": behavior["ex_behavior"],
-            "goal": goal["fc_ex_goal"],
-            "voice": voice["ex_voice"],
-            "format": format["ex_format"],
-            "guardrail": guardrail["ex_guardrail"],
-            "functions": functions["ex_function"]
+            "goal": "Identify the user's needs.",
+            "functions": {
+                "name": "goal_identified",
+                "description": "Identify user goals based on input.",
+                "parameters": {
+                    "goal": {"type": "string", "description": "The identified goal for the user."}
+                }
+            }
         },
+        "cbt_goal_setting": {
+            "goal": "Help the user set actionable therapy goals.",
+            "functions": shared_functions["get_user_mood"]
+        }
+    }
 
-        "fc_troll": {
-            "identity": identity["ex_identity"],
-            "purpose": purpose["ex_purpose"],
-            "behavior": behavior["ex_behavior"],
-            "voice": voice["ex_voice"],
-            "guardrail": guardrail["ex_guardrail"],
-            "functions": functions["ex_function"]
+    # Rules for transitioning between modes
+    transition_rules = {
+        "fc_general": {
+            "goal_identified": "cbt_goal_setting",
+            "default": "fc_general"
+        },
+        "cbt_goal_setting": {
+            "goal_completed": "fc_general",
+            "default": "cbt_goal_setting"
+        }
+    }
+
+    def get_mode_instructions(self):
+        """
+        Fetch and format instructions for the current mode.
+
+        Returns:
+            dict: Instructions for the current mode, including the goal and functions.
+        """
+        attributes = self.mode_attributes.get(self.current_mode)
+        if not attributes:
+            return {"error": f"Mode '{self.current_mode}' not found."}
+
+        return {
+            "mode": self.current_mode,
+            "goal": attributes["goal"],
+            "functions": attributes["functions"]
         }
 
-        # cbt modes (begin with "cbt")
+    def switch_mode(self, new_mode):
+        """
+        Switch the current mode of the chatbot.
+
+        Args:
+            new_mode (str): The new mode to switch to.
+        
+        Raises:
+            ValueError: If the new mode is not valid.
+        """
+        if new_mode not in self.mode_attributes:
+            raise ValueError(f"Invalid mode '{new_mode}'. Available modes: {list(self.mode_attributes.keys())}")
+        
+        self.current_mode = new_mode
+        self.conversation_state["mode"] = new_mode
+        print(f"Switched to mode: {new_mode}")
+
+    def get_next_mode(self, current_mode, event):
+        """
+        Determine the next mode based on the current mode and event.
+
+        Args:
+            current_mode (str): The current mode.
+            event (str): The event triggering a transition.
+
+        Returns:
+            str: The next mode.
+        """
+        return self.transition_rules.get(current_mode, {}).get(event, self.transition_rules[current_mode]["default"])
+
+    def process_function_call(self, function_name, args):
+        """
+        Process a function call returned from OpenAI API.
+
+        Args:
+            function_name (str): Name of the function being called.
+            args (dict): Arguments provided by the function call.
+        """
+        print(f"Processing function: {function_name} with arguments: {args}")
+
+        # Validate the function arguments
+        if not self.validate_function_args(function_name, args):
+            print(f"Invalid arguments provided for function: {function_name}")
+            return
+
+        # Trigger a mode switch if applicable
+        next_mode = self.get_next_mode(self.current_mode, function_name)
+        if next_mode != self.current_mode:
+            self.switch_mode(next_mode)
+
+    def validate_function_args(self, function_name, args):
+        """
+        Validate the arguments provided for a function call.
+
+        Args:
+            function_name (str): The name of the function.
+            args (dict): The arguments provided.
+
+        Returns:
+            bool: True if valid, False otherwise.
+        """
+        function_details = self.mode_attributes.get(self.current_mode, {}).get("functions")
+        if not function_details or function_details["name"] != function_name:
+            return False
+
+        required_params = function_details.get("parameters", {})
+        for param, details in required_params.items():
+            if param not in args or not isinstance(args[param], eval(details["type"])):
+                return False
+        return True
+
+    def log_interaction(self, user_input, response, function_call=None):
+        """
+        Log user interaction and chatbot response.
+
+        Args:
+            user_input (str): The user's input.
+            response (str): The chatbot's response.
+            function_call (dict): Details of the function call, if any.
+        """
+        self.conversation_state["history"].append({
+            "user_input": user_input,
+            "response": response,
+            "function_call": function_call
+        })
+
+    def suggest_function_call(self):
+        """
+        Suggest the appropriate function call based on the current mode.
+
+        Returns:
+            dict: Suggested function details.
+        """
+        attributes = self.mode_attributes.get(self.current_mode)
+        if not attributes:
+            return {"error": f"Mode '{self.current_mode}' not found."}
+        return attributes["functions"]
 
 
-        # other modes
+# Backend Logic to Handle OpenAI Responses
+def handle_openai_response(chat_mode, response):
+    """
+    Handle a response from OpenAI's API.
 
+    Args:
+        chat_mode (ChatMode): The ChatMode instance managing the state.
+        response (dict): The API response, including function calls and arguments.
+    """
+    function_call = response.get("function_call")
+    if function_call:
+        function_name = function_call["name"]
+        args = function_call.get("arguments", {})
+        chat_mode.process_function_call(function_name, args)
+
+    print(f"Current Mode: {chat_mode.current_mode}")
+    print("Suggested Function:", chat_mode.suggest_function_call())
+
+
+# Example Usage
+if __name__ == "__main__":
+    # Initialize the chat mode
+    chat_mode = ChatMode("fc_general")
+
+    # Mock OpenAI API response
+    mock_response = {
+        "function_call": {
+            "name": "goal_identified",
+            "arguments": {"goal": "Set therapy goals"}
+        }
     }
 
-    # Creates instructions to use for API request by formatting mode_attributes
-    def get_mode_instructions(self, mode):
-        # Fetch the mode attributes for the specified mode
-        attributes = self.mode_attributes.get(mode)
-        
-        # If mode is not found, return an error message
-        if not attributes:
-            return f"Mode '{mode}' not found."
+    # Handle the response and switch modes if needed
+    handle_openai_response(chat_mode, mock_response)
 
-        # Format the output
-        instructions = (
-            f"Identity: {attributes['identity']}\n"
-            f"Purpose: {attributes['purpose']}\n"
-            f"Behavior: {attributes['behavior']}\n"
-            f"Voice: {attributes['voice']}\n"
-            f"Guardrail: {attributes['guardrail']}\n"
-            f"Functions: {attributes['functions']}"
-        )
+    # Display the current mode instructions
+    print("\nMode Instructions:")
+    print(chat_mode.get_mode_instructions())
 
-        functions = attributes['functions']
-        return instructions, functions
-    
-
-# Test function
-def test_get_mode_instructions():
-    # Create an instance of ChatMode
-    chat_mode = ChatMode("mental_health_assistant")
-    
-    while True:
-        # Prompt user to enter a mode or type 'exit' to quit
-        mode = input("Enter the mode you want to test (or type 'exit' to quit): ").strip()
-        
-        if mode.lower() == 'exit':
-            print("Exiting test.")
-            break  # Exit the loop if 'exit' is entered
-        
-        # Get the instructions for the entered mode
-        instructions = chat_mode.get_mode_instructions(mode)
-        print("\n--- Requested Mode Instructions ---")
-        print(instructions)
-        print("-" * 50)  # Separator for readability
-
-# Run the interactive test function
-test_get_mode_instructions()
+    # Suggest the next function call
+    print("\nNext Suggested Function Call:")
+    print(chat_mode.suggest_function_call())
