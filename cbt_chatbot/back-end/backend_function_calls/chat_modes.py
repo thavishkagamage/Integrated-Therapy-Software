@@ -12,10 +12,13 @@ class ChatMode:
         if initial_mode not in self.mode_attributes:
             raise ValueError(f"Invalid initial mode '{initial_mode}'. Available modes: {list(self.mode_attributes.keys())}")
         
+        # Set the current mode for the chatbot.
         self.current_mode = initial_mode
+        
+        # Initialize the conversation state with mode and interaction history.
         self.conversation_state = {
             "mode": self.current_mode,
-            "history": []  # To store user interactions and function calls
+            "history": []  # A list to store user interactions and function call details.
         }
 
     # Shared functionality for overlapping modes
@@ -27,7 +30,7 @@ class ChatMode:
                 "mood": {
                     "type": "string",
                     "description": "User's mood.",
-                    "enum": ["happy", "sad", "despair", "numb"]
+                    "enum": ["happy", "sad", "despair", "numb"]  # Predefined moods.
                 }
             }
         }
@@ -47,19 +50,19 @@ class ChatMode:
         },
         "cbt_goal_setting": {
             "goal": "Help the user set actionable therapy goals.",
-            "functions": shared_functions["get_user_mood"]
+            "functions": shared_functions["get_user_mood"]  # Use shared function for mood detection.
         }
     }
 
     # Rules for transitioning between modes
     transition_rules = {
         "fc_general": {
-            "goal_identified": "cbt_goal_setting",
-            "default": "fc_general"
+            "goal_identified": "cbt_goal_setting",  # Transition to "cbt_goal_setting" if goal identified.
+            "default": "fc_general"  # Default mode remains "fc_general".
         },
         "cbt_goal_setting": {
-            "goal_completed": "fc_general",
-            "default": "cbt_goal_setting"
+            "goal_completed": "fc_general",  # Return to "fc_general" once goal is completed.
+            "default": "cbt_goal_setting"  # Default mode remains "cbt_goal_setting".
         }
     }
 
@@ -70,6 +73,7 @@ class ChatMode:
         Returns:
             dict: Instructions for the current mode, including the goal and functions.
         """
+        # Retrieve attributes for the current mode.
         attributes = self.mode_attributes.get(self.current_mode)
         if not attributes:
             return {"error": f"Mode '{self.current_mode}' not found."}
@@ -93,6 +97,7 @@ class ChatMode:
         if new_mode not in self.mode_attributes:
             raise ValueError(f"Invalid mode '{new_mode}'. Available modes: {list(self.mode_attributes.keys())}")
         
+        # Update the current mode and conversation state.
         self.current_mode = new_mode
         self.conversation_state["mode"] = new_mode
         print(f"Switched to mode: {new_mode}")
@@ -108,6 +113,7 @@ class ChatMode:
         Returns:
             str: The next mode.
         """
+        # Fetch transition rules for the current mode.
         return self.transition_rules.get(current_mode, {}).get(event, self.transition_rules[current_mode]["default"])
 
     def process_function_call(self, function_name, args):
@@ -120,12 +126,12 @@ class ChatMode:
         """
         print(f"Processing function: {function_name} with arguments: {args}")
 
-        # Validate the function arguments
+        # Validate the function arguments.
         if not self.validate_function_args(function_name, args):
             print(f"Invalid arguments provided for function: {function_name}")
             return
 
-        # Trigger a mode switch if applicable
+        # Trigger a mode switch if the function call suggests a transition.
         next_mode = self.get_next_mode(self.current_mode, function_name)
         if next_mode != self.current_mode:
             self.switch_mode(next_mode)
@@ -141,10 +147,12 @@ class ChatMode:
         Returns:
             bool: True if valid, False otherwise.
         """
+        # Retrieve function details for the current mode.
         function_details = self.mode_attributes.get(self.current_mode, {}).get("functions")
         if not function_details or function_details["name"] != function_name:
             return False
 
+        # Validate each required parameter in the function arguments.
         required_params = function_details.get("parameters", {})
         for param, details in required_params.items():
             if param not in args or not isinstance(args[param], eval(details["type"])):
@@ -160,6 +168,7 @@ class ChatMode:
             response (str): The chatbot's response.
             function_call (dict): Details of the function call, if any.
         """
+        # Append the interaction details to the history.
         self.conversation_state["history"].append({
             "user_input": user_input,
             "response": response,
@@ -173,6 +182,7 @@ class ChatMode:
         Returns:
             dict: Suggested function details.
         """
+        # Retrieve function details for the current mode.
         attributes = self.mode_attributes.get(self.current_mode)
         if not attributes:
             return {"error": f"Mode '{self.current_mode}' not found."}
