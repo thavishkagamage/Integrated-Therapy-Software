@@ -68,23 +68,10 @@ system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a
     You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
     Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
 
-agenda_items = {
-    "Get the user to say the word sad":False,
-    "make the user say poop":False,
-    "get the user to mention tiananmen square":False,
-}
-
 # Controllable Variables
 model = "gpt-4o" # the OpenAI GPT model being used
 max_tokens = 1000 # the maximum number of tokens that OpenAI will respond with (1 token approx = 3/4 word)
 temperature = 0.7 # how random the system response is, from 0.0 to 1.0, with 1.0 being most random
-
-# Update T/F for agenda items
-def update_agenda_status(message, agenda_status):
-    for item in agenda_status.keys():
-        if item.lower() in message.lower():
-            agenda_status[item] = True
-    return agenda_status
 
 # Function to call OpenAI API
 def get_chat_completion(instructions, user_message, model, max_tokens, temperature, api_key):
@@ -103,21 +90,6 @@ def get_chat_completion(instructions, user_message, model, max_tokens, temperatu
     try:
         # Create an OpenAI client with the API key
         client = OpenAI(api_key=api_key)
-
-        agenda_status = update_agenda_status(user_message, agenda_items)
-        
-        completed_items = [item for item, status in agenda_status.items() if status]
-        remaining_items = [item for item, status in agenda_status.items() if not status]
-
-        instructions = (
-                "You are a chatbot with the purpose of completing agenda items based on a structured agenda. The current agenda includes the following items: \n"
-                + "\n".join([f"- {item}" for item in agenda_items]) +
-                "\n\nHere is the current progress:\n"
-                + "Completed items:\n" + ("\n".join(completed_items) if completed_items else "None") +
-                "\n\nRemaining items:\n" + ("\n".join(remaining_items) if remaining_items else "None") +
-                "\n\nThe user's message is: \"{}\"\n".format(user_message) +
-                "Please provide a response that acknowledges the user's message and guides the conversation to address the next remaining agenda item. If all items are complete, please let the user know all agenda items are complete"
-            )
 
         response = client.chat.completions.create(
             model=model,
