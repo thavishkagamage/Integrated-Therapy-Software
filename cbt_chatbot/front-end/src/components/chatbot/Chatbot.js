@@ -8,6 +8,7 @@ const Chatbot = () => {
   const [conversationId, setConversationId] = useState(null);
   const [loading, setLoading] = useState(false); // Track loading state
   const messagesEndRef = useRef(null);
+  const hasMounted = useRef(false); // Track if the component has mounted
 
   useEffect(() => {
     const createOrFetchConversation = async () => {
@@ -133,7 +134,13 @@ const Chatbot = () => {
   };
 
   useEffect(() => {
-    scrollToBottom();
+    if (hasMounted.current) {
+      // Scroll to the bottom only after the initial render
+      scrollToBottom();
+    } else {
+      // Mark the component as mounted after the initial render
+      hasMounted.current = true;
+    }
   }, [conversation]);
 
   return (
@@ -153,7 +160,7 @@ const Chatbot = () => {
           type="text"
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
         />
         <button onClick={sendMessage}>Send</button>
       </div>
