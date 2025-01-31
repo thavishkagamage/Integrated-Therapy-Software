@@ -43,8 +43,8 @@ function App() {
 
   return (
     <div class="content-container">
-      <div class="main-content">
-        <Router>
+      <Router>
+        <header class="header"> 
           <nav class="nav-bar">
             <div class="app-logo">LOGO<br/>HERE</div>
             <ul class="nav-list">
@@ -57,16 +57,23 @@ function App() {
               {isLoggedIn && <li class="nav-item"><button class="nav-link button" onClick={handleClearConversations}>Clear All Conversations</button></li>}
             </ul>
           </nav>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/chatbot" element={<Chatbot />} />
-            <Route path="/conversations" element={<Conversations />} />
-            <Route path="/conversations/:id" element={<ConversationDetail />} />
-            <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-            <Route path="/register" element={<Register />} />
-          </Routes>
-        </Router>
-      </div>
+        </header>
+        <div class="main-content-container">
+          <aside class="left-aside"></aside>
+          <main>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/chatbot" element={<Chatbot />} />
+              <Route path="/conversations" element={<Conversations />} />
+              <Route path="/conversations/:id" element={<ConversationDetail />} />
+              <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+              <Route path="/register" element={<Register />} />
+            </Routes>
+          </main>
+          <aside class="right-aside"></aside>
+        </div>
+        <div class="footer"></div>
+      </Router>
     </div>
   );
 }

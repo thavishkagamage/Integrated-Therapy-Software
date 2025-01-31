@@ -1,15 +1,53 @@
-.content-container {
-  padding: 0;
-  min-height: 100vh; /* Ensures the container takes the full height of the viewport */
-  display: flex; /* Enables Flexbox */
-  justify-content: center; /* Horizontally centers the content */
+@media all and (max-width: 768px) {
+  .main-content-container {
+    flex-direction: column;
+  }
+  main {
+    padding: 5em 0;
+  }
+  .left-aside, .right-aside {
+    display: none;
+  }
 }
 
-.main-content {
-  width: 90%; /* Restricts content width */
-  max-width: 1440px; /* Limits the maximum width */
-  text-align: left; /* Ensures text aligns left */
-  margin: 20px 0 0 0;
+* {
+  box-sizing: border-box;
+  margin: 5px;
+}
+
+.content-container {
+  display: flex;
+  flex-direction: column;
+  height: 99vh;
+  max-width: 1440px;
+  margin: auto;
+}
+
+header {
+  padding: 2em 0;
+  background-color: #ddeffd;
+}
+
+.left-aside, .right-aside {
+  padding: 3em 0;
+  flex: 1 1 50px;
+  background-color: #ffeceb;
+}
+
+main {
+  padding: 1em 0;
+  flex: 7 7 150px;
+  background-color: #fff6ed;
+}
+
+.footer {
+  padding: 1em 0;
+  background-color: #d6cdea;
+}
+
+.main-content-container {
+  display: flex;
+  flex: 1;
 }
 
 /* temporary styles for logo placeholder */
