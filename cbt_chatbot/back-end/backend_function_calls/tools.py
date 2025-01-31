@@ -19,5 +19,26 @@ tools = [
         "additionalProperties": False
       }
     }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "start_cbt",
+      "description": "Detects when user wants to begin a CBT session",
+      "strict": True,
+      "parameters": {
+        "type": "object",
+        "required": [
+          "user_response"
+        ],
+        "properties": {
+          "user_response": {
+            "type": "string",
+            "description": "Response from the user that indicates they want to begin a CBT session"
+          }
+        },
+        "additionalProperties": False
+      }
+    }
   }
 ]
