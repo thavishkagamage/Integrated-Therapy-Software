@@ -55,6 +55,9 @@ from openai import OpenAI
 import json
 from dotenv import load_dotenv
 
+from backend_function_calls.tools import tools
+from backend_function_calls.tool_functions import *
+
 load_dotenv()
 # API Key
 api_key = os.getenv('OPENAI_API_KEY')
@@ -74,7 +77,7 @@ max_tokens = 1000 # the maximum number of tokens that OpenAI will respond with (
 temperature = 0.7 # how random the system response is, from 0.0 to 1.0, with 1.0 being most random
 
 # Function to call OpenAI API
-def get_chat_completion(instructions, user_message, model, max_tokens, temperature, api_key):
+def get_chat_completion(instructions, user_message, model, max_tokens, temperature, api_key, tools_list=tools):
     """
     Generates a chat completion response using the OpenAI API.
     Args:
@@ -98,10 +101,18 @@ def get_chat_completion(instructions, user_message, model, max_tokens, temperatu
                 {"role": "user", "content": user_message}
                 # Can append messages from continuing conversation here
             ],
+            tools=tools_list,
             max_tokens=max_tokens,
             temperature=temperature  # Controls randomness (0.0 to 1.0 scale, 1.0 being the most random)
         )
 
+        # Check if the response contains a tool call
+        if response.choices[0].message.tool_calls != None:
+            tool_call = response.choices[0].message.tool_calls[0]
+            args = json.loads(tool_call.function.arguments)
+            result = self_harm_help()
+            return result
+        
         # Returns the API response, assumes number of responses is 1 and chooses only that response
         return response.choices[0].message.content
 
