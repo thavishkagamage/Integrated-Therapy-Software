@@ -42,27 +42,32 @@ function App() {
   };
 
   return (
-    <Router>
-      <nav>
-        <ul>
-          <li><Link to="/">Home</Link></li>
-          <li><Link to="/chatbot">Chatbot</Link></li>
-          {isLoggedIn && <li><Link to="/conversations">Conversations</Link></li>}
-          {!isLoggedIn && <li><Link to="/login">Login</Link></li>}
-          {!isLoggedIn && <li><Link to="/register">Register</Link></li>}
-          {isLoggedIn && <li><button onClick={handleLogout}>Logout</button></li>}
-          {isLoggedIn && <li><button onClick={handleClearConversations}>Clear All Conversations</button></li>}
-        </ul>
-      </nav>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/chatbot" element={<Chatbot />} />
-        <Route path="/conversations" element={<Conversations />} />
-        <Route path="/conversations/:id" element={<ConversationDetail />} />
-        <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </Router>
+    <div class="content-container">
+      <div class="main-content">
+        <Router>
+          <nav class="nav-bar">
+            <div class="app-logo">LOGO<br/>HERE</div>
+            <ul class="nav-list">
+              <li class="nav-item"><Link class="nav-link" to="/">Home</Link></li>
+              <li class="nav-item"><Link class="nav-link" to="/chatbot">Chatbot</Link></li>
+              {!isLoggedIn && <li class="nav-item"><Link class="nav-link" to="/login">Login</Link></li>}
+              {!isLoggedIn && <li class="nav-item"><Link class="nav-link" to="/register">Register</Link></li>}
+              {isLoggedIn && <li class="nav-item"><button class="nav-link button" onClick={handleLogout}>Logout</button></li>}
+              {isLoggedIn && <li class="nav-item"><Link class="nav-link" to="/conversations">Conversations</Link></li>}
+              {isLoggedIn && <li class="nav-item"><button class="nav-link button" onClick={handleClearConversations}>Clear All Conversations</button></li>}
+            </ul>
+          </nav>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/chatbot" element={<Chatbot />} />
+            <Route path="/conversations" element={<Conversations />} />
+            <Route path="/conversations/:id" element={<ConversationDetail />} />
+            <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+            <Route path="/register" element={<Register />} />
+          </Routes>
+        </Router>
+      </div>
+    </div>
   );
 }
 

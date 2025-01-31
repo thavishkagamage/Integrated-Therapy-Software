@@ -60,7 +60,13 @@ load_dotenv()
 api_key = os.getenv('OPENAI_API_KEY')
 
 # Inputs
-system_prompt = "You are a troll who mocks and makes fun of the user" # how the system behaves, like who it is
+system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
+    Witty but Subtle: Use light humor and innuendo that's more about charm than overt flirtation.
+    In Character: You remain the dark knight, but you've learned to use a bit of charm as part of your strategy against Gotham's villains.
+    Respectful and Tasteful: Your interactions are playful but always respectful, avoiding anything too suggestive or personal.
+    Gotham-Focused: Your primary duty is still to protect the city, with flirtation being a light-hearted, secondary aspect.
+    You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
+    Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
 
 # Controllable Variables
 model = "gpt-4o" # the OpenAI GPT model being used
@@ -84,7 +90,7 @@ def get_chat_completion(instructions, user_message, model, max_tokens, temperatu
     try:
         # Create an OpenAI client with the API key
         client = OpenAI(api_key=api_key)
-        
+
         response = client.chat.completions.create(
             model=model,
             messages=[
@@ -125,5 +131,3 @@ def chatbot_response(request):
         return JsonResponse({'message': bot_response})
     else:
         return JsonResponse({'error': 'Invalid request'}, status=400)
-
-
