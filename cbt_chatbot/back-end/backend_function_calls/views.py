@@ -54,7 +54,6 @@ from django.views.decorators.csrf import csrf_exempt
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
-
 from backend_function_calls.tools import tools
 from backend_function_calls.tool_functions import *
 
@@ -106,21 +105,22 @@ def get_chat_completion(instructions, user_message, model, max_tokens, temperatu
             temperature=temperature  # Controls randomness (0.0 to 1.0 scale, 1.0 being the most random)
         )
 
+        # debug line
+        print('\n' + str(response) + '\n')
+        
         # Check if the response contains a tool call
         if response.choices[0].message.tool_calls != None:
-            tool_call = response.choices[0].message.tool_calls[0]
-            args = json.loads(tool_call.function.arguments)
-            result = self_harm_help()
-            return result
-        
+            response_message = handle_response(response.choices[0].message)
+            return response_message
+
         # Returns the API response, assumes number of responses is 1 and chooses only that response
         return response.choices[0].message.content
 
     # Returns error message from API
     except Exception as error_message:
         return f"Error: {str(error_message)}"
-    
-    
+
+
 @csrf_exempt
 def chatbot_response(request):
     """
