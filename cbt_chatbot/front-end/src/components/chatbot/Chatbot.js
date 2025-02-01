@@ -107,7 +107,7 @@ const Chatbot = () => {
         );
         setConversation([
           ...newConversation,
-          { text: response.data.message, sender: "AI" },
+          { text: response.data.message, sender: "ai" },
         ]);
 
         // Save the message to the database
@@ -149,9 +149,9 @@ const Chatbot = () => {
       <div className="chat-messages">
         <span className="start-message"> This is the beginning of your CBT chat session </span>
         {conversation.map((message, index) => (
-          <div key={index} className={`${message.sender}-message message`}>
+          <span key={index} className={`${message.sender}-message message`}>
             {message.text}
-          </div>
+          </span>
         ))}
         <div ref={messagesEndRef} />
       </div>

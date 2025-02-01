@@ -2,6 +2,9 @@ h1 {
   text-align: center;
 }
 
+/* 
+Chat window styles 
+*/
 .chat-window {
   min-width: 425px;
   max-width: 768px;
@@ -10,7 +13,6 @@ h1 {
   border-radius: 10px;
   overflow: hidden;
 }
-
 .chat-window h1 {
   background-color: #259ab8;
   color: white;
@@ -18,7 +20,42 @@ h1 {
   margin: 0;
   padding: 20px;
 }
+.chat-messages::-webkit-scrollbar {
+  display: none;
+}
+.start-message {
+  display: block;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #888;
+}
+.input-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0px;
+  gap: 10px;
+}
+input {
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 10px;
+  outline: none;
+  cursor: pointer;
+  width: 500px;
+}
+button {
+  border-radius: 20px;
+}
+button:hover {
+  background-color: #006ee4;
+}
 
+
+/* 
+Chat message styles 
+*/
 .chat-messages {
   padding: 10px 30px;
   border-top: 1px solid #000000;
@@ -29,27 +66,6 @@ h1 {
   overflow-y: auto;
   background-color: #f9f9f9;
 }
-
-.chat-messages::-webkit-scrollbar {
-  display: none;
-}
-
-.start-message {
-  display: block;
-  text-align: center;
-  margin-bottom: 20px;
-  color: #888;
-}
-
-.user, .ai {
-  width: fit-content;
-  overflow-wrap: anywhere;
-  text-wrap: auto;
-}
-.ai-message, .user-message {
-  width: fit-content;
-}
-
 .message {
   padding: 10px 15px;
   border-radius: 20px;
@@ -58,42 +74,16 @@ h1 {
   word-wrap: break-word;
   color: white;
 }
-
-li::marker {
-  display: none;
-}
-
 .user-message {
   background-color: #259ab8;
   align-self: flex-end;
+  width: fit-content;
 }
-.AI-message, .ai-message{
+/* removed .AI-message to favor lower case consistency */
+.ai-message { 
   background-color: #1a1a1a;
   align-self: flex-start;
 }
-
-.input-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 0px;
-  gap: 10px;
-}
-
-input {
-  background-color: #f9f9f9;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
-  padding: 10px;
-  outline: none;
-  cursor: pointer;
-  width: 300px;
-  
-}
-
-button {
-  border-radius: 20px;
-}
-button:hover {
-  background-color: #006ee4;
+li::marker {
+  display: none;
 }

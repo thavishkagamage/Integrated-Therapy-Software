@@ -27,15 +27,15 @@ const ConversationDetail = () => {
   }, [id]);
 
   return (
-    <div>
+    <div class="chat-window">
       <h1>Conversation Messages</h1>
-      <ul>
+      <div class="chat-messages">
         {messages.map(message => (
-          <li key={message.id}>
-            <strong>{message.sender}:</strong> {message.content}
-          </li>
+          <span key={message.id} className={`${message.sender}-message message`}>
+            {message.content}
+          </span>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
