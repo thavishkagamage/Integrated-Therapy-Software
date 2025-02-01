@@ -7,6 +7,7 @@ const Chatbot = () => {
   const [conversation, setConversation] = useState([]);
   const [conversationId, setConversationId] = useState(null);
   const [loading, setLoading] = useState(false); // Track loading state
+  const [waitingForResponse, setWaitingForResponse] = useState(false); // when user is waiting for API response
   const messagesEndRef = useRef(null);
   const hasMounted = useRef(false); // Track if the component has mounted
 
@@ -84,6 +85,7 @@ const Chatbot = () => {
   }, [conversationId, loading]); // Add loading to dependencies
   
   const sendMessage = async () => {
+    setWaitingForResponse(true);
     if (userInput.trim() && conversationId) {
       const newConversation = [
         ...conversation,
@@ -123,6 +125,8 @@ const Chatbot = () => {
         );
       } catch (error) {
         console.error("Error sending message:", error.response ? error.response.data : error.message);
+      } finally {
+        setWaitingForResponse(false);
       }
     }
   };
@@ -162,7 +166,9 @@ const Chatbot = () => {
           onChange={(e) => setUserInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
         />
-        <button class="send-button" onClick={sendMessage}>Send</button>
+        <button class="send-button" disabled={waitingForResponse} onClick={sendMessage}>
+          {waitingForResponse ? 'Sending...' : 'Send'}
+        </button>
       </div>
     </div>
   );
