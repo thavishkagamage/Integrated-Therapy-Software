@@ -5,10 +5,10 @@
 }
 
 .login-form {
-    background: white;
+    /* background: white; */
     padding: 1.5rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* border-radius: 0.5rem; */
+    /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
     width: 24rem;
 }
 
@@ -70,4 +70,22 @@
 .login-button:disabled {
     background-color: #9ca3af;
     cursor: not-allowed;
+}
+
+/* Styles for register login link */
+.register-login-link {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #374151;
+    margin-top: 1rem;
+}
+
+.register-login-link a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.register-login-link a:hover {
+    text-decoration: underline;
 }

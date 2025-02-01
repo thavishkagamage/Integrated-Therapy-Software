@@ -68,6 +68,8 @@ const Login = ({ setIsLoggedIn }) => {
                 <button type="submit" disabled={loading} className="login-button">
                     {loading ? 'Logging in...' : 'Login'}
                 </button>
+
+                <div className="register-login-link">Don't have an account? <a href="/register">Sign up</a></div>
             </form>
         </div>
     );
