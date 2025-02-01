@@ -59,6 +59,7 @@ main {
 
 .nav-bar {
   display: flex;
+  align-items: center;
 }
 
 ul, .nav-item {
@@ -73,6 +74,10 @@ a {
 .nav-item a, .nav-item button {
   font-size: 25px;
   font-weight: 800;
+}
+
+.nav-item button:hover {
+  background-color: none;
 }
 
 .nav-list {
@@ -90,6 +95,29 @@ a {
   text-align: inherit;
   font: inherit;
   border-radius: 0;
+  cursor: pointer;
+}
+
+.user-state-container {
+  margin-left: auto;
+  
+  .button {
+    margin: 5px;
+  }
+}
+.user-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.user-icon {
+  width: 42px;
+  height: 42px;
+}
+.user-state-text {
+  width: 52px;
+  text-align: center;
 }
 
 /* .App {

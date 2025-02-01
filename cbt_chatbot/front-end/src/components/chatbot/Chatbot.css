@@ -45,10 +45,10 @@ input {
   cursor: pointer;
   width: 500px;
 }
-button {
+.send-button {
   border-radius: 20px;
 }
-button:hover {
+.send-button:hover {
   background-color: #006ee4;
 }
 

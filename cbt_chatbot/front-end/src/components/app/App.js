@@ -8,6 +8,7 @@ import Login from '../login/Login';
 import Register from '../register/Register';
 import Conversations from '../conversations/Conversations';
 import ConversationDetail from '../conversations/ConversationDetail';
+import UserIcon from "../../images/user-icon.png";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -50,12 +51,22 @@ function App() {
             <ul class="nav-list">
               <li class="nav-item"><Link class="nav-link" to="/">Home</Link></li>
               <li class="nav-item"><Link class="nav-link" to="/chatbot">Chatbot</Link></li>
-              {!isLoggedIn && <li class="nav-item"><Link class="nav-link" to="/login">Login</Link></li>}
-              {!isLoggedIn && <li class="nav-item"><Link class="nav-link" to="/register">Register</Link></li>}
-              {isLoggedIn && <li class="nav-item"><button class="nav-link button" onClick={handleLogout}>Logout</button></li>}
               {isLoggedIn && <li class="nav-item"><Link class="nav-link" to="/conversations">Conversations</Link></li>}
-              {isLoggedIn && <li class="nav-item"><button class="nav-link button" onClick={handleClearConversations}>Clear All Conversations</button></li>}
+              {/* {isLoggedIn && <li class="nav-item"><button class="nav-link button" onClick={handleClearConversations}>Clear All Conversations</button></li>} */}
             </ul>
+            <div class="user-state-container">
+              {isLoggedIn ? (
+                <button className="button user-state" onClick={handleLogout}>
+                  <img className="user-icon" src={UserIcon} alt="User Icon" />
+                  <span className="user-state-text">Logout</span>
+                </button>
+              ) : (
+                <Link className="user-state" to="/login">
+                  <img className="user-icon" src={UserIcon} alt="User Icon" />
+                  <span className="user-state-text">Login</span>
+                </Link>
+              )}
+            </div>
           </nav>
         </header>
         <div class="main-content-container">
