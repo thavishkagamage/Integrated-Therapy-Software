@@ -157,12 +157,12 @@ const Chatbot = () => {
             {message.text}
           </span>
         ))}
+        <div ref={messagesEndRef} />
         {waitingForResponse && (
           <div className="loading-container">
             <div className="loading-spinner"></div>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
       <div className="input-container">
         <input
