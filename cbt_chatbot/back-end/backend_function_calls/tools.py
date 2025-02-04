@@ -1,6 +1,6 @@
 # List of all tools
 
-tools = [
+all_tools = [
   {
     "type": "function",
     "function": {
