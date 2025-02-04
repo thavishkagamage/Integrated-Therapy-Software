@@ -18,6 +18,7 @@ function_mapping = {
     "start_cbt": start_cbt
 }
 
+
 # Handle the function call from OpenAI API response
 def handle_response(message):
     """
