@@ -141,7 +141,7 @@ def chatbot_response(request):
         
         # This is where we will gather and combine details to pass in as the system prompt
         # - general instructions and voice attributes
-        # - session specific attributes (agenda, goals, )
+        # - session specific attributes (agenda, goals, etc.)
         # - user background info
         # - guardrails
 
