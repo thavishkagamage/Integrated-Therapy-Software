@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import './Conversations.css';
+import axiosInstance from '../utils/axios';
 
 const Conversations = () => {
   const [conversations, setConversations] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -13,7 +15,7 @@ const Conversations = () => {
         return;
       }
       try {
-        const response = await axios.get('http://localhost:8000/api/conversations/', {
+        const response = await axiosInstance.get('http://localhost:8000/api/conversations/', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setConversations(response.data);
@@ -32,7 +34,7 @@ const Conversations = () => {
       return;
     }
     try {
-      await axios.delete(`http://localhost:8000/api/conversations/${conversationId}/`, {
+      await axiosInstance.delete(`http://localhost:8000/api/conversations/${conversationId}/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setConversations(conversations.filter(conversation => conversation.id !== conversationId));
@@ -41,14 +43,28 @@ const Conversations = () => {
     }
   };
 
+  const handleResumeConversation = (conversationId) => {
+    console.log(`Resuming conversation with ID: ${conversationId}`);
+    navigate(`/chatbot?conversationId=${conversationId}`);
+  };
+
+  const handViewConversation = (conversationId) => {
+    console.log(`Viewing conversation with ID: ${conversationId}`);
+    navigate(`/conversations/${conversationId}`);
+  };
+
   return (
-    <div>
+    <div className="conversations-container">
       <h1>Your Conversations</h1>
       <ul>
         {conversations.map(conversation => (
-          <li key={conversation.id}>
-            <Link to={`/conversations/${conversation.id}`}>{conversation.title}</Link>
-            <button onClick={() => handleDeleteConversation(conversation.id)}>Delete</button>
+          <li key={conversation.id} className="conversation-item">
+            <div className="conversation-title">{conversation.title}</div>
+            <div>
+              <button onClick={() => handViewConversation(conversation.id)}>View</button>
+              <button onClick={() => handleResumeConversation(conversation.id)}>Resume</button>
+              <button onClick={() => handleDeleteConversation(conversation.id)}>Delete</button>
+            </div>
           </li>
         ))}
       </ul>
