@@ -45,6 +45,21 @@ INSTALLED_APPS = [
     'users',
     'conversation_handler',
     'message_handler',  
+
+    # Wagtail
+    'wagtail.contrib.forms',
+    'wagtail.contrib.redirects',
+    'wagtail.embeds',
+    'wagtail.sites',
+    'wagtail.users',
+    'wagtail.snippets',
+    'wagtail.documents',
+    'wagtail.images',
+    'wagtail.search',
+    'wagtail.admin',
+    'wagtail',
+    'modelcluster',
+    'taggit',
 ]
 
 MIDDLEWARE = [
@@ -57,6 +72,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+
+    # Wagtail
+    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -147,3 +165,24 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
+
+# Wagtail settings -> https://docs.wagtail.org/en/stable/reference/settings.html
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
+# This specifies the maximum number of fields allowed in a form submission
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10_000
+
+# This will be displayed on the main dashboard of the Wagtail admin backend:
+WAGTAIL_SITE_NAME = 'CBT Chatbot'
+
+# This is the base URL used by the Wagtail admin site. It is typically used for generating URLs to include in notification emails
+#       If this setting is not present, Wagtail will fall back to request.site.root_url or to the hostname of the request. Although this setting is not 
+#       strictly required, it is highly recommended because leaving it out may produce unusable URLs in notification emails.
+WAGTAILADMIN_BASE_URL = 'http://cbt-chatbot-capstone.com'
+
+# specify the file types that Wagtail will allow to be uploaded as documents. This can be omitted to allow all file types, but this may present a security
+# risk if untrusted users are allowed to upload documents
+WAGTAILDOCS_EXTENSIONS = ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']

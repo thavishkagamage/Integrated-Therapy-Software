@@ -18,6 +18,13 @@ from rest_framework.routers import DefaultRouter
 from conversation_handler.views import ConversationViewSet, ClearConversationsView
 from message_handler.views import MessageViewSet
 
+from wagtail.admin import urls as wagtailadmin_urls
+from wagtail import urls as wagtail_urls
+from wagtail.documents import urls as wagtaildocs_urls
+
+from django.conf import settings
+from django.conf.urls.static import static
+
 router = DefaultRouter()
 router.register(r'conversations', ConversationViewSet)
 router.register(r'messages', MessageViewSet)
@@ -28,4 +35,23 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/users/', include('users.urls')),
     path('clear_conversations/', ClearConversationsView.as_view(), name='clear-conversations'),
-]
+
+    # Wagtail
+
+    # wagtailadmin_urls provides the admin interface for Wagtail. 
+    # This is separate from the Django admin interface, django.contrib.admin. 
+    path('cms/', include(wagtailadmin_urls)),
+
+    # Wagtail serves your document files from the location, wagtaildocs_urls. 
+    # You can omit this if you do not intend to use Wagtail’s document management features.
+    path('documents/', include(wagtaildocs_urls)),
+
+    # Wagtail serves your pages from the wagtail_urls location. In the above example, Wagtail handles URLs under /pages/, 
+    # leaving your Django project to handle the root URL and other paths as normal
+    path('pages/', include(wagtail_urls)),
+
+    # If you want Wagtail to handle the entire URL space including the root URL, then place this at the end of the urlpatterns list.
+    # path('', include(wagtail_urls)),
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # Note:
+# This only works in development mode (DEBUG = True); in production, you have to configure your web server to serve files from MEDIA_ROOT. 
