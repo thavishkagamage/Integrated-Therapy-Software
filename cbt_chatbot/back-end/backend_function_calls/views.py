@@ -57,7 +57,7 @@ import json
 from dotenv import load_dotenv
 from backend_function_calls.tools.tools import all_tools
 from backend_function_calls.tools.tool_functions import handle_response
-from backend_function_calls.cache_utils import get_system_prompt
+from backend_function_calls.cache_utils import get_cache_file
 
 load_dotenv()
 # API Key
@@ -150,6 +150,12 @@ def chatbot_response(request):
         # - session number
         # - specific attribute names
 
+        # test retrieval
+        prompts = get_cache_file('prompts')
+
+        print(prompts)
+
+        # system_prompt = 
 
         # Some values have defaults, but we can add custom inputs for tools, model, max_tokens, temperature
         bot_response = get_chat_completion(system_prompt, user_message) 
