@@ -150,14 +150,23 @@ def chatbot_response(request):
         # - session number
         # - specific attribute names
 
-        # test retrieval
-        prompts = get_cache_file('prompts')
+        # session file caching and retrieval
+        prompts = get_cache_file('session1')
 
-        # debug line
-        print('\n' + str(prompts) + '\n')
+        # example of parsing the json for prompts
+        identity = prompts['Identity']['1']
+        purpose = prompts['Purpose']['1']
+        behavior = prompts['Behavior']['1']
 
-        # example of parsing the json
-        system_prompt = prompts['voices']['session3']
+        # Fetch the agenda
+        session_agenda = {}
+
+        for item in prompts['Conversation Agenda'].values():
+            session_agenda[item] = 'not started'
+
+        system_prompt = identity + purpose + behavior
+
+        print(system_prompt)
 
         # Some values have defaults, but we can add custom inputs for tools, model, max_tokens, temperature
         bot_response = get_chat_completion(system_prompt, user_message) 
