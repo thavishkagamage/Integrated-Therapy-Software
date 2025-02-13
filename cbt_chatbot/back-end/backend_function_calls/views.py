@@ -157,7 +157,7 @@ def chatbot_response(request):
         print('\n' + str(prompts) + '\n')
 
         # example of parsing the json
-        system_prompt = prompts['voices']['session2']
+        system_prompt = prompts['voices']['session3']
 
         # Some values have defaults, but we can add custom inputs for tools, model, max_tokens, temperature
         bot_response = get_chat_completion(system_prompt, user_message) 
