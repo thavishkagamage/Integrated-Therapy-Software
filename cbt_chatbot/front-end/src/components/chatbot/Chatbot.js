@@ -113,9 +113,19 @@ const Chatbot = () => {
 
         const conversationHistory = newConversation.map(message => `${message.sender}: ${message.text}`).join('\n');
 
+        // Fetch the session number and agenda items from the conversation
+        const conversationResponse = await axiosInstance.get(`conversations/${conversationId}/`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const { session_number, agenda_items } = conversationResponse.data;
+
         const response = await axiosInstance.post(
           "chatbot/",
-          { message: conversationHistory },
+          { 
+            message: conversationHistory,
+            session_number: session_number,
+            agenda_items: agenda_items
+          },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setConversation([

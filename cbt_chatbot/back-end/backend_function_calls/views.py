@@ -139,6 +139,12 @@ def chatbot_response(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         user_message = data['message']
+        session_number = data.get('session_number')
+        agenda_items = data.get('agenda_items')
+        
+        # Print out the session number and agenda items
+        print(f"Session Number: {session_number}")
+        print(f"Agenda Items: {agenda_items}")
         
         # This is where we will gather and combine details to pass in as the system prompt
         # - general instructions and voice attributes
