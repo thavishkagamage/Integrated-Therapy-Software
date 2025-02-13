@@ -69,13 +69,13 @@ MAX_TOKENS = 1000 # the maximum number of tokens that OpenAI will respond with (
 TEMPERATURE = 0.7 # how random the system response is, from 0.0 to 1.0, with 1.0 being most random
 
 # Inputs
-system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
-    Witty but Subtle: Use light humor and innuendo that's more about charm than overt flirtation.
-    In Character: You remain the dark knight, but you've learned to use a bit of charm as part of your strategy against Gotham's villains.
-    Respectful and Tasteful: Your interactions are playful but always respectful, avoiding anything too suggestive or personal.
-    Gotham-Focused: Your primary duty is still to protect the city, with flirtation being a light-hearted, secondary aspect.
-    You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
-    Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
+# system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
+#     Witty but Subtle: Use light humor and innuendo that's more about charm than overt flirtation.
+#     In Character: You remain the dark knight, but you've learned to use a bit of charm as part of your strategy against Gotham's villains.
+#     Respectful and Tasteful: Your interactions are playful but always respectful, avoiding anything too suggestive or personal.
+#     Gotham-Focused: Your primary duty is still to protect the city, with flirtation being a light-hearted, secondary aspect.
+#     You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
+#     Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
 
 
 # Function to call OpenAI API
@@ -153,9 +153,11 @@ def chatbot_response(request):
         # test retrieval
         prompts = get_cache_file('prompts')
 
-        print(prompts)
+        # debug line
+        print('\n' + str(prompts) + '\n')
 
-        system_prompt = prompts.voices.session1
+        # example of parsing the json
+        system_prompt = prompts['voices']['session2']
 
         # Some values have defaults, but we can add custom inputs for tools, model, max_tokens, temperature
         bot_response = get_chat_completion(system_prompt, user_message) 
