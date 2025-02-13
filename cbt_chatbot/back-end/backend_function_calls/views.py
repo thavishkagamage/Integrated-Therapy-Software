@@ -155,7 +155,7 @@ def chatbot_response(request):
 
         print(prompts)
 
-        # system_prompt = 
+        system_prompt = prompts.voices.session1
 
         # Some values have defaults, but we can add custom inputs for tools, model, max_tokens, temperature
         bot_response = get_chat_completion(system_prompt, user_message) 
