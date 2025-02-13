@@ -57,6 +57,7 @@ import json
 from dotenv import load_dotenv
 from backend_function_calls.tools import all_tools
 from backend_function_calls.tool_functions import handle_response
+from backend_function_calls.cache_utils import get_system_prompt
 
 load_dotenv()
 # API Key
