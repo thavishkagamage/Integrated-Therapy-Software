@@ -30,9 +30,10 @@
 #   - Args:
 #     - instructions: Instructions for the system role in the chat.
 #     - user_message: The message from the user.
-#     - model: The model to use for generating the completion.
+#     - tools_list: A list of tools to be used by the chatbot.
 #     - max_tokens: The maximum number of tokens to generate in the response.
 #     - temperature: Controls the randomness of the response.
+#     - model: The model to use for generating the completion.
 #     - api_key: The API key for authenticating with the OpenAI service.
 #   - Returns: The content of the generated response from the API, or an error message if the API call fails.
 
@@ -54,27 +55,31 @@ from django.views.decorators.csrf import csrf_exempt
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
+from backend_function_calls.tools.tools import all_tools
+from backend_function_calls.tools.tool_functions import handle_response
+from backend_function_calls.cache_utils import get_cache_file
 
 load_dotenv()
 # API Key
-api_key = os.getenv('OPENAI_API_KEY')
-
-# Inputs
-system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
-    Witty but Subtle: Use light humor and innuendo that's more about charm than overt flirtation.
-    In Character: You remain the dark knight, but you've learned to use a bit of charm as part of your strategy against Gotham's villains.
-    Respectful and Tasteful: Your interactions are playful but always respectful, avoiding anything too suggestive or personal.
-    Gotham-Focused: Your primary duty is still to protect the city, with flirtation being a light-hearted, secondary aspect.
-    You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
-    Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
+API_KEY = os.getenv('OPENAI_API_KEY')
 
 # Controllable Variables
-model = "gpt-4o" # the OpenAI GPT model being used
-max_tokens = 1000 # the maximum number of tokens that OpenAI will respond with (1 token approx = 3/4 word)
-temperature = 0.7 # how random the system response is, from 0.0 to 1.0, with 1.0 being most random
+MODEL = "gpt-4o" # the OpenAI GPT model being used
+MAX_TOKENS = 1000 # the maximum number of tokens that OpenAI will respond with (1 token approx = 3/4 word)
+TEMPERATURE = 0.7 # how random the system response is, from 0.0 to 1.0, with 1.0 being most random
+
+# Inputs
+# system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
+#     Witty but Subtle: Use light humor and innuendo that's more about charm than overt flirtation.
+#     In Character: You remain the dark knight, but you've learned to use a bit of charm as part of your strategy against Gotham's villains.
+#     Respectful and Tasteful: Your interactions are playful but always respectful, avoiding anything too suggestive or personal.
+#     Gotham-Focused: Your primary duty is still to protect the city, with flirtation being a light-hearted, secondary aspect.
+#     You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
+#     Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
+
 
 # Function to call OpenAI API
-def get_chat_completion(instructions, user_message, model, max_tokens, temperature, api_key):
+def get_chat_completion(instructions, user_message, tools=all_tools, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, model=MODEL, api_key=API_KEY):
     """
     Generates a chat completion response using the OpenAI API.
     Args:
@@ -98,9 +103,18 @@ def get_chat_completion(instructions, user_message, model, max_tokens, temperatu
                 {"role": "user", "content": user_message}
                 # Can append messages from continuing conversation here
             ],
+            tools=tools, # List of tools to be used by the chatbot
             max_tokens=max_tokens,
             temperature=temperature  # Controls randomness (0.0 to 1.0 scale, 1.0 being the most random)
         )
+
+        # debug line
+        print('\n' + str(response) + '\n')
+        
+        # Check if the response contains a tool call
+        if response.choices[0].message.tool_calls != None:
+            response_message = handle_response(response.choices[0].message)
+            return response_message
 
         # Returns the API response, assumes number of responses is 1 and chooses only that response
         return response.choices[0].message.content
@@ -108,8 +122,8 @@ def get_chat_completion(instructions, user_message, model, max_tokens, temperatu
     # Returns error message from API
     except Exception as error_message:
         return f"Error: {str(error_message)}"
-    
-    
+
+
 @csrf_exempt
 def chatbot_response(request):
     """
@@ -126,7 +140,27 @@ def chatbot_response(request):
         data = json.loads(request.body)
         user_message = data['message']
         
-        bot_response = get_chat_completion(system_prompt, user_message, model, max_tokens, temperature, api_key)
+        # This is where we will gather and combine details to pass in as the system prompt
+        # - general instructions and voice attributes
+        # - session specific attributes (agenda, goals, etc.)
+        # - user background info
+        # - guardrails
+
+        # Need a way to determine which cache items to get, differentiate by:
+        # - session number
+        # - specific attribute names
+
+        # test retrieval
+        prompts = get_cache_file('prompts')
+
+        # debug line
+        print('\n' + str(prompts) + '\n')
+
+        # example of parsing the json
+        system_prompt = prompts['voices']['session3']
+
+        # Some values have defaults, but we can add custom inputs for tools, model, max_tokens, temperature
+        bot_response = get_chat_completion(system_prompt, user_message) 
     
         return JsonResponse({'message': bot_response})
     else:
