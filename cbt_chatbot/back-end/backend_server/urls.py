@@ -18,7 +18,6 @@ from rest_framework.routers import DefaultRouter
 from conversation_handler.views import ConversationViewSet, ClearConversationsView
 from message_handler.views import MessageViewSet
 
-
 router = DefaultRouter()
 router.register(r'conversations', ConversationViewSet)
 router.register(r'messages', MessageViewSet)
