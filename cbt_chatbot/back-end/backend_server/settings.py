@@ -142,9 +142,10 @@ REST_FRAMEWORK = {
     ),
 }
 
+# More types of caching here: https://docs.djangoproject.com/en/5.1/topics/cache/ 
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'cbt-therapy-chatbot',  # Unique identifier for your cache instance
+        'LOCATION': 'cbt-therapy-chatbot',  # Unique identifier for your cache instance, used to identify individual memory stores
     }
 }

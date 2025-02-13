@@ -55,8 +55,8 @@ from django.views.decorators.csrf import csrf_exempt
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
-from backend_function_calls.tools import all_tools
-from backend_function_calls.tool_functions import handle_response
+from backend_function_calls.tools.tools import all_tools
+from backend_function_calls.tools.tool_functions import handle_response
 from backend_function_calls.cache_utils import get_system_prompt
 
 load_dotenv()
@@ -145,6 +145,11 @@ def chatbot_response(request):
         # - session specific attributes (agenda, goals, etc.)
         # - user background info
         # - guardrails
+
+        # Need a way to determine which cache items to get, differentiate by:
+        # - session number
+        # - specific attribute names
+
 
         # Some values have defaults, but we can add custom inputs for tools, model, max_tokens, temperature
         bot_response = get_chat_completion(system_prompt, user_message) 
