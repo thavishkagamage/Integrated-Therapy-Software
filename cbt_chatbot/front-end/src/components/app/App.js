@@ -8,6 +8,7 @@ import Login from '../login/Login';
 import Register from '../register/Register';
 import Conversations from '../conversations/Conversations';
 import ConversationDetail from '../conversations/ConversationDetail';
+import Goals from '../goals/Goals';  // Import Goals component
 import UserIcon from "../../images/user-icon.png";
 
 function App() {
@@ -43,18 +44,18 @@ function App() {
   };
 
   return (
-    <div class="content-container">
+    <div className="content-container">
       <Router>
-        <header class="header"> 
-          <nav class="nav-bar">
-            <div class="app-logo">LOGO<br/>HERE</div>
-            <ul class="nav-list">
-              <li class="nav-item"><Link class="nav-link" to="/">Home</Link></li>
-              <li class="nav-item"><Link class="nav-link" to="/chatbot">Chatbot</Link></li>
-              {isLoggedIn && <li class="nav-item"><Link class="nav-link" to="/conversations">Conversations</Link></li>}
-              {/* {isLoggedIn && <li class="nav-item"><button class="nav-link button" onClick={handleClearConversations}>Clear All Conversations</button></li>} */}
+        <header className="header"> 
+          <nav className="nav-bar">
+            <div className="app-logo">LOGO<br/>HERE</div>
+            <ul className="nav-list">
+              <li className="nav-item"><Link className="nav-link" to="/">Home</Link></li>
+              <li className="nav-item"><Link className="nav-link" to="/chatbot">Chatbot</Link></li>
+              {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/conversations">Conversations</Link></li>}
+              {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/goals">Goals</Link></li>} {/* New Goals Link */}
             </ul>
-            <div class="user-state-container">
+            <div className="user-state-container">
               {isLoggedIn ? (
                 <button className="button user-state" onClick={handleLogout}>
                   <img className="user-icon" src={UserIcon} alt="User Icon" />
@@ -69,8 +70,8 @@ function App() {
             </div>
           </nav>
         </header>
-        <div class="main-content-container">
-          <aside class="left-aside"></aside>
+        <div className="main-content-container">
+          <aside className="left-aside"></aside>
           <main>
             <Routes>
               <Route path="/" element={<Home />} />
@@ -79,11 +80,12 @@ function App() {
               <Route path="/conversations/:id" element={<ConversationDetail />} />
               <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/goals" element={<Goals />} />  {/* New Goals Route */}
             </Routes>
           </main>
-          <aside class="right-aside"></aside>
+          <aside className="right-aside"></aside>
         </div>
-        <div class="footer"></div>
+        <div className="footer"></div>
       </Router>
     </div>
   );

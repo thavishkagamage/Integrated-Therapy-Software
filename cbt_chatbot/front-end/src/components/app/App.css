@@ -8,6 +8,11 @@
   .left-aside, .right-aside {
     display: none;
   }
+  /* Ensure chat and goals stack on mobile */
+  .chat-goals-container {
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
 * {
@@ -50,6 +55,13 @@ main {
   flex: 1;
 }
 
+/* Add the new container to align chat and goals side by side */
+.chat-goals-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
 /* temporary styles for logo placeholder */
 .app-logo {
   padding: 0 20px 0 20px;
@@ -87,7 +99,7 @@ a {
   padding-left: 0px;
 }
 
-.button{
+.button {
   background-color: transparent;
   border: none;
   margin: 0;
@@ -105,16 +117,19 @@ a {
     margin: 5px;
   }
 }
+
 .user-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
+
 .user-icon {
   width: 42px;
   height: 42px;
 }
+
 .user-state-text {
   width: 52px;
   text-align: center;
