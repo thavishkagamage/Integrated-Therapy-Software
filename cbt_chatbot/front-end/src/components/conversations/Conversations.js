@@ -28,6 +28,7 @@ const Conversations = () => {
   }, []);
 
   const handleDeleteConversation = async (conversationId) => {
+    console.log(`Deleting Conversation with ID:  ${conversationId}`)
     const token = localStorage.getItem('accessToken');
     if (!token) {
       console.error("No access token found");
