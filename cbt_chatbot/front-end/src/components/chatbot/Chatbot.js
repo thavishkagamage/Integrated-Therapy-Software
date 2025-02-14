@@ -60,7 +60,17 @@ const Chatbot = () => {
             (conv) => conv.user === userId && conv.title.startsWith("New Conversation")
           );
 
-          let conversationTitle = "New Conversation";
+          const dateTime = new Date().toLocaleString('en-US', {
+            year: '2-digit',
+            month: 'numeric',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+          });
+
+          let conversationTitle = `New Conversation - ${dateTime}`;
+
           if (userConversations.length > 0) {
             const existingNumbers = userConversations
               .map(conv => {
@@ -69,7 +79,7 @@ const Chatbot = () => {
               })
               .sort((a, b) => a - b);
             const nextNumber = existingNumbers.length ? existingNumbers[existingNumbers.length - 1] + 1 : 1;
-            conversationTitle = `New Conversation ${nextNumber}`;
+            conversationTitle = `New Conversation ${nextNumber} - ${dateTime}`;
           }
 
           // Create a new conversation if none exists

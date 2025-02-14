@@ -46,7 +46,7 @@ const Conversations = () => {
 
   const handleResumeConversation = (conversationId) => {
     console.log(`Resuming conversation with ID: ${conversationId}`);
-    navigate(`/chatbot?conversationId=${conversationId}`);
+    navigate(`/sessions/chatbot?conversationId=${conversationId}`);
   };
 
   const handViewConversation = (conversationId) => {
