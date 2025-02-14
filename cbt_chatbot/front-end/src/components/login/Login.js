@@ -16,6 +16,7 @@ const Login = ({ setIsLoggedIn }) => {
         setError(null);
 
         try {
+            // Login existing user
             const response = await axios.post('http://127.0.0.1:8000/api/users/login/', {
                 username,
                 password,

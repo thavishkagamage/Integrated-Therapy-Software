@@ -79,7 +79,7 @@ function App() {
               <Route path="/conversations" element={<Conversations />} />
               <Route path="/conversations/:id" element={<ConversationDetail />} />
               <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-              <Route path="/register" element={<Register />} />
+              <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
               <Route path="/goals" element={<Goals />} />  {/* New Goals Route */}
             </Routes>
           </main>
