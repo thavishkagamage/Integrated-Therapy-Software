@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../login/Login.css';
 
@@ -8,6 +9,7 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     const handleRegister = async (e) => {
         e.preventDefault();
@@ -21,8 +23,27 @@ const Register = () => {
                 password,
             });
             alert('Registration successful!');
+            navigate('/');
         } catch (error) {
-            setError('Error during registration. Please try again.');
+            console.error('Registration failed:', error.response.data);
+            if (error.response && error.response.data) {
+                const errors = error.response.data;
+                let errorMessage = '';
+                if (errors.username && errors.email) {
+                    errorMessage = 'A user with that username and email already exists.';
+                } 
+                else if (errors.username) {
+                    errorMessage = errors.username;
+                }
+                else if (errors.email) {
+                    errorMessage = errors.email;
+                }
+                // Fallback message if there are no specific errors
+                else {
+                    errorMessage = 'Error during registration. Please try again.';
+                }
+                setError(errorMessage);
+            }
         } finally {
             setLoading(false);
         }

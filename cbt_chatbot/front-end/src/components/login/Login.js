@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Login.css';
 
@@ -7,6 +8,7 @@ const Login = ({ setIsLoggedIn }) => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -28,6 +30,7 @@ const Login = ({ setIsLoggedIn }) => {
 
             setIsLoggedIn(true);
             alert('Login successful!');
+            navigate('/');
         } catch (error) {
             console.error('Login failed:', error.response.data);
             alert('Invalid credentials');
