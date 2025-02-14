@@ -56,18 +56,24 @@ const Conversations = () => {
   return (
     <div className="conversations-container">
       <h1>Your Conversations</h1>
-      <ul>
-        {conversations.map(conversation => (
-          <li key={conversation.id} className="conversation-item">
-            <div className="conversation-title">{conversation.title}</div>
-            <div>
-              <button onClick={() => handViewConversation(conversation.id)}>View</button>
-              <button onClick={() => handleResumeConversation(conversation.id)}>Resume</button>
-              <button onClick={() => handleDeleteConversation(conversation.id)}>Delete</button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {conversations.length === 0 ? (
+        <div className="no-conversations">
+          <p>You have no previous conversations.</p>
+        </div>
+      ) : (
+        conversations.map(conversation => (
+          <ul>
+            <li key={conversation.id} className="conversation-item">
+              <div className="conversation-title">{conversation.title}</div>
+              <div>
+                <button onClick={() => handViewConversation(conversation.id)}>View</button>
+                <button onClick={() => handleResumeConversation(conversation.id)}>Resume</button>
+                <button onClick={() => handleDeleteConversation(conversation.id)}>Delete</button>
+              </div>
+            </li>
+          </ul>
+        )))
+      }
     </div>
   );
 };

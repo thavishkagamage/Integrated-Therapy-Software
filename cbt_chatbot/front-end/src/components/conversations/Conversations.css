@@ -1,36 +1,44 @@
 .conversations-container {
-    padding: 20px;
-  }
+  padding: 20px;
+}
   
-  .conversation-item {
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 10px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.conversation-item {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.conversation-title {
+  font-weight: bold;
+  color: #333;
+}
+
+.conversation-item .button,
+.conversation-item button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 5px 10px;
+  cursor: pointer;
+  margin-left: 5px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.conversation-item .button:hover,
+.conversation-item button:hover {
+  background-color: #0056b3;
+}
+
+.no-conversations {
+  text-align: center;
+  padding-top: 20px;
+  p {
+    font-weight: 600;
   }
-  
-  .conversation-title {
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .conversation-item .button,
-  .conversation-item button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 5px 10px;
-    cursor: pointer;
-    margin-left: 5px;
-    text-decoration: none;
-    display: inline-block;
-  }
-  
-  .conversation-item .button:hover,
-  .conversation-item button:hover {
-    background-color: #0056b3;
-  }
+}
