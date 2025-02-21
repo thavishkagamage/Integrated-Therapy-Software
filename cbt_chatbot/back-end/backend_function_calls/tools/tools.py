@@ -43,7 +43,7 @@ all_tools = [
       }
     }
   },
-   {
+  {
     "type": "function",
     "function": {
       "name": "complete_agenda_item",
@@ -64,7 +64,7 @@ all_tools = [
       }
     }
   },
-    {
+  {
     "type": "function",
     "function": {
       "name": "update_current_agenda",
