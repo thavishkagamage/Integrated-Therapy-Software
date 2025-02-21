@@ -4,25 +4,38 @@ import axiosInstance from "../utils/axios";
 import { useLocation } from 'react-router-dom';
 
 const Chatbot = () => {
+
+  // These are variables we pass into the chatbot component (instead of using props)
+  // 1. sessionId: the session number we will use to fetch the CBT instructions
+  //    - when sessionId is 0 (default value) the user is in free chat
+  // 2. convoId: the conversationId that identifies the conversation in the database
+  //    - when convoId is null (default value) we create a new conversation 
+  const location = useLocation();
+  const { sessionId = 0, convoId = null} = location.state || {};
+
   const [userInput, setUserInput] = useState("");
   const [conversation, setConversation] = useState([]);
   const [conversationId, setConversationId] = useState(null);
+  // const [sessionNumber, setSessionNumber] = useState(null);
   const [loading, setLoading] = useState(false);
   const [waitingForResponse, setWaitingForResponse] = useState(false);
   const [conversationFetched, setConversationFetched] = useState(false); // Track if conversation has been fetched
   const messagesEndRef = useRef(null);
   const hasMounted = useRef(false);
-  const location = useLocation();
+
+  // useEffect(() => {
+  //   const queryParams = new URLSearchParams(location.search);
+  //   const conversationIdFromUrl = queryParams.get('conversationId');
+  //   if (conversationIdFromUrl) {
+  //     setConversationId(conversationIdFromUrl);  // Set the conversationId if passed in URL
+  //   }
+
+  //   setConversationId(convoId);  // Set the conversationId from location.state
+
+  // }, [location]);
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const conversationIdFromUrl = queryParams.get('conversationId');
-    if (conversationIdFromUrl) {
-      setConversationId(conversationIdFromUrl);  // Set the conversationId if passed in URL
-    }
-  }, [location]);
-
-  useEffect(() => {
+    console.log(`Chatbot Params: sessionId = ${sessionId} = convoId: ${convoId}`)
     const createOrFetchConversation = async () => {
       if (loading || conversationFetched) return;  // Prevent repeated fetching if conversation is already fetched
 
@@ -35,8 +48,9 @@ const Chatbot = () => {
           console.error("No access token found");
           return;
         }
-        const queryParams = new URLSearchParams(location.search);
-        const conversationId = queryParams.get('conversationId');
+        // const queryParams = new URLSearchParams(location.search);
+        // const conversationId = queryParams.get('conversationId');
+        const conversationId = convoId; // using location.state instead of queryParams
         console.log("conversationId", conversationId);
         if (conversationId) {
           // If a conversationId exists, fetch the existing conversation
@@ -56,10 +70,6 @@ const Chatbot = () => {
             { headers: { Authorization: `Bearer ${token}` } }
           );
 
-          const userConversations = existingConversationsResponse.data.filter(
-            (conv) => conv.user === userId && conv.title.startsWith("New Conversation")
-          );
-
           const dateTime = new Date().toLocaleString('en-US', {
             year: '2-digit',
             month: 'numeric',
@@ -69,18 +79,24 @@ const Chatbot = () => {
             hour12: true,
           });
 
-          let conversationTitle = `New Conversation - ${dateTime}`;
+          const title = (sessionId === 0) ? "Free Chat" : `Session ${sessionId}`;
+          const conversationTitle = `${title} - ${dateTime}`;
 
-          if (userConversations.length > 0) {
-            const existingNumbers = userConversations
-              .map(conv => {
-                const match = conv.title.match(/^New Conversation (\d+)$/);
-                return match ? parseInt(match[1], 10) : 0;
-              })
-              .sort((a, b) => a - b);
-            const nextNumber = existingNumbers.length ? existingNumbers[existingNumbers.length - 1] + 1 : 1;
-            conversationTitle = `New Conversation ${nextNumber} - ${dateTime}`;
-          }
+          // const userConversations = existingConversationsResponse.data.filter(
+          //   (conv) => conv.user === userId && conv.title.startsWith("New Conversation")
+          // );
+
+          // let nextNumber = 1;
+          // if (userConversations.length > 0) {
+          //   const existingNumbers = userConversations
+          //     .map(conv => {
+          //       const match = conv.title.match(/^New Conversation (\d+)$/);
+          //       return match ? parseInt(match[1], 10) : 0;
+          //     })
+          //     .sort((a, b) => a - b);
+          //   nextNumber = existingNumbers.length ? existingNumbers[existingNumbers.length - 1] + 1 : 1;
+          // }
+          // const conversationTitle = `New Conversation ${nextNumber} - ${dateTime}`;
 
           // Create a new conversation if none exists
           const newConversationResponse = await axiosInstance.post(
@@ -106,29 +122,43 @@ const Chatbot = () => {
   }, [conversationId, loading, conversationFetched]);
 
   const sendMessage = async () => {
+    // Set the waiting state to true before processing the message
     setWaitingForResponse(true);
+
+    // Check if user input is not empty (after trimming) and a conversationId exists
     if (userInput.trim() && conversationId) {
+      // Create a new conversation array including the user's message
       const newConversation = [
         ...conversation,
         { text: userInput, sender: "user" },
       ];
+      // Update the conversation state with the new message
       setConversation(newConversation);
+      // Clear the user input field
       setUserInput("");
+      
       try {
+        // Retrieve the access token from local storage
         const token = localStorage.getItem('accessToken');
+        // If token is not found, log an error and exit the function
         if (!token) {
           console.error("No access token found");
           return;
         }
 
-        const conversationHistory = newConversation.map(message => `${message.sender}: ${message.text}`).join('\n');
+        // Create a conversation history string by joining each message with its sender
+        const conversationHistory = newConversation
+          .map(message => `${message.sender}: ${message.text}`)
+          .join('\n');
 
-        // Fetch the session number and agenda items from the conversation
+        // Fetch the session number and agenda items for the conversation from the backend
         const conversationResponse = await axiosInstance.get(`conversations/${conversationId}/`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        // Destructure session_number and agenda_items from the response data
         const { session_number, agenda_items } = conversationResponse.data;
 
+        // Send the conversation history to the chatbot endpoint along with session details
         const response = await axiosInstance.post(
           "chatbot/",
           { 
@@ -138,28 +168,33 @@ const Chatbot = () => {
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        // Append the chatbot's response to the conversation state
         setConversation([
           ...newConversation,
           { text: response.data.message, sender: "ai" },
         ]);
 
-        // Save the message to the database
+        // Save the user's message to the database
         await axiosInstance.post(
           "messages/",
           { conversation: conversationId, sender: "user", content: userInput },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        // Save the AI's response to the database
         await axiosInstance.post(
           "messages/",
           { conversation: conversationId, sender: "ai", content: response.data.message },
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } catch (error) {
+        // Log any errors that occur during the process
         console.error("Error sending message:", error.response ? error.response.data : error.message);
       } finally {
+        // Set waiting state to false once processing is complete, regardless of success or error
         setWaitingForResponse(false);
       }
     }
+
   };
 
   const scrollToBottom = () => {
