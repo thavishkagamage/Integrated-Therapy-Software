@@ -11,7 +11,7 @@ class Conversation(models.Model):
         choices=[('active', 'Active'), ('archived', 'Archived'), ('deleted', 'Deleted')],
         default='active'
     )
-    session_number = models.IntegerField(default=1)
+    session_number = models.IntegerField(default=0)
     agenda_items = models.JSONField(default=dict)
 
     def __str__(self):
