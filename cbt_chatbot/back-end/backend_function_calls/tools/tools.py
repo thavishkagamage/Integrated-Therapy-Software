@@ -42,5 +42,47 @@ all_tools = [
         "additionalProperties": False
       }
     }
+  },
+   {
+    "type": "function",
+    "function": {
+      "name": "complete_agenda_item",
+      "description": "Activate when current agenda item is complete according to the current agenda item instructions",
+      "strict": True,
+      "parameters": {
+        "type": "object",
+        "required": [
+          "user_response"
+        ],
+        "properties": {
+          "user_response": {
+            "type": "string",
+            "description": "Response from the user that indicates they want to begin a CBT session"
+          }
+        },
+        "additionalProperties": False
+      }
+    }
+  },
+    {
+    "type": "function",
+    "function": {
+      "name": "update_current_agenda",
+      "description": "select a new agenda item when none of the agenda items on the agenda item list are marked as current",
+      "strict": True,
+      "parameters": {
+        "type": "object",
+        "required": [
+          "user_response"
+        ],
+        "properties": {
+          "user_response": {
+            "type": "string",
+            "description": "Response from the user that indicates they want to begin a CBT session"
+          }
+        },
+        "additionalProperties": False
+      }
+    }
   }
 ]
