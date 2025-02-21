@@ -46,7 +46,7 @@ const Conversations = () => {
 
   const handleResumeConversation = (conversationId) => {
     console.log(`Resuming conversation with ID: ${conversationId}`);
-    navigate(`/sessions/chatbot?conversationId=${conversationId}`);
+    navigate(`/sessions/chatbot`, { state: { convoId: conversationId } });
   };
 
   const handViewConversation = (conversationId) => {
@@ -62,8 +62,8 @@ const Conversations = () => {
           <p>You have no previous conversations.</p>
         </div>
       ) : (
-        conversations.map(conversation => (
-          <ul>
+        <ul>
+          {conversations.map(conversation => (
             <li key={conversation.id} className="conversation-item">
               <div className="conversation-title">{conversation.title}</div>
               <div>
@@ -72,9 +72,9 @@ const Conversations = () => {
                 <button onClick={() => handleDeleteConversation(conversation.id)}>Delete</button>
               </div>
             </li>
-          </ul>
-        )))
-      }
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
