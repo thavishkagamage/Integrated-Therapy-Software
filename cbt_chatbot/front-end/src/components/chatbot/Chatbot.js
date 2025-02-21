@@ -16,7 +16,6 @@ const Chatbot = () => {
   const [userInput, setUserInput] = useState("");
   const [conversation, setConversation] = useState([]);
   const [conversationId, setConversationId] = useState(null);
-  // const [sessionNumber, setSessionNumber] = useState(null);
   const [loading, setLoading] = useState(false);
   const [waitingForResponse, setWaitingForResponse] = useState(false);
   const [conversationFetched, setConversationFetched] = useState(false); // Track if conversation has been fetched
@@ -51,7 +50,6 @@ const Chatbot = () => {
         // const queryParams = new URLSearchParams(location.search);
         // const conversationId = queryParams.get('conversationId');
         const conversationId = convoId; // using location.state instead of queryParams
-        console.log("conversationId", conversationId);
         if (conversationId) {
           // If a conversationId exists, fetch the existing conversation
           const response = await axiosInstance.get(`conversations/${conversationId}/`, {
