@@ -15,7 +15,7 @@ const Chatbot = () => {
 
   const [userInput, setUserInput] = useState("");
   const [conversation, setConversation] = useState([]);
-  const [conversationId, setConversationId] = useState(null);
+  const [conversationId, setConversationId] = useState(null); // may not need this since we use location.state
   const [loading, setLoading] = useState(false);
   const [waitingForResponse, setWaitingForResponse] = useState(false);
   const [conversationFetched, setConversationFetched] = useState(false); // Track if conversation has been fetched
@@ -34,9 +34,10 @@ const Chatbot = () => {
   // }, [location]);
 
   useEffect(() => {
-    console.log(`Chatbot Params: sessionId = ${sessionId} = convoId: ${convoId}`)
     const createOrFetchConversation = async () => {
       if (loading || conversationFetched) return;  // Prevent repeated fetching if conversation is already fetched
+
+      console.log(`Chatbot Params: sessionId = ${sessionId} = convoId: ${convoId}`);
 
       setLoading(true);
       try {
@@ -55,6 +56,7 @@ const Chatbot = () => {
           const response = await axiosInstance.get(`conversations/${conversationId}/`, {
             headers: { Authorization: `Bearer ${token}` }
           });
+          console.log(response.data);
 
           // Update conversation state with the fetched messages
           setConversation(response.data.messages.map(message => ({
@@ -63,7 +65,7 @@ const Chatbot = () => {
           })));
         } else {
           // If no conversationId, create a new conversation
-          const existingConversationsResponse = await axiosInstance.get(
+          const existingConversationsResponse = await axiosInstance.get( // DO WE NEED THIS? since we changed title format
             "conversations/",
             { headers: { Authorization: `Bearer ${token}` } }
           );
@@ -99,7 +101,7 @@ const Chatbot = () => {
           // Create a new conversation if none exists
           const newConversationResponse = await axiosInstance.post(
             "conversations/",
-            { title: conversationTitle, user: userId },
+            { title: conversationTitle, user: userId, session_number: sessionId },
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setConversationId(newConversationResponse.data.id);  // Set new conversationId
