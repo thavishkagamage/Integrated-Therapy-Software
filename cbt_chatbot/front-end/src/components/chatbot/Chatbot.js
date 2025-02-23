@@ -162,6 +162,7 @@ const Chatbot = () => {
         const response = await axiosInstance.post(
           "chatbot/",
           { 
+            conversation_id: conversationId,
             message: conversationHistory,
             session_number: session_number,
             agenda_items: agenda_items

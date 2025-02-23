@@ -57,7 +57,8 @@ import json
 from dotenv import load_dotenv
 from backend_function_calls.tools.tools import all_tools
 from backend_function_calls.tools.tool_functions import handle_response
-from backend_function_calls.cache_utils import get_cache_file
+from backend_function_calls.session_utils import get_cache_file, AgendaStatus
+from conversation_handler.models import Conversation
 
 load_dotenv()
 # API Key
@@ -67,16 +68,6 @@ API_KEY = os.getenv('OPENAI_API_KEY')
 MODEL = "gpt-4o" # the OpenAI GPT model being used
 MAX_TOKENS = 1000 # the maximum number of tokens that OpenAI will respond with (1 token approx = 3/4 word)
 TEMPERATURE = 0.7 # how random the system response is, from 0.0 to 1.0, with 1.0 being most random
-
-# Inputs
-# system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
-#     Witty but Subtle: Use light humor and innuendo that's more about charm than overt flirtation.
-#     In Character: You remain the dark knight, but you've learned to use a bit of charm as part of your strategy against Gotham's villains.
-#     Respectful and Tasteful: Your interactions are playful but always respectful, avoiding anything too suggestive or personal.
-#     Gotham-Focused: Your primary duty is still to protect the city, with flirtation being a light-hearted, secondary aspect.
-#     You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
-#     Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
-
 
 # Function to call OpenAI API
 def get_chat_completion(instructions, user_message, tools=all_tools, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, model=MODEL, api_key=API_KEY):
@@ -107,9 +98,6 @@ def get_chat_completion(instructions, user_message, tools=all_tools, max_tokens=
             max_tokens=max_tokens,
             temperature=temperature  # Controls randomness (0.0 to 1.0 scale, 1.0 being the most random)
         )
-
-        # debug line
-        print('\n' + str(response) + '\n')
         
         # Check if the response contains a tool call
         if response.choices[0].message.tool_calls != None:
@@ -138,41 +126,66 @@ def chatbot_response(request):
     """
     if request.method == 'POST':
         data = json.loads(request.body)
+        conversation_id = data.get('conversation_id')
         user_message = data['message']
         session_number = data.get('session_number')
         agenda_items = data.get('agenda_items')
-        
-        # Print out the session number and agenda items
-        print(f"Session Number: {session_number}")
-        print(f"Agenda Items: {agenda_items}")
-        
+
         # This is where we will gather and combine details to pass in as the system prompt
-        # - general instructions and voice attributes
-        # - session specific attributes (agenda, goals, etc.)
-        # - user background info
-        # - guardrails
+        system_prompt = ''
 
-        # Need a way to determine which cache items to get, differentiate by:
-        # - session number
-        # - specific attribute names
+        try:
+            # session file retrieval/caching
+            cache_key = f'session{session_number}'
+            prompts = get_cache_file(cache_key)
 
-        # session file caching and retrieval
-        prompts = get_cache_file('session1')
+            # Retrieve the conversation object
+            try:
+                conversation = Conversation.objects.get(id=conversation_id)
+            except Conversation.DoesNotExist:
+                return JsonResponse({'error': 'Conversation not found'}, status=404)
 
-        # example of parsing the json for prompts
-        identity = prompts['Identity']['1']
-        purpose = prompts['Purpose']['1']
-        behavior = prompts['Behavior']['1']
+            # set agenda items the first time
+            if agenda_items == {}:
+                print(f"Setting agenda for conversation {conversation_id}")
 
-        # Fetch the agenda
-        session_agenda = {}
+                # Extract the "Conversation Agenda" and build the new list for the database
+                agenda_length = len(prompts.get("Conversation Agenda", []))
+                database_agenda = [1 if i == 0 else 0 for i in range(agenda_length)]
+                print("\n" + str(database_agenda) + "\n")
 
-        for item in prompts['Conversation Agenda'].values():
-            session_agenda[item] = 'not started'
+                # Save the updates to agenda_items
+                conversation.agenda_items = database_agenda
+                conversation.save(update_fields=['agenda_items'])
 
-        system_prompt = identity + purpose + behavior
+            # fetch all varibles based on session_number and/or current agenda item
+            # example of parsing the json for prompts
+            identity = prompts['Identity']['1']
+            purpose = prompts['Purpose']['1']
+            behavior = prompts['Behavior']['1']
+            
+            # Create a dictionary mapping agenda item to its databsae status
+            conversation_agenda = prompts.get("Conversation Agenda", [])
+            agenda_status = conversation.agenda_items
+            agenda_dict = {
+                item: AgendaStatus(status).name
+                for item, status in zip(conversation_agenda, agenda_status)
+            }
 
-        print(system_prompt)
+            # combine all strings into one prompt
+            system_prompt = identity + purpose + behavior
+        
+        except Exception as e:
+            # print(f'Error retrieving session file: {e}')
+
+            # You'll definitely know when there's an error
+            system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
+                                Witty but Subtle: Use light humor and innuendo that's more about charm than overt flirtation.
+                                In Character: You remain the dark knight, but you've learned to use a bit of charm as part of your strategy against Gotham's villains.
+                                Respectful and Tasteful: Your interactions are playful but always respectful, avoiding anything too suggestive or personal.
+                                Gotham-Focused: Your primary duty is still to protect the city, with flirtation being a light-hearted, secondary aspect.
+                                You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
+                                Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
 
         # Some values have defaults, but we can add custom inputs for tools, model, max_tokens, temperature
         bot_response = get_chat_completion(system_prompt, user_message) 

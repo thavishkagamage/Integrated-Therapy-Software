@@ -4,6 +4,13 @@ import os
 import json
 from django.conf import settings
 from django.core.cache import cache
+from enum import Enum
+
+
+class AgendaStatus(Enum):
+    Unstarted = 0
+    Current = 1
+    Completed = 2
 
 
 def get_cache_file(cache_key):
@@ -45,13 +52,3 @@ def get_cache_file(cache_key):
             prompts = {}
 
     return prompts
-
-
-# TODO: cache all important session files
-def cache_all_session_files(session_num):
-    """
-    Caches all files that will be used in the current session/mode to improve performance
-    Args:
-        session_num (int): identifies the session to help identify files to cache
-    """
-    # loop through static directory and cache all files that correlate to the session_num
