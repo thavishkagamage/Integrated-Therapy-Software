@@ -8,9 +8,9 @@ from enum import Enum
 
 
 class AgendaStatus(Enum):
-    Unstarted = 0
+    Not_Started = 0
     Current = 1
-    Completed = 2
+    Complete = 2
 
 
 def get_cache_file(cache_key):
