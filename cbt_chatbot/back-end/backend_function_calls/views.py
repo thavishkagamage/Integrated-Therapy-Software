@@ -168,7 +168,7 @@ def chatbot_response(request):
             conversation_agenda = prompts.get("Conversation Agenda", [])
             agenda_status = conversation.agenda_items
             agenda_dict = {
-                item: AgendaStatus(status).name
+                item: AgendaStatus(status).name.replace("_", " ")
                 for item, status in zip(conversation_agenda, agenda_status)
             }
 
@@ -176,7 +176,7 @@ def chatbot_response(request):
             system_prompt = identity + purpose + behavior
         
         except Exception as e:
-            # print(f'Error retrieving session file: {e}')
+            print(f'ERROR retrieving session file: {e}')
 
             # You'll definitely know when there's an error
             system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
