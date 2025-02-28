@@ -79,6 +79,9 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/sessions" element={<Sessions />} />
               <Route path="/sessions/chatbot" element={<Chatbot />} />
+              {/* Add these new routes with parameters */}
+              <Route path="/sessions/chatbot/:sessionId" element={<Chatbot />} />
+              <Route path="/sessions/chatbot/:sessionId/:conversationId" element={<Chatbot />} />
               <Route path="/conversations" element={<Conversations />} />
               <Route path="/conversations/:id" element={<ConversationDetail />} />
               <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />

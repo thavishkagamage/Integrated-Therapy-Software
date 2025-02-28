@@ -9,7 +9,7 @@ const Sessions = () => {
 
 	const handleStartConversation = (session) => {
 		console.log(`Starting CBT session number: ${session}`);
-		navigate(`/sessions/chatbot`, { state: { sessionId: session} });
+		navigate(`/sessions/chatbot/${session}`);
 	};
 	
 	return (
