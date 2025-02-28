@@ -1,42 +1,34 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./Chatbot.css";
 import axiosInstance from "../utils/axios";
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams, useNavigate } from 'react-router-dom';
 
 const Chatbot = () => {
-
-  // These are variables we pass into the chatbot component (instead of using props)
-  // 1. sessionId: the session number we will use to fetch the CBT instructions
-  //    - when sessionId is 0 (default value) the user is in free chat
-  // 2. convoId: the conversationId that identifies the conversation in the database
-  //    - when convoId is null (default value) we create a new conversation 
+  // Get parameters from URL instead of location.state
+  const { sessionId: urlSessionId, conversationId: urlConversationId } = useParams();
   const location = useLocation();
-  const { sessionId = 0, convoId = null} = location.state || {};
+  const navigate = useNavigate();
+  
+  // Parse session and conversation IDs from URL or use from location.state as fallback
+  const sessionId = urlSessionId ? parseInt(urlSessionId) : 
+                   (location.state?.sessionId || 0);
+  const convoId = urlConversationId ? urlConversationId : 
+                 (location.state?.convoId || null);
 
   const [userInput, setUserInput] = useState("");
   const [conversation, setConversation] = useState([]);
-  const [conversationId, setConversationId] = useState(null);
+  const [conversationId, setConversationId] = useState(convoId);
   const [loading, setLoading] = useState(false);
   const [waitingForResponse, setWaitingForResponse] = useState(false);
   const [conversationFetched, setConversationFetched] = useState(false); // Track if conversation has been fetched
   const messagesEndRef = useRef(null);
   const hasMounted = useRef(false);
 
-  // useEffect(() => {
-  //   const queryParams = new URLSearchParams(location.search);
-  //   const conversationIdFromUrl = queryParams.get('conversationId');
-  //   if (conversationIdFromUrl) {
-  //     setConversationId(conversationIdFromUrl);  // Set the conversationId if passed in URL
-  //   }
-
-  //   setConversationId(convoId);  // Set the conversationId from location.state
-
-  // }, [location]);
-
   useEffect(() => {
-    console.log(`Chatbot Params: sessionId = ${sessionId} = convoId: ${convoId}`)
     const createOrFetchConversation = async () => {
       if (loading || conversationFetched) return;  // Prevent repeated fetching if conversation is already fetched
+
+      console.log(`Chatbot Params: sessionId = ${sessionId} = convoId: ${convoId}`);
 
       setLoading(true);
       try {
@@ -47,14 +39,13 @@ const Chatbot = () => {
           console.error("No access token found");
           return;
         }
-        // const queryParams = new URLSearchParams(location.search);
-        // const conversationId = queryParams.get('conversationId');
         const conversationId = convoId; // using location.state instead of queryParams
         if (conversationId) {
           // If a conversationId exists, fetch the existing conversation
           const response = await axiosInstance.get(`conversations/${conversationId}/`, {
             headers: { Authorization: `Bearer ${token}` }
           });
+          console.log(response.data);
 
           // Update conversation state with the fetched messages
           setConversation(response.data.messages.map(message => ({
@@ -63,7 +54,7 @@ const Chatbot = () => {
           })));
         } else {
           // If no conversationId, create a new conversation
-          const existingConversationsResponse = await axiosInstance.get(
+          const existingConversationsResponse = await axiosInstance.get( // DO WE NEED THIS? since we changed title format
             "conversations/",
             { headers: { Authorization: `Bearer ${token}` } }
           );
@@ -80,26 +71,10 @@ const Chatbot = () => {
           const title = (sessionId === 0) ? "Free Chat" : `Session ${sessionId}`;
           const conversationTitle = `${title} - ${dateTime}`;
 
-          // const userConversations = existingConversationsResponse.data.filter(
-          //   (conv) => conv.user === userId && conv.title.startsWith("New Conversation")
-          // );
-
-          // let nextNumber = 1;
-          // if (userConversations.length > 0) {
-          //   const existingNumbers = userConversations
-          //     .map(conv => {
-          //       const match = conv.title.match(/^New Conversation (\d+)$/);
-          //       return match ? parseInt(match[1], 10) : 0;
-          //     })
-          //     .sort((a, b) => a - b);
-          //   nextNumber = existingNumbers.length ? existingNumbers[existingNumbers.length - 1] + 1 : 1;
-          // }
-          // const conversationTitle = `New Conversation ${nextNumber} - ${dateTime}`;
-
           // Create a new conversation if none exists
           const newConversationResponse = await axiosInstance.post(
             "conversations/",
-            { title: conversationTitle, user: userId },
+            { title: conversationTitle, user: userId, session_number: sessionId },
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setConversationId(newConversationResponse.data.id);  // Set new conversationId
@@ -118,6 +93,17 @@ const Chatbot = () => {
 
     createOrFetchConversation();
   }, [conversationId, loading, conversationFetched]);
+
+  // Update URL when conversation ID changes to make it bookmarkable/refreshable
+  useEffect(() => {
+    if (conversationId && !urlConversationId) {
+      // Update URL without triggering a navigation
+      navigate(`/sessions/chatbot/${sessionId}/${conversationId}`, { 
+        replace: true,
+        state: { sessionId, convoId: conversationId }
+      });
+    }
+  }, [conversationId, navigate, sessionId, urlConversationId]);
 
   const sendMessage = async () => {
     // Set the waiting state to true before processing the message
@@ -160,6 +146,7 @@ const Chatbot = () => {
         const response = await axiosInstance.post(
           "chatbot/",
           { 
+            conversation_id: conversationId,
             message: conversationHistory,
             session_number: session_number,
             agenda_items: agenda_items
