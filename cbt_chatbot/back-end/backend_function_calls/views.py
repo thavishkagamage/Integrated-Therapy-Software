@@ -55,7 +55,7 @@ from django.views.decorators.csrf import csrf_exempt
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
-from backend_function_calls.tools.tools import all_tools
+from backend_function_calls.tools.tools import get_all_tools
 from backend_function_calls.tools.tool_functions import handle_response
 from backend_function_calls.session_utils import get_cache_file, AgendaStatus
 from conversation_handler.models import Conversation
@@ -70,7 +70,7 @@ MAX_TOKENS = 1000 # the maximum number of tokens that OpenAI will respond with (
 TEMPERATURE = 0.7 # how random the system response is, from 0.0 to 1.0, with 1.0 being most random
 
 # Function to call OpenAI API
-def get_chat_completion(instructions, user_message, tools=all_tools, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, model=MODEL, api_key=API_KEY):
+def get_chat_completion(instructions, user_message, tools, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, model=MODEL, api_key=API_KEY):
     """
     Generates a chat completion response using the OpenAI API.
     Args:
@@ -181,6 +181,9 @@ def chatbot_response(request):
             # combine all strings into one prompt
             system_prompt = identity + purpose + behavior + format + voice + guardrails + background + agenda_instructions + str(agenda_dict)
         
+            current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
+            tools = get_all_tools(current_agenda_item)
+
         except Exception as e:
             print(f'ERROR retrieving session file: {e}')
 
@@ -194,7 +197,7 @@ def chatbot_response(request):
                                 Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
 
         # Some values have defaults, but we can add custom inputs for tools, model, max_tokens, temperature
-        bot_response = get_chat_completion(system_prompt, user_message) 
+        bot_response = get_chat_completion(system_prompt, user_message, tools) 
     
         return JsonResponse({'message': bot_response})
     else:
