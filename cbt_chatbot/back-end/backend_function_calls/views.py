@@ -163,6 +163,11 @@ def chatbot_response(request):
             identity = prompts['Identity']['1']
             purpose = prompts['Purpose']['1']
             behavior = prompts['Behavior']['1']
+            format = prompts['Format']['1']
+            voice = prompts['Voice']['1']
+            guardrails = prompts['Guardrails']['1']
+            background  = prompts['Background']['1']
+            agenda_instructions = prompts['Agenda Instructions']['1']
             
             # Create a dictionary mapping agenda item to its databsae status
             conversation_agenda = prompts.get("Conversation Agenda", [])
@@ -171,9 +176,10 @@ def chatbot_response(request):
                 item: AgendaStatus(status).name.replace("_", " ")
                 for item, status in zip(conversation_agenda, agenda_status)
             }
+            print(agenda_dict)
 
             # combine all strings into one prompt
-            system_prompt = identity + purpose + behavior
+            system_prompt = identity + purpose + behavior + format + voice + guardrails + background + agenda_instructions + str(agenda_dict)
         
         except Exception as e:
             print(f'ERROR retrieving session file: {e}')
