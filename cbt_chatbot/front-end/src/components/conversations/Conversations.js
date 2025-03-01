@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './Conversations.css';
 import axiosInstance from '../utils/axios';
 
 const Conversations = () => {
   const [conversations, setConversations] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,8 +29,28 @@ const Conversations = () => {
     fetchConversations();
   }, []);
 
+  // Calculate indices for the current page's items
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentConversations = conversations.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(conversations.length / itemsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prevPage => prevPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prevPage => prevPage - 1);
+    }
+  };
+
   const handleDeleteConversation = async (conversationId) => {
-    console.log(`Deleting Conversation with ID:  ${conversationId}`)
+    console.log(`Deleting Conversation with ID: ${conversationId}`);
     const token = localStorage.getItem('accessToken');
     if (!token) {
       console.error("No access token found");
@@ -56,24 +78,51 @@ const Conversations = () => {
 
   return (
     <div className="conversations-container">
-      <h1>Your Conversations</h1>
+      <h1 className="text-2xl font-bold mb-4">Your Conversations</h1>
       {conversations.length === 0 ? (
         <div className="no-conversations">
           <p>You have no previous conversations.</p>
         </div>
       ) : (
-        <ul>
-          {conversations.map(conversation => (
-            <li key={conversation.id} className="conversation-item">
-              <div className="conversation-title">{conversation.title}</div>
-              <div>
-                <button onClick={() => handViewConversation(conversation.id)}>View</button>
-                <button onClick={() => handleResumeConversation(conversation.id)}>Resume</button>
-                <button onClick={() => handleDeleteConversation(conversation.id)}>Delete</button>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul>
+            {currentConversations.map(conversation => (
+              <li key={conversation.id} className="conversation-item flex justify-between items-center p-4 border-b">
+                <div className="conversation-title">{conversation.title}</div>
+                <div className="space-x-2">
+                  <button onClick={() => handViewConversation(conversation.id)} className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded">
+                    View
+                  </button>
+                  <button onClick={() => handleResumeConversation(conversation.id)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
+                    Resume
+                  </button>
+                  <button onClick={() => handleDeleteConversation(conversation.id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded">
+                    Delete
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="pagination-controls flex justify-center items-center space-x-4 mt-4">
+            <button 
+              onClick={handlePrevPage} 
+              disabled={currentPage === 1}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <span className="text-gray-700 font-medium">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button 
+              onClick={handleNextPage} 
+              disabled={currentPage === totalPages}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
