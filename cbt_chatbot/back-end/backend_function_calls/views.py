@@ -57,7 +57,7 @@ import json
 from dotenv import load_dotenv
 from backend_function_calls.tools.tools import get_all_tools, pick_new_agenda_item
 from backend_function_calls.tools.tool_functions import handle_response
-from backend_function_calls.session_utils import get_cache_file, AgendaStatus
+from backend_function_calls.session_utils import *
 from conversation_handler.models import Conversation
 
 load_dotenv()
@@ -109,10 +109,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
                 agenda_items = list(agenda.keys())
 
                 # zip up our agenda items and our new agenda status values
-                agenda_dict = {
-                    item: AgendaStatus(status).name.replace("_", " ")
-                    for item, status in zip(agenda_items, tool_response)
-                }
+                agenda_dict = zip_agenda_with_status(agenda_items, tool_response)
                 # print("UPDATED AGENDA: " + str(agenda_dict) + '\n')
 
                 # prompt the AI to give usa new agenda item using pick_new_agenda_item tool
@@ -123,10 +120,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
                 updated_agenda_statuses = get_chat_completion(prompt, conversation_history_with_extra, pick_new_agenda_item, conversation_id, agenda_dict)
                 
                 # zip up our agenda items and our new agenda status values
-                agenda_dict = {
-                    item: AgendaStatus(status).name.replace("_", " ")
-                    for item, status in zip(agenda_items, updated_agenda_statuses)
-                }
+                agenda_dict = zip_agenda_with_status(agenda_items, updated_agenda_statuses)
 
                 # get just the current agenda item and use it to get the tools
                 current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
@@ -186,10 +180,7 @@ def chatbot_response(request):
             session_instructions_json = get_cache_file(cache_key)
 
             # Retrieve the conversation object
-            try:
-                conversation = Conversation.objects.get(id=conversation_id)
-            except Conversation.DoesNotExist:
-                return JsonResponse({'ERROR': 'Conversation not found'}, status=404)
+            conversation = get_conversation_object(conversation_id)
 
             # set agenda items the first time
             if agenda_items_status == {}:
@@ -219,10 +210,7 @@ def chatbot_response(request):
             # EX: {'Welcome the user': 'Current', 'Learn about user': 'Not Started', ...}
             conversation_agenda = session_instructions_json.get("Conversation Agenda", [])
             agenda_status = conversation.agenda_items
-            agenda_dict = {
-                item: AgendaStatus(status).name.replace("_", " ")
-                for item, status in zip(conversation_agenda, agenda_status)
-            }
+            agenda_dict = zip_agenda_with_status(conversation_agenda, agenda_status)
             print(str(agenda_status) + "\n")
 
             # combine all strings into one prompt for the api

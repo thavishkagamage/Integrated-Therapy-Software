@@ -3,6 +3,7 @@
 import json
 from django.http import JsonResponse
 from conversation_handler.models import Conversation
+from backend_function_calls.session_utils import get_conversation_object
 
 CONVERSATION_ID = -1
 
@@ -11,10 +12,8 @@ def detect_self_harm(**kwargs):
     return f"You said '{user_response}', which indicates you may harm yourself or harm others. Please call 911 or go to your nearest emergency room."
 
 def current_agenda_item_is_complete():
-    try:
-        conversation = Conversation.objects.get(id=CONVERSATION_ID)
-    except Conversation.DoesNotExist:
-        return JsonResponse({'error': 'Conversation not found'}, status=404)
+    # get the conversation
+    conversation = get_conversation_object(CONVERSATION_ID)
     
     # fetch agenda from conversation object
     updated_agenda_statuses = conversation.agenda_items
@@ -37,10 +36,9 @@ def current_agenda_item_is_complete():
 
 def pick_new_current_agenda_item(**kwargs):
     print("AGENDA UPDATE: new current agenda item is: " + str(kwargs.get('agenda_item_index', 'ERR')) + ": " + str(kwargs.get('agenda_item', 'ERR')))
-    try:
-        conversation = Conversation.objects.get(id=CONVERSATION_ID)
-    except Conversation.DoesNotExist:
-        return JsonResponse({'error': 'Conversation not found'}, status=404)
+    
+    # get the conversation
+    conversation = get_conversation_object(CONVERSATION_ID)
     
     # fetch agenda from conversation object
     updated_agenda_statuses = conversation.agenda_items

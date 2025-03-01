@@ -2,6 +2,8 @@
 
 import os
 import json
+from django.http import JsonResponse
+from conversation_handler.models import Conversation
 from django.conf import settings
 from django.core.cache import cache
 from enum import Enum
@@ -11,6 +13,25 @@ class AgendaStatus(Enum):
     Not_Started = 0
     Current = 1
     Complete = 2
+
+
+# fetch the conversation object using the id
+def get_conversation_object(conversation_id):
+    try:
+        conversation = Conversation.objects.get(id=conversation_id)
+    except Conversation.DoesNotExist:
+        return JsonResponse({'ERROR': 'Conversation not found'}, status=404)
+    return conversation
+
+
+# zips array of agenda items with array of statuses
+# EX: {'Welcome the user': 'Current', 'Learn about user': 'Not Started', ...}
+def zip_agenda_with_status(agenda_items, statuses):
+    zipped_agenda = {
+        item: AgendaStatus(status).name.replace("_", " ")
+        for item, status in zip(agenda_items, statuses)
+    }
+    return zipped_agenda
 
 
 def get_cache_file(cache_key):
