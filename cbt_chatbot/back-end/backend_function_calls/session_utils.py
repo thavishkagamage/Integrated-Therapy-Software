@@ -28,7 +28,7 @@ def get_cache_file(cache_key):
 
     # if file is not in our cache
     if prompts is None:
-        print(f'DEBUG: Adding {cache_key}.json to the cache')
+        print(f'CHACHING: Attempting to cache {cache_key}.json\n')
 
         # build file name from cache key
         file_name = f'{cache_key}.json'
@@ -44,11 +44,11 @@ def get_cache_file(cache_key):
             # Cache the file with a long timeout (or use None)
             cache.set(cache_key, prompts, timeout=60 * 60 * 24 * 365 * 10) # 10 years in seconds
 
-            print(f'DEBUG: {cache_key}.json is now in the cache')
+            print(f'CHACHING: {cache_key}.json is now in the cache\n')
         
         except Exception as error:
             # Optionally, handle the error or re-raise an exception
-            print('ERROR: {error}')
+            print(f'ERROR: {error}\n')
             prompts = {}
 
     return prompts

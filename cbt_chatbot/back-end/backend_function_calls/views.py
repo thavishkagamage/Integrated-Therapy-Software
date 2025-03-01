@@ -29,7 +29,7 @@
 # - get_chat_completion: This function interacts with the OpenAI API to generate a chat response.
 #   - Args:
 #     - instructions: Instructions for the system role in the chat.
-#     - user_message: The message from the user.
+#     - conversation_history: The message from the user and all convrsation context.
 #     - tools_list: A list of tools to be used by the chatbot.
 #     - max_tokens: The maximum number of tokens to generate in the response.
 #     - temperature: Controls the randomness of the response.
@@ -55,7 +55,7 @@ from django.views.decorators.csrf import csrf_exempt
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
-from backend_function_calls.tools.tools import get_all_tools
+from backend_function_calls.tools.tools import get_all_tools, pick_new_agenda_item
 from backend_function_calls.tools.tool_functions import handle_response
 from backend_function_calls.session_utils import get_cache_file, AgendaStatus
 from conversation_handler.models import Conversation
@@ -70,12 +70,12 @@ MAX_TOKENS = 1000 # the maximum number of tokens that OpenAI will respond with (
 TEMPERATURE = 0.7 # how random the system response is, from 0.0 to 1.0, with 1.0 being most random
 
 # Function to call OpenAI API
-def get_chat_completion(instructions, user_message, tools, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, model=MODEL, api_key=API_KEY):
+def get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda={}, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, model=MODEL, api_key=API_KEY):
     """
     Generates a chat completion response using the OpenAI API.
     Args:
         instructions (str): Instructions for the system role in the chat.
-        user_message (str): The message from the user.
+        conversation_history (str): The message from the user.
         model (str): The model to use for generating the completion.
         max_tokens (int): The maximum number of tokens to generate in the response.
         temperature (float): Controls the randomness of the response (0.0 to 1.0 scale).
@@ -91,7 +91,7 @@ def get_chat_completion(instructions, user_message, tools, max_tokens=MAX_TOKENS
             model=model,
             messages=[
                 {"role": "system", "content": instructions},
-                {"role": "user", "content": user_message}
+                {"role": "user", "content": conversation_history}
                 # Can append messages from continuing conversation here
             ],
             tools=tools, # List of tools to be used by the chatbot
@@ -101,8 +101,29 @@ def get_chat_completion(instructions, user_message, tools, max_tokens=MAX_TOKENS
         
         # Check if the response contains a tool call
         if response.choices[0].message.tool_calls != None:
-            response_message = handle_response(response.choices[0].message)
-            return response_message
+            tool_response = handle_response(response.choices[0].message, conversation_id)
+
+            # if handle_response returns a list from current_agenda_item_is_complete()
+            if isinstance(tool_response, list):
+                # get the keys (actual agenda items) from our outdated agenda as a list
+                agenda_items = list(agenda.keys())
+
+                # zip up our agenda items and our new agenda status values
+                agenda_dict = {
+                    item: AgendaStatus(status).name.replace("_", " ")
+                    for item, status in zip(agenda_items, tool_response)
+                }
+                # print("UPDATED AGENDA: " + str(agenda_dict) + '\n')
+
+                # prompt the AI to give usa new agenda item using pick_new_agenda_item tool
+                prompt = f"Here is the current agenda: {agenda_dict}. Based on the entire context of this conversation with the user, please pick a new agenda item that is marked as 'Not Started' by its value in the dictionary."
+                conversation_history_with_extra = conversation_history + "user: Now I want to pick a new agenda item that is not started to make current"
+                
+                new_response = get_chat_completion(prompt, conversation_history_with_extra, pick_new_agenda_item, conversation_id)
+                
+                return new_response
+
+            return str(tool_response)
 
         # Returns the API response, assumes number of responses is 1 and chooses only that response
         return response.choices[0].message.content
@@ -126,66 +147,77 @@ def chatbot_response(request):
     """
     if request.method == 'POST':
         data = json.loads(request.body)
-        conversation_id = data.get('conversation_id')
-        user_message = data['message']
-        session_number = data.get('session_number')
-        agenda_items = data.get('agenda_items')
 
-        # This is where we will gather and combine details to pass in as the system prompt
+        # ID that we use to get the conversation object
+        conversation_id = data.get('conversation_id')
+        # the most recent message sent by the user
+        conversation_history = data['message']
+        # the CBT session number
+        session_number = data.get('session_number')
+        # the current list of agenda items statuses
+        agenda_items_status = data.get('agenda_items')
+
+        # This is where we will gather and combine details to pass in as the system prompt to the API
         system_prompt = ''
+        tools = []
+        agenda_dict = {}
 
         try:
             # session file retrieval/caching
             cache_key = f'session{session_number}'
-            prompts = get_cache_file(cache_key)
+            session_instructions_json = get_cache_file(cache_key)
 
             # Retrieve the conversation object
             try:
                 conversation = Conversation.objects.get(id=conversation_id)
             except Conversation.DoesNotExist:
-                return JsonResponse({'error': 'Conversation not found'}, status=404)
+                return JsonResponse({'ERROR': 'Conversation not found'}, status=404)
 
             # set agenda items the first time
-            if agenda_items == {}:
-                print(f"Setting agenda for conversation {conversation_id}")
+            if agenda_items_status == {}:
+                print(f"SETTING AGENDA for conversation {conversation_id=}\n")
 
                 # Extract the "Conversation Agenda" and build the new list for the database
-                agenda_length = len(prompts.get("Conversation Agenda", []))
-                database_agenda = [1 if i == 0 else 0 for i in range(agenda_length)]
-                print("\n" + str(database_agenda) + "\n")
+                # This will look like [1, 0, 0, ...]
+                agenda_length = len(session_instructions_json.get("Conversation Agenda", []))
+                new_database_agenda = [1 if i == 0 else 0 for i in range(agenda_length)]
 
-                # Save the updates to agenda_items
-                conversation.agenda_items = database_agenda
+                # Save the updates to the conversation object
+                conversation.agenda_items = new_database_agenda
                 conversation.save(update_fields=['agenda_items'])
 
             # fetch all varibles based on session_number and/or current agenda item
-            # example of parsing the json for prompts
-            identity = prompts['Identity']['1']
-            purpose = prompts['Purpose']['1']
-            behavior = prompts['Behavior']['1']
-            format = prompts['Format']['1']
-            voice = prompts['Voice']['1']
-            guardrails = prompts['Guardrails']['1']
-            background  = prompts['Background']['1']
-            agenda_instructions = prompts['Agenda Instructions']['1']
+            # example of parsing the session json
+            identity = session_instructions_json['Identity']['1']
+            purpose = session_instructions_json['Purpose']['1']
+            behavior = session_instructions_json['Behavior']['1']
+            format = session_instructions_json['Format']['1']
+            voice = session_instructions_json['Voice']['1']
+            guardrails = session_instructions_json['Guardrails']['1']
+            background  = session_instructions_json['Background']['1']
+            agenda_instructions = session_instructions_json['Agenda Instructions']['1']
             
-            # Create a dictionary mapping agenda item to its databsae status
-            conversation_agenda = prompts.get("Conversation Agenda", [])
+            # Create a dictionary zipping agenda item strings with its corresponding status from the conversation
+            # EX: {'Welcome the user': 'Current', 'Learn about user': 'Not Started', ...}
+            conversation_agenda = session_instructions_json.get("Conversation Agenda", [])
             agenda_status = conversation.agenda_items
             agenda_dict = {
                 item: AgendaStatus(status).name.replace("_", " ")
                 for item, status in zip(conversation_agenda, agenda_status)
             }
-            print(agenda_dict)
+            print(str(agenda_status) + "\n")
 
-            # combine all strings into one prompt
-            system_prompt = identity + purpose + behavior + format + voice + guardrails + background + agenda_instructions + str(agenda_dict)
+            # combine all strings into one prompt for the api
+            system_prompt = identity + purpose + behavior + format + voice + guardrails + background + agenda_instructions
         
+            # get just the current agenda item
             current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
+
+            # get the tools and use 
             tools = get_all_tools(current_agenda_item)
 
         except Exception as e:
-            print(f'ERROR retrieving session file: {e}')
+            print(f'ERROR retrieving session file: {e}\n')
 
             # You'll definitely know when there's an error
             system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
@@ -197,7 +229,7 @@ def chatbot_response(request):
                                 Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
 
         # Some values have defaults, but we can add custom inputs for tools, model, max_tokens, temperature
-        bot_response = get_chat_completion(system_prompt, user_message, tools) 
+        bot_response = get_chat_completion(system_prompt, conversation_history, tools, conversation_id, agenda_dict) 
     
         return JsonResponse({'message': bot_response})
     else:
