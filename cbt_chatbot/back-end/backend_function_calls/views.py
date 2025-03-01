@@ -140,22 +140,6 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
             # if handle_response returns a list from pick_new_current_agenda_item()
             elif isinstance(tool_response, list) and (1 in tool_response):
                 return tool_response
-            
-            # if handle_response returns a list from pick_new_current_agenda_item()
-            # elif isinstance(tool_response, list) and (1 in tool_response):
-            #     # get the keys (actual agenda items) from our outdated agenda as a list
-            #     agenda_items = list(agenda.keys())
-
-            #     # zip up our agenda items and our new agenda status values
-            #     agenda_dict = {
-            #         item: AgendaStatus(status).name.replace("_", " ")
-            #         for item, status in zip(agenda_items, tool_response)
-            #     }
-            #     # print("UPDATED AGENDA: " + str(agenda_dict) + '\n')
-
-            #     third_api_call = get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda_dict)
-
-            #     return third_api_call
 
             return str(tool_response)
 
