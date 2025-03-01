@@ -104,7 +104,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
             tool_response = handle_response(response.choices[0].message, conversation_id)
 
             # if handle_response returns a list from current_agenda_item_is_complete()
-            if isinstance(tool_response, list):
+            if isinstance(tool_response, list) and (1 not in tool_response):
                 # get the keys (actual agenda items) from our outdated agenda as a list
                 agenda_items = list(agenda.keys())
 
@@ -119,9 +119,43 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
                 prompt = f"Here is the current agenda: {agenda_dict}. Based on the entire context of this conversation with the user, please pick a new agenda item that is marked as 'Not Started' by its value in the dictionary."
                 conversation_history_with_extra = conversation_history + "user: Now I want to pick a new agenda item that is not started to make current"
                 
-                new_response = get_chat_completion(prompt, conversation_history_with_extra, pick_new_agenda_item, conversation_id)
+                # this should be the list returned from pick_new_current_agenda_item()
+                updated_agenda_statuses = get_chat_completion(prompt, conversation_history_with_extra, pick_new_agenda_item, conversation_id, agenda_dict)
                 
-                return new_response
+                # zip up our agenda items and our new agenda status values
+                agenda_dict = {
+                    item: AgendaStatus(status).name.replace("_", " ")
+                    for item, status in zip(agenda_items, updated_agenda_statuses)
+                }
+
+                # get just the current agenda item and use it to get the tools
+                current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
+                tools = get_all_tools(current_agenda_item)
+
+                # we call get_chat_completions() again to give us an actual response to use in the conversation
+                third_api_call = get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda_dict)
+
+                return third_api_call
+            
+            # if handle_response returns a list from pick_new_current_agenda_item()
+            elif isinstance(tool_response, list) and (1 in tool_response):
+                return tool_response
+            
+            # if handle_response returns a list from pick_new_current_agenda_item()
+            # elif isinstance(tool_response, list) and (1 in tool_response):
+            #     # get the keys (actual agenda items) from our outdated agenda as a list
+            #     agenda_items = list(agenda.keys())
+
+            #     # zip up our agenda items and our new agenda status values
+            #     agenda_dict = {
+            #         item: AgendaStatus(status).name.replace("_", " ")
+            #         for item, status in zip(agenda_items, tool_response)
+            #     }
+            #     # print("UPDATED AGENDA: " + str(agenda_dict) + '\n')
+
+            #     third_api_call = get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda_dict)
+
+            #     return third_api_call
 
             return str(tool_response)
 
@@ -213,7 +247,7 @@ def chatbot_response(request):
             # get just the current agenda item
             current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
 
-            # get the tools and use 
+            # get the tools
             tools = get_all_tools(current_agenda_item)
 
         except Exception as e:

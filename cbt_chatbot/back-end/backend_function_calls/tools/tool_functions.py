@@ -54,8 +54,8 @@ def pick_new_current_agenda_item(**kwargs):
         conversation.save(update_fields=['agenda_items'])
     except Exception as error:
         print(f'ERROR: {error}\n')
-    
-    return "DODODODODODENENENENENENENNEN"
+
+    return updated_agenda_statuses
 
 # Dictionary to map the function name from the response to the function it corresponds to
 #   - Functions should have the same name as the tool it corresponds to in tools.py
