@@ -55,7 +55,7 @@ from django.views.decorators.csrf import csrf_exempt
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
-from backend_function_calls.tools.tools import get_all_tools, pick_new_agenda_item
+from backend_function_calls.tools.tools import *
 from backend_function_calls.tools.tool_functions import handle_response
 from backend_function_calls.session_utils import *
 from conversation_handler.models import Conversation
@@ -107,35 +107,22 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
             tool_response = handle_response(response.choices[0].message, conversation_id)
 
             # if handle_response returns a list from current_agenda_item_is_complete()
-            if isinstance(tool_response, list) and (1 not in tool_response):
+            if isinstance(tool_response, list):
                 # get the keys (actual agenda items) from our outdated agenda as a list
                 agenda_items = list(agenda.keys())
 
                 # zip up our agenda items and our new agenda status values
                 agenda_dict = zip_agenda_with_status(agenda_items, tool_response)
 
-                # prompt the AI to give usa new agenda item using pick_new_agenda_item tool
-                prompt = f"Here is the current agenda: {agenda_dict}. Based on the entire context of this conversation with the user, please pick a new agenda item that is marked as 'Not Started' by its value in the dictionary."
-                conversation_history_with_extra = conversation_history + "user: Now I want to pick a new agenda item that is not started to make current"
-                
-                # this should be the list returned from pick_new_current_agenda_item()
-                updated_agenda_statuses = get_chat_completion(prompt, conversation_history_with_extra, pick_new_agenda_item, conversation_id, agenda_dict)
-                
-                # zip up our agenda items and our new agenda status values
-                agenda_dict = zip_agenda_with_status(agenda_items, updated_agenda_statuses)
-
                 # get just the current agenda item and use it to get the tools
                 current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
-                tools = get_all_tools(current_agenda_item)
+                updated_tools = get_all_tools(current_agenda_item)
 
                 # we call get_chat_completions() again to give us an actual response to use in the conversation
-                third_api_call = get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda_dict)
+                print(f"{GREEN}AGENDA REPORT:{RESET} agenda = {agenda_dict}\n")
+                conversation_response = get_chat_completion(instructions, conversation_history, updated_tools, conversation_id, agenda_dict)
 
-                return third_api_call
-            
-            # if handle_response returns a list from pick_new_current_agenda_item()
-            elif isinstance(tool_response, list) and (1 in tool_response):
-                return tool_response
+                return conversation_response
 
             return str(tool_response)
 
@@ -159,6 +146,7 @@ def chatbot_response(request):
         JsonResponse: A JSON response containing the chatbot's message if the request method is POST.
         JsonResponse: A JSON response containing an error message if the request method is not POST.
     """
+    print("\n")
     if request.method == 'POST':
         data = json.loads(request.body)
 

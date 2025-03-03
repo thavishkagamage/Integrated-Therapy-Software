@@ -14,7 +14,7 @@ def detect_self_harm(**kwargs):
     user_response = kwargs.get('user_response', 'No user response provided')
     return f"You said '{user_response}', which indicates you may harm yourself or harm others. Please call 911 or go to your nearest emergency room."
 
-def current_agenda_item_is_complete():
+def current_agenda_item_is_complete(**kwargs):
     # get the conversation
     conversation = get_conversation_object(CONVERSATION_ID)
     
@@ -28,26 +28,10 @@ def current_agenda_item_is_complete():
             print(f"{GREEN}AGENDA UPDATE:{RESET} item marked complete at {index=}\n")
             break
 
-    # update and save agenda statuses in the conversation object
-    try:
-        conversation.agenda_items = updated_agenda_statuses
-        conversation.save(update_fields=['agenda_items'])
-    except Exception as error:
-        print(f'ERROR: {error}\n')
-
-    return updated_agenda_statuses
-
-def pick_new_current_agenda_item(**kwargs):
-    print(f"{GREEN}AGENDA UPDATE:{RESET} new current agenda item is: " + str(kwargs.get('agenda_item_index', 'ERR')) + ": " + str(kwargs.get('agenda_item', 'ERR')))
-    
-    # get the conversation
-    conversation = get_conversation_object(CONVERSATION_ID)
-    
-    # fetch agenda from conversation object
-    updated_agenda_statuses = conversation.agenda_items
-
     # use agenda_item_index to assign the new agenda item as current
+    new_current_index = kwargs.get('agenda_item_index', -1)
     updated_agenda_statuses[kwargs.get('agenda_item_index', -1)] = 1
+    print(f"{GREEN}AGENDA UPDATE:{RESET} item marked current at {new_current_index=}\n")
 
     # update and save agenda statuses in the conversation object
     try:
@@ -56,6 +40,7 @@ def pick_new_current_agenda_item(**kwargs):
     except Exception as error:
         print(f'ERROR: {error}\n')
 
+    print(f"{GREEN}AGENDA UPDATE:{RESET} new agenda statuses - {updated_agenda_statuses}\n")
     return updated_agenda_statuses
 
 # Dictionary to map the function name from the response to the function it corresponds to
@@ -64,7 +49,6 @@ def pick_new_current_agenda_item(**kwargs):
 function_mapping = {
     "detect_self_harm": detect_self_harm,
     "current_agenda_item_is_complete": current_agenda_item_is_complete,
-    "pick_new_current_agenda_item": pick_new_current_agenda_item
 }
 
 
