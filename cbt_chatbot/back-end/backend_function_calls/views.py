@@ -115,8 +115,8 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
                 agenda_dict = zip_agenda_with_status(agenda_items, tool_response)
 
                 # get just the current agenda item and use it to get the tools
-                current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
-                updated_tools = get_all_tools(current_agenda_item)
+                # current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
+                updated_tools = get_all_tools()
 
                 # we call get_chat_completions() again to give us an actual response to use in the conversation
                 print(f"{GREEN}AGENDA REPORT:{RESET} agenda = {agenda_dict}\n")
@@ -209,10 +209,10 @@ def chatbot_response(request):
             system_prompt = identity + purpose + behavior + format + voice + guardrails + background + agenda_instructions
         
             # get just the current agenda item
-            current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
+            # current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
 
             # get the tools
-            tools = get_all_tools(current_agenda_item)
+            tools = get_all_tools() + switch_agenda_tool(agenda_dict)
 
         except Exception as e:
             print(f'ERROR buildin system prompt: {e}\n')

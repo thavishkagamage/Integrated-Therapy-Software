@@ -6,6 +6,7 @@ import json
 from backend_function_calls.session_utils import get_conversation_object
 
 GREEN = "\033[32m"
+BLUE  = "\033[34m"
 RESET = "\033[0m"
 
 CONVERSATION_ID = -1
@@ -69,7 +70,7 @@ def handle_response(message, conversation_id):
         # Extract function name and arguments from the message in the API response
         function_name = message.tool_calls[0].function.name
         function_args = json.loads(message.tool_calls[0].function.arguments)
-        print(f'{GREEN}TOOL TRIGGERED: {RESET}' + str(function_name) + ' : ' + str(function_args) + '\n') # debug line
+        print(f'{BLUE}TOOL TRIGGERED: {RESET}' + str(function_name) + ' : ' + str(function_args) + '\n') # debug line
 
         # Check if function exists in function_mapping
         if function_name in function_mapping:
