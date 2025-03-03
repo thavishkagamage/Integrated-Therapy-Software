@@ -8,6 +8,8 @@ from django.conf import settings
 from django.core.cache import cache
 from enum import Enum
 
+GREEN = "\033[32m"
+RESET = "\033[0m"
 
 class AgendaStatus(Enum):
     Not_Started = 0
@@ -49,7 +51,7 @@ def get_cache_file(cache_key):
 
     # if file is not in our cache
     if prompts is None:
-        print(f'CHACHING: Attempting to cache {cache_key}.json\n')
+        print(f'{GREEN}CHACHING:{RESET} Attempting to cache {cache_key}.json\n')
 
         # build file name from cache key
         file_name = f'{cache_key}.json'
@@ -65,7 +67,7 @@ def get_cache_file(cache_key):
             # Cache the file with a long timeout (or use None)
             cache.set(cache_key, prompts, timeout=60 * 60 * 24 * 365 * 10) # 10 years in seconds
 
-            print(f'CHACHING: {cache_key}.json is now in the cache\n')
+            print(f'{GREEN}CHACHING:{RESET} {cache_key}.json is now in the cache\n')
         
         except Exception as error:
             # Optionally, handle the error or re-raise an exception

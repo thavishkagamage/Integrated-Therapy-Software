@@ -36,6 +36,15 @@
         "End conversation"
     ],
     "Current Agenda Item Instructions": {
-        "1": "Welcome the user and wait for a response."
+        "1": "Welcome the user and wait for a response.",
+        "2": "Talk to the user to learn their name, age, and why they want to try cbt.",
+        "3": "Tell the user about the structure of the cbt session.",
+        "4": "Introduce cognitive model of depression.",
+        "5": "Introduce negative automatic thoughts.",
+        "6": "Identify patient's NATs.",
+        "7": "Introduce thought record.",
+        "8": "Create a case conceptualization.",
+        "9": "Review session.",
+        "10": "End conversation."
     }
 }

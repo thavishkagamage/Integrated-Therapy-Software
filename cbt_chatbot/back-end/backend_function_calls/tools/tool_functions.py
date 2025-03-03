@@ -1,9 +1,12 @@
 # All function defenitions that correspond with tools in the tools.py file
 
 import json
-from django.http import JsonResponse
-from conversation_handler.models import Conversation
+# from django.http import JsonResponse
+# from conversation_handler.models import Conversation
 from backend_function_calls.session_utils import get_conversation_object
+
+GREEN = "\033[32m"
+RESET = "\033[0m"
 
 CONVERSATION_ID = -1
 
@@ -22,7 +25,7 @@ def current_agenda_item_is_complete():
     for index, item in enumerate(updated_agenda_statuses):
         if item == 1:
             updated_agenda_statuses[index] = 2
-            print(f"AGENDA UPDATE: item marked complete at {index=}\n")
+            print(f"{GREEN}AGENDA UPDATE:{RESET} item marked complete at {index=}\n")
             break
 
     # update and save agenda statuses in the conversation object
@@ -35,7 +38,7 @@ def current_agenda_item_is_complete():
     return updated_agenda_statuses
 
 def pick_new_current_agenda_item(**kwargs):
-    print("AGENDA UPDATE: new current agenda item is: " + str(kwargs.get('agenda_item_index', 'ERR')) + ": " + str(kwargs.get('agenda_item', 'ERR')))
+    print(f"{GREEN}AGENDA UPDATE:{RESET} new current agenda item is: " + str(kwargs.get('agenda_item_index', 'ERR')) + ": " + str(kwargs.get('agenda_item', 'ERR')))
     
     # get the conversation
     conversation = get_conversation_object(CONVERSATION_ID)
@@ -82,7 +85,7 @@ def handle_response(message, conversation_id):
         # Extract function name and arguments from the message in the API response
         function_name = message.tool_calls[0].function.name
         function_args = json.loads(message.tool_calls[0].function.arguments)
-        print('TOOL TRIGGERED: ' + str(function_name) + ' : ' + str(function_args) + '\n') # debug line
+        print(f'{GREEN}TOOL TRIGGERED: {RESET}' + str(function_name) + ' : ' + str(function_args) + '\n') # debug line
 
         # Check if function exists in function_mapping
         if function_name in function_mapping:

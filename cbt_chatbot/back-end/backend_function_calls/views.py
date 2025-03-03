@@ -60,6 +60,9 @@ from backend_function_calls.tools.tool_functions import handle_response
 from backend_function_calls.session_utils import *
 from conversation_handler.models import Conversation
 
+GREEN = "\033[32m"
+RESET = "\033[0m"
+
 load_dotenv()
 # API Key
 API_KEY = os.getenv('OPENAI_API_KEY')
@@ -110,7 +113,6 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
 
                 # zip up our agenda items and our new agenda status values
                 agenda_dict = zip_agenda_with_status(agenda_items, tool_response)
-                # print("UPDATED AGENDA: " + str(agenda_dict) + '\n')
 
                 # prompt the AI to give usa new agenda item using pick_new_agenda_item tool
                 prompt = f"Here is the current agenda: {agenda_dict}. Based on the entire context of this conversation with the user, please pick a new agenda item that is marked as 'Not Started' by its value in the dictionary."
@@ -184,7 +186,7 @@ def chatbot_response(request):
 
             # set agenda items the first time
             if agenda_items_status == {}:
-                print(f"SETTING AGENDA for conversation {conversation_id=}\n")
+                print(f"{GREEN}SETTING AGENDA{RESET} for conversation {conversation_id=}\n")
 
                 # Extract the "Conversation Agenda" and build the new list for the database
                 # This will look like [1, 0, 0, ...]
@@ -194,6 +196,9 @@ def chatbot_response(request):
                 # Save the updates to the conversation object
                 conversation.agenda_items = new_database_agenda
                 conversation.save(update_fields=['agenda_items'])
+
+                # Update local variable
+                agenda_items_status = new_database_agenda
 
             # fetch all varibles based on session_number and/or current agenda item
             # example of parsing the session json
@@ -209,9 +214,8 @@ def chatbot_response(request):
             # Create a dictionary zipping agenda item strings with its corresponding status from the conversation
             # EX: {'Welcome the user': 'Current', 'Learn about user': 'Not Started', ...}
             conversation_agenda = session_instructions_json.get("Conversation Agenda", [])
-            agenda_status = conversation.agenda_items
-            agenda_dict = zip_agenda_with_status(conversation_agenda, agenda_status)
-            print(str(agenda_status) + "\n")
+            agenda_dict = zip_agenda_with_status(conversation_agenda, agenda_items_status)
+            print(f"{GREEN}AGENDA STATUS:{RESET} " + str(agenda_items_status) + "\n")
 
             # combine all strings into one prompt for the api
             system_prompt = identity + purpose + behavior + format + voice + guardrails + background + agenda_instructions
@@ -223,7 +227,7 @@ def chatbot_response(request):
             tools = get_all_tools(current_agenda_item)
 
         except Exception as e:
-            print(f'ERROR retrieving session file: {e}\n')
+            print(f'ERROR buildin system prompt: {e}\n')
 
             # You'll definitely know when there's an error
             system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
