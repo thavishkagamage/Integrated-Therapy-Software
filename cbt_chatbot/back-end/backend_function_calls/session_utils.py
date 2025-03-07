@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from conversation_handler.models import Conversation
 from django.conf import settings
 from django.core.cache import cache
+from django.views.decorators.csrf import csrf_exempt
 from enum import Enum
 
 GREEN = "\033[32m"
@@ -75,3 +76,11 @@ def get_cache_file(cache_key):
             prompts = {}
 
     return prompts
+
+
+@csrf_exempt
+def get_agenda_items(request):
+    data = json.loads(request.body)
+    session_number = data.get('session_number')
+
+    return JsonResponse({'session_number': session_number})

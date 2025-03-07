@@ -171,6 +171,16 @@ const Chatbot = () => {
           { conversation: conversationId, sender: "ai", content: response.data.message },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+
+        // Testing getting agenda items
+        const agendaItems = await axiosInstance.post(
+          "get-agenda-items/",
+          { 
+            session_number: session_number,
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        console.log(agendaItems)
       } catch (error) {
         // Log any errors that occur during the process
         console.error("Error sending message:", error.response ? error.response.data : error.message);
