@@ -36,7 +36,7 @@ const Agenda = forwardRef(({conversationId, sessionNumber}, ref) => {
         
         // Update state so the component re-renders
         setAgendaItemsAndStatuses(itemsAndStatuses);
-        console.log("AGENDA MAP:", itemsAndStatuses);
+        // console.log("AGENDA MAP:", itemsAndStatuses);
       } catch (error) {
         console.error("Error fetching agenda items:", error);
       }
@@ -55,7 +55,7 @@ const Agenda = forwardRef(({conversationId, sessionNumber}, ref) => {
 
     // Update state so the component re-renders
     setAgendaItemsAndStatuses(itemsAndStatuses);
-    console.log("UPDATED AGENDA MAP:", itemsAndStatuses);
+    // console.log("UPDATED AGENDA MAP:", itemsAndStatuses);
   };
 
   // Expose the function via the ref
