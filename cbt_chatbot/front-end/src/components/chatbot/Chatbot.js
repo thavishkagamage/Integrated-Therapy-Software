@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./Chatbot.css";
+import Agenda from "../agenda/Agenda"
 import axiosInstance from "../utils/axios";
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 
@@ -23,6 +24,8 @@ const Chatbot = () => {
   const [conversationFetched, setConversationFetched] = useState(false); // Track if conversation has been fetched
   const messagesEndRef = useRef(null);
   const hasMounted = useRef(false);
+
+  const agendaRef = useRef(null);
 
   useEffect(() => {
     const createOrFetchConversation = async () => {
@@ -172,15 +175,10 @@ const Chatbot = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        // Testing getting agenda items
-        const agendaItems = await axiosInstance.post(
-          "get-agenda-items/",
-          { 
-            session_number: session_number,
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        console.log(agendaItems.data.agenda)
+        // update agenda component
+        if (agendaRef.current) {
+          agendaRef.current.runFunction();
+        }
       } catch (error) {
         // Log any errors that occur during the process
         console.error("Error sending message:", error.response ? error.response.data : error.message);
@@ -207,34 +205,37 @@ const Chatbot = () => {
   }, [conversation]);
 
   return (
-    <div className="chat-window">
-      <h1>Chat with our AI Bot</h1>
-      <div className="chat-messages">
-        <span className="start-message"> This is the beginning of your CBT chat session </span>
-        {conversation.map((message, index) => (
-          <span key={index} className={`${message.sender}-message message`}>
-            {message.text}
-          </span>
-        ))}
-        <div ref={messagesEndRef} />
-        {waitingForResponse && (
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-          </div>
-        )}
+    <>
+      <div className="chat-window">
+        <h1>Chat with our AI Bot</h1>
+        <div className="chat-messages">
+          <span className="start-message"> This is the beginning of your CBT chat session </span>
+          {conversation.map((message, index) => (
+            <span key={index} className={`${message.sender}-message message`}>
+              {message.text}
+            </span>
+          ))}
+          <div ref={messagesEndRef} />
+          {waitingForResponse && (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+            </div>
+          )}
+        </div>
+        <div className="input-container">
+          <input
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+          />
+          <button className="send-button" disabled={waitingForResponse} onClick={sendMessage}>
+            {waitingForResponse ? 'Sending...' : 'Send'}
+          </button>
+        </div>
       </div>
-      <div className="input-container">
-        <input
-          type="text"
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-        />
-        <button className="send-button" disabled={waitingForResponse} onClick={sendMessage}>
-          {waitingForResponse ? 'Sending...' : 'Send'}
-        </button>
-      </div>
-    </div>
+      <Agenda ref={agendaRef} sessionNumber={sessionId} />
+    </>
   );
 };
 
