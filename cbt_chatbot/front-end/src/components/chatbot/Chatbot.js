@@ -175,12 +175,15 @@ const Chatbot = () => {
 
         // update agenda component
         if (agendaRef.current) {
-          // Fetch the session number and agenda items for the conversation from the backend
-          const conversationResponse = await axiosInstance.get(`conversations/${conversationId}/`, {
+          // Fetch the updated agenda items for the conversation from the backend
+          const updatedConversation = await axiosInstance.get(`conversations/${conversationId}/`, {
             headers: { Authorization: `Bearer ${token}` }
           });
-          const { session_number, agenda_items } = conversationResponse.data;
-          agendaRef.current.update(agenda_items);
+          const updated_status = (updatedConversation.data.agenda_items);
+          
+          if (JSON.stringify(updated_status) !== JSON.stringify(agenda_items)) {
+            agendaRef.current.update(updated_status);
+          }
         }
       } catch (error) {
         // Log any errors that occur during the process
