@@ -10,10 +10,8 @@ const Chatbot = () => {
   const navigate = useNavigate();
   
   // Parse session and conversation IDs from URL or use from location.state as fallback
-  const sessionId = urlSessionId ? parseInt(urlSessionId) : 
-                   (location.state?.sessionId || 0);
-  const convoId = urlConversationId ? urlConversationId : 
-                 (location.state?.convoId || null);
+  const sessionId = urlSessionId ? parseInt(urlSessionId) : (location.state?.sessionId || 0);
+  const convoId = urlConversationId ? urlConversationId : (location.state?.convoId || null);
 
   const [userInput, setUserInput] = useState("");
   const [conversation, setConversation] = useState([]);
@@ -39,9 +37,17 @@ const Chatbot = () => {
           console.error("No access token found");
           return;
         }
+
+        // Check all cnversations to see if the conversationId exists
         const conversationId = convoId; // using location.state instead of queryParams
-        if (conversationId) {
-          // If a conversationId exists, fetch the existing conversation
+        const existingConversationsResponse = await axiosInstance.get(
+          "conversations/",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const conversationExists = existingConversationsResponse.data.some(item => item.id == conversationId);
+        
+        if (conversationId && conversationExists){
+          // If a conversationId and corresponding conversation exist, fetch the conversation
           const response = await axiosInstance.get(`conversations/${conversationId}/`, {
             headers: { Authorization: `Bearer ${token}` }
           });
@@ -53,12 +59,7 @@ const Chatbot = () => {
             sender: message.sender
           })));
         } else {
-          // If no conversationId, create a new conversation
-          const existingConversationsResponse = await axiosInstance.get( // DO WE NEED THIS? since we changed title format
-            "conversations/",
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-
+          // If no conversationId or conversation exist, create a new conversation
           const dateTime = new Date().toLocaleString('en-US', {
             year: '2-digit',
             month: 'numeric',
