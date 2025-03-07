@@ -180,7 +180,7 @@ const Chatbot = () => {
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log(agendaItems)
+        console.log(agendaItems.data.agenda)
       } catch (error) {
         // Log any errors that occur during the process
         console.error("Error sending message:", error.response ? error.response.data : error.message);

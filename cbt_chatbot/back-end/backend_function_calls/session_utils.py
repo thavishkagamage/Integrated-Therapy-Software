@@ -83,4 +83,12 @@ def get_agenda_items(request):
     data = json.loads(request.body)
     session_number = data.get('session_number')
 
-    return JsonResponse({'session_number': session_number})
+    # session file retrieval/caching
+    cache_key = f'session{session_number}'
+    session_instructions_json = get_cache_file(cache_key)
+
+    # get the agenda
+    conversation_agenda = session_instructions_json.get("Conversation Agenda", [])
+    
+    # return agenda
+    return JsonResponse({'agenda': conversation_agenda})
