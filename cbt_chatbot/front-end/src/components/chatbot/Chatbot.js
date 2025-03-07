@@ -11,10 +11,8 @@ const Chatbot = () => {
   const navigate = useNavigate();
   
   // Parse session and conversation IDs from URL or use from location.state as fallback
-  const sessionId = urlSessionId ? parseInt(urlSessionId) : 
-                   (location.state?.sessionId || 0);
-  const convoId = urlConversationId ? urlConversationId : 
-                 (location.state?.convoId || null);
+  const sessionId = urlSessionId ? parseInt(urlSessionId) : (location.state?.sessionId || 0);
+  const convoId = urlConversationId ? urlConversationId : (location.state?.convoId || null);
 
   const [userInput, setUserInput] = useState("");
   const [conversation, setConversation] = useState([]);
@@ -48,7 +46,7 @@ const Chatbot = () => {
           const response = await axiosInstance.get(`conversations/${conversationId}/`, {
             headers: { Authorization: `Bearer ${token}` }
           });
-          console.log(response.data);
+          console.log("RESPONSE:", response.data);
 
           // Update conversation state with the fetched messages
           setConversation(response.data.messages.map(message => ({
@@ -177,7 +175,12 @@ const Chatbot = () => {
 
         // update agenda component
         if (agendaRef.current) {
-          agendaRef.current.runFunction();
+          // Fetch the session number and agenda items for the conversation from the backend
+          const conversationResponse = await axiosInstance.get(`conversations/${conversationId}/`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const { session_number, agenda_items } = conversationResponse.data;
+          agendaRef.current.update(agenda_items);
         }
       } catch (error) {
         // Log any errors that occur during the process
@@ -234,7 +237,7 @@ const Chatbot = () => {
           </button>
         </div>
       </div>
-      <Agenda ref={agendaRef} sessionNumber={sessionId} />
+      <Agenda ref={agendaRef} conversationId={convoId} sessionNumber={sessionId} />
     </>
   );
 };

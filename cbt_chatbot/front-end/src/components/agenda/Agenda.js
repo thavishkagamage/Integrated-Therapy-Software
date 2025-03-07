@@ -1,9 +1,9 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import axiosInstance from "../utils/axios";
 
-const Agenda = forwardRef(({sessionNumber}, ref) => {
+const Agenda = forwardRef(({conversationId, sessionNumber}, ref) => {
 
-  // const agendaItems = useRef([])
+  const agendaItems = useRef([])
   const [agendaItemsAndStatuses, setAgendaItemsAndStatuses] = useState(null);
   
   useEffect(() => {
@@ -16,7 +16,7 @@ const Agenda = forwardRef(({sessionNumber}, ref) => {
 
     const fetchSessionAgendaItems = async () => {
       try {
-        // Testing getting agenda items
+        // Get the sessions agenda items
         const agenda = await axiosInstance.post(
           "get-agenda-items/",
           { 
@@ -25,17 +25,18 @@ const Agenda = forwardRef(({sessionNumber}, ref) => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        const agendaItems = agenda.data.agenda;
-        const agendaStatus = agendaItems.map((_, index) => (index === 0 ? 1 : 0));
+        // Create initial map of agenda items and statuses
+        agendaItems.current = agenda.data.agenda;
+        const agendaStatus = agendaItems.current.map((_, index) => (index === 0 ? 1 : 0));
         const itemsAndStatuses = new Map();
 
-        agendaItems.forEach((item, index) => {
+        agendaItems.current.forEach((item, index) => {
           itemsAndStatuses.set(item, agendaStatus[index]);
         });
         
         // Update state so the component re-renders
         setAgendaItemsAndStatuses(itemsAndStatuses);
-        console.log(agendaItemsAndStatuses);
+        console.log("AGENDA MAP:", itemsAndStatuses);
       } catch (error) {
         console.error("Error fetching agenda items:", error);
       }
@@ -45,16 +46,21 @@ const Agenda = forwardRef(({sessionNumber}, ref) => {
   }, [sessionNumber]);
 
   // Define the function that you want to run
-  const runMyFunction = () => {
-    console.log("Child function executed without re-rendering the component.");
+  const updateAgendaStatuses = (statuses) => {    
+    // make new map with updated statuses
+    const itemsAndStatuses = new Map();
+    agendaItems.current.forEach((item, index) => {
+      itemsAndStatuses.set(item, statuses[index]);
+    });
 
-    
-    
+    // Update state so the component re-renders
+    setAgendaItemsAndStatuses(itemsAndStatuses);
+    console.log("UPDATED AGENDA MAP:", itemsAndStatuses);
   };
 
   // Expose the function via the ref
   useImperativeHandle(ref, () => ({
-    runFunction: runMyFunction
+    update: updateAgendaStatuses
   }), []); // Empty dependency array means the handle doesn't change
 
   return (
