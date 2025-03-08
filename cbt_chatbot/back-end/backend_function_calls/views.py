@@ -245,23 +245,23 @@ def chatbot_response(request):
         
         def enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict):
             # Step 1: Analyze if message contains self-harm indicators (this should always be checked)
-            self_harm_tools = [tool for tool in tools if tool['function']['name'] == 'detect_self_harm']
-            if self_harm_tools:
-                self_harm_check = get_chat_completion(
-                    "You are a mental health professional. Analyze the following message and determine if it contains any indicators of self-harm or harm to others. Respond with 'HARM_DETECTED' only if clear indicators are present, otherwise 'NO_DETECTED'.",
-                    conversation_history,
-                    self_harm_tools,
-                    conversation_id,
-                    temperature=0.1,
-                    max_tokens=50
-                )
+            # self_harm_tools = [tool for tool in tools if tool['function']['name'] == 'detect_self_harm']
+            # if self_harm_tools:
+            #     self_harm_check = get_chat_completion(
+            #         "You are a mental health professional. Analyze the following message and determine if it contains any indicators of self-harm or harm to others. Respond with 'HARM_DETECTED' only if clear indicators are present, otherwise 'NO_DETECTED'.",
+            #         conversation_history,
+            #         self_harm_tools,
+            #         conversation_id,
+            #         temperature=0.1,
+            #         max_tokens=50
+            #     )
                 
-                if "HARM_DETECTED" in self_harm_check:
-                    print(f"{GREEN}SELF-HARM DETECTED - EXECUTING SELF-HARM PROTOCOL{RESET}\n")
-                    return "You said something that was harm to self or others. Dont do that bro"
+            #     if "HARM_DETECTED" in self_harm_check:
+            #         print(f"{GREEN}SELF-HARM DETECTED - EXECUTING SELF-HARM PROTOCOL{RESET}\n")
+            #         return "You said something that was harm to self or others. Dont do that bro"
             
             # Step 2: Agent decides whether current message needs tool execution or therapeutic response
-            tool_names = [tool['function']['name'] for tool in tools]
+            tool_names = [tool for tool in tools if tool['function']['name'] != 'detect_self_harm']
             decision_prompt = f"""You are an agent coordinator for a CBT therapy chatbot.
             Your job is to analyze the user's message and decide on the appropriate action.
             
@@ -279,7 +279,7 @@ def chatbot_response(request):
             
             Output only one of these exact terms: "AGENDA_UPDATE" or "THERAPEUTIC_RESPONSE"
             """
-            
+            print(decision_prompt)
             decision = get_chat_completion(
                 decision_prompt,
                 conversation_history,
@@ -298,7 +298,7 @@ def chatbot_response(request):
                 if agenda_tools:
                     print(f"{GREEN}EXECUTING AGENDA UPDATE{RESET}\n")
                     return get_chat_completion(
-                        system_prompt,
+                        "AGENDA UPDATE",
                         conversation_history,
                         agenda_tools,
                         conversation_id,
