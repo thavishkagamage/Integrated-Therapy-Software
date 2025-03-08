@@ -279,7 +279,7 @@ def chatbot_response(request):
             
             Output only one of these exact terms: "AGENDA_UPDATE" or "THERAPEUTIC_RESPONSE"
             """
-            print(decision_prompt)
+
             decision = get_chat_completion(
                 decision_prompt,
                 conversation_history,
@@ -324,7 +324,7 @@ def chatbot_response(request):
         # bot_response = agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict)
         # Some values have defaults, but we can add custom inputs for tools, model, max_tokens, temperature
         # bot_response = get_chat_completion(system_prompt, conversation_history, tools, conversation_id, agenda_dict) 
-        print(agenda_dict)
+        print(f"{GREEN}BOT RESPONSE:{RESET} " + bot_response + "\n")
         return JsonResponse({'message': bot_response})
     else:
         return JsonResponse({'error': 'Invalid request'}, status=400)
