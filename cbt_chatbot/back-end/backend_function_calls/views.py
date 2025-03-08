@@ -71,7 +71,7 @@ API_KEY = os.getenv('OPENAI_API_KEY')
 MODEL = "gpt-4o" # the OpenAI GPT model being used
 MAX_TOKENS = 1000 # the maximum number of tokens that OpenAI will respond with (1 token approx = 3/4 word)
 TEMPERATURE = 0.7 # how random the system response is, from 0.0 to 1.0, with 1.0 being most random
-
+    
 # Function to call OpenAI API
 def get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda={}, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, model=MODEL, api_key=API_KEY):
     """
@@ -205,7 +205,7 @@ def chatbot_response(request):
             identity = session_instructions_json['Identity']['1']
             purpose = session_instructions_json['Purpose']['1']
             behavior = session_instructions_json['Behavior']['1']
-            format = session_instructions_json['Format']['1']
+            Format = session_instructions_json['Format']['1']
             voice = session_instructions_json['Voice']['1']
             guardrails = session_instructions_json['Guardrails']['1']
             background  = session_instructions_json['Background']['1']
@@ -218,7 +218,7 @@ def chatbot_response(request):
             print(f"{GREEN}AGENDA STATUS:{RESET} " + str(agenda_items_status) + "\n")
 
             # combine all strings into one prompt for the api
-            system_prompt = identity + purpose + behavior + format + voice + guardrails + background + agenda_instructions
+            system_prompt = identity + purpose + behavior + Format + voice + guardrails + background + agenda_instructions
         
             # get just the current agenda item
             current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
@@ -238,9 +238,93 @@ def chatbot_response(request):
                                 You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
                                 Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
 
+        
+        # TODO Create the agent mode here. Instead of passing in the tools list to the bot_response
+        # create a call to the LLM with the prompt of "Decide what to do" and give it the function calls, and based on the user response
+        # it will either do the function call OR it will pass it to the next step to generate the bot response based on the current conversation and agenda item
+        
+        def enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict):
+            # Step 1: Analyze if message contains self-harm indicators (this should always be checked)
+            self_harm_tools = [tool for tool in tools if tool['function']['name'] == 'detect_self_harm']
+            if self_harm_tools:
+                self_harm_check = get_chat_completion(
+                    "You are a mental health professional. Analyze the following message and determine if it contains any indicators of self-harm or harm to others. Respond with 'HARM_DETECTED' only if clear indicators are present, otherwise 'NO_DETECTED'.",
+                    conversation_history,
+                    self_harm_tools,
+                    conversation_id,
+                    temperature=0.1,
+                    max_tokens=50
+                )
+                
+                if "HARM_DETECTED" in self_harm_check:
+                    print(f"{GREEN}SELF-HARM DETECTED - EXECUTING SELF-HARM PROTOCOL{RESET}\n")
+                    return "You said something that was harm to self or others. Dont do that bro"
+            
+            # Step 2: Agent decides whether current message needs tool execution or therapeutic response
+            tool_names = [tool['function']['name'] for tool in tools]
+            decision_prompt = f"""You are an agent coordinator for a CBT therapy chatbot.
+            Your job is to analyze the user's message and decide on the appropriate action.
+            
+            User message: "{conversation_history}"
+            Current agenda item: {current_agenda_item}
+            Available tools: {tool_names}
+            
+            Task: Decide which of these actions is most appropriate:
+            1. AGENDA_UPDATE - Message indicates the current agenda item is complete
+            2. THERAPEUTIC_RESPONSE - Message requires empathy, conversation, or therapy guidance
+            
+            Consider:
+            - If the user has fully addressed the current agenda item, choose AGENDA_UPDATE
+            - If the user is expressing emotions, asking questions, or engaging in therapeutic conversation, choose THERAPEUTIC_RESPONSE
+            
+            Output only one of these exact terms: "AGENDA_UPDATE" or "THERAPEUTIC_RESPONSE"
+            """
+            
+            decision = get_chat_completion(
+                decision_prompt,
+                conversation_history,
+                [],
+                conversation_id,
+                max_tokens=50,
+                temperature=0.1
+            ).strip()
+            
+            print(f"{GREEN}ENHANCED AGENT DECISION:{RESET} {decision}\n")
+            
+            # Step 3: Execute appropriate action based on decision
+            if "AGENDA_UPDATE" in decision:
+                # Get agenda-related tools
+                agenda_tools = [tool for tool in tools if 'agenda_item' in tool['function']['name']]
+                if agenda_tools:
+                    print(f"{GREEN}EXECUTING AGENDA UPDATE{RESET}\n")
+                    return get_chat_completion(
+                        system_prompt,
+                        conversation_history,
+                        agenda_tools,
+                        conversation_id,
+                        agenda_dict,
+                        temperature=0.3
+                    )
+            
+            # Default to therapeutic response (including when no specific tools are needed)
+            print(f"{GREEN}EXECUTING THERAPEUTIC RESPONSE{RESET}\n")
+            return get_chat_completion(
+                system_prompt,
+                conversation_history,
+                [],  # No tools to avoid function calling
+                conversation_id,
+                agenda_dict,
+                temperature=0.7
+            )
+
+        # Use the enhanced agent mode
+        bot_response = enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict)
+        # Comment out the direct call
+        # bot_response = get_chat_completion(system_prompt, conversation_history, tools, conversation_id, agenda_dict)
+        # bot_response = agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict)
         # Some values have defaults, but we can add custom inputs for tools, model, max_tokens, temperature
-        bot_response = get_chat_completion(system_prompt, conversation_history, tools, conversation_id, agenda_dict) 
-    
+        # bot_response = get_chat_completion(system_prompt, conversation_history, tools, conversation_id, agenda_dict) 
+        print(agenda_dict)
         return JsonResponse({'message': bot_response})
     else:
         return JsonResponse({'error': 'Invalid request'}, status=400)
