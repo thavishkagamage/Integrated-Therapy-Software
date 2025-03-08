@@ -305,17 +305,17 @@ def chatbot_response(request):
                         agenda_dict,
                         temperature=0.3
                     )
-            
-            # Default to therapeutic response (including when no specific tools are needed)
-            print(f"{GREEN}EXECUTING THERAPEUTIC RESPONSE{RESET}\n")
-            return get_chat_completion(
-                system_prompt,
-                conversation_history,
-                [],  # No tools to avoid function calling
-                conversation_id,
-                agenda_dict,
-                temperature=0.7
-            )
+            else:
+                # Default to therapeutic response (including when no specific tools are needed)
+                print(f"{GREEN}EXECUTING THERAPEUTIC RESPONSE{RESET}\n")
+                return get_chat_completion(
+                    system_prompt,
+                    conversation_history,
+                    [],  # No tools to avoid function calling
+                    conversation_id,
+                    agenda_dict,
+                    temperature=0.7
+                )
 
         # Use the enhanced agent mode
         bot_response = enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict)
