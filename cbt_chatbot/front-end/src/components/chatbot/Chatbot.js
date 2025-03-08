@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./Chatbot.css";
+import Agenda from "../agenda/Agenda"
 import axiosInstance from "../utils/axios";
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 
@@ -21,6 +22,8 @@ const Chatbot = () => {
   const [conversationFetched, setConversationFetched] = useState(false); // Track if conversation has been fetched
   const messagesEndRef = useRef(null);
   const hasMounted = useRef(false);
+
+  const agendaRef = useRef(null);
 
   useEffect(() => {
     const createOrFetchConversation = async () => {
@@ -51,7 +54,7 @@ const Chatbot = () => {
           const response = await axiosInstance.get(`conversations/${conversationId}/`, {
             headers: { Authorization: `Bearer ${token}` }
           });
-          console.log(response.data);
+          console.log("RESPONSE:", response.data);
 
           // Update conversation state with the fetched messages
           setConversation(response.data.messages.map(message => ({
@@ -172,6 +175,19 @@ const Chatbot = () => {
           { conversation: conversationId, sender: "ai", content: response.data.message },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+
+        // update agenda component
+        if (agendaRef.current) {
+          // Fetch the updated agenda items for the conversation from the backend
+          const updatedConversation = await axiosInstance.get(`conversations/${conversationId}/`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const updated_status = (updatedConversation.data.agenda_items);
+          
+          if (JSON.stringify(updated_status) !== JSON.stringify(agenda_items)) {
+            agendaRef.current.update(updated_status);
+          }
+        }
       } catch (error) {
         // Log any errors that occur during the process
         console.error("Error sending message:", error.response ? error.response.data : error.message);
@@ -198,34 +214,37 @@ const Chatbot = () => {
   }, [conversation]);
 
   return (
-    <div className="chat-window">
-      <h1>Chat with our AI Bot</h1>
-      <div className="chat-messages">
-        <span className="start-message"> This is the beginning of your CBT chat session </span>
-        {conversation.map((message, index) => (
-          <span key={index} className={`${message.sender}-message message`}>
-            {message.text}
-          </span>
-        ))}
-        <div ref={messagesEndRef} />
-        {waitingForResponse && (
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-          </div>
-        )}
+    <>
+      <div className="chat-window">
+        <h1>Chat with our AI Bot</h1>
+        <div className="chat-messages">
+          <span className="start-message"> This is the beginning of your CBT chat session </span>
+          {conversation.map((message, index) => (
+            <span key={index} className={`${message.sender}-message message`}>
+              {message.text}
+            </span>
+          ))}
+          <div ref={messagesEndRef} />
+          {waitingForResponse && (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+            </div>
+          )}
+        </div>
+        <div className="input-container">
+          <input
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+          />
+          <button className="send-button" disabled={waitingForResponse} onClick={sendMessage}>
+            {waitingForResponse ? 'Sending...' : 'Send'}
+          </button>
+        </div>
       </div>
-      <div className="input-container">
-        <input
-          type="text"
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-        />
-        <button className="send-button" disabled={waitingForResponse} onClick={sendMessage}>
-          {waitingForResponse ? 'Sending...' : 'Send'}
-        </button>
-      </div>
-    </div>
+      <Agenda ref={agendaRef} conversationId={convoId} sessionNumber={sessionId} />
+    </>
   );
 };
 

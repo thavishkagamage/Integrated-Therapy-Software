@@ -13,6 +13,7 @@ Imports:
 from django.contrib import admin
 from django.urls import path, include
 from backend_function_calls.views import chatbot_response
+from backend_function_calls.session_utils import get_agenda_items
 
 from rest_framework.routers import DefaultRouter
 from conversation_handler.views import ConversationViewSet, ClearConversationsView
@@ -25,6 +26,7 @@ router.register(r'messages', MessageViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/chatbot/', chatbot_response, name='chatbot_response'),
+    path('api/get-agenda-items/', get_agenda_items, name='get_agenda_items'),
     path('api/', include(router.urls)),
     path('api/users/', include('users.urls')),
     path('clear_conversations/', ClearConversationsView.as_view(), name='clear-conversations'),
