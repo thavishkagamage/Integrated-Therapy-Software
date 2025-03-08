@@ -3,6 +3,7 @@ import "./Chatbot.css";
 import Agenda from "../agenda/Agenda"
 import axiosInstance from "../utils/axios";
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 
 const Chatbot = () => {
   // Get parameters from URL instead of location.state
@@ -221,7 +222,7 @@ const Chatbot = () => {
           <span className="start-message"> This is the beginning of your CBT chat session </span>
           {conversation.map((message, index) => (
             <span key={index} className={`${message.sender}-message message`}>
-              {message.text}
+              <ReactMarkdown>{message.text}</ReactMarkdown>
             </span>
           ))}
           <div ref={messagesEndRef} />
