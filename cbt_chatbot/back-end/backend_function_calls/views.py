@@ -202,14 +202,14 @@ def chatbot_response(request):
 
             # fetch all varibles based on session_number and/or current agenda item
             # example of parsing the session json
-            identity = session_instructions_json['Identity']['1']
-            purpose = session_instructions_json['Purpose']['1']
-            behavior = session_instructions_json['Behavior']['1']
-            Format = session_instructions_json['Format']['1']
-            voice = session_instructions_json['Voice']['1']
-            guardrails = session_instructions_json['Guardrails']['1']
-            background  = session_instructions_json['Background']['1']
-            agenda_instructions = session_instructions_json['Agenda Instructions']['1']
+            identity = session_instructions_json.get('Identity', {}).get('1', '')
+            purpose = session_instructions_json.get('Purpose', {}).get('1', '')
+            behavior = session_instructions_json.get('Behavior', {}).get('1', '')
+            Format = session_instructions_json.get('Format', {}).get('1', '')
+            voice = session_instructions_json.get('Voice', {}).get('1', '')
+            guardrails = session_instructions_json.get('Guardrails', {}).get('1', '')
+            background  = session_instructions_json.get('Background', {}).get('1', '')
+            agenda_instructions = session_instructions_json.get('Agenda Instructions', {}).get('1', '')
             
             # Create a dictionary zipping agenda item strings with its corresponding status from the conversation
             # EX: {'Welcome the user': 'Current', 'Learn about user': 'Not Started', ...}
