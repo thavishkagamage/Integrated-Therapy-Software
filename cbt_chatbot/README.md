@@ -1,3 +1,13 @@
+## NEW RUN COMMANDS
+Launch 2 terminals
+Terminal 1 in cbt_chatbot/back-end:
+poetry run python manage.py runserver
+
+Terminal 2 in cbt_chatbot/front-end:
+npm run start
+
+
+
 ### If you have completed these instructions before:
 1. Launch the React client and python server from one terminal
     ```bash
