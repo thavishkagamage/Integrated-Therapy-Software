@@ -129,7 +129,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
                 tools = get_all_tools(current_agenda_item)
 
                 # we call get_chat_completions() again to give us an actual response to use in the conversation
-                third_api_call = get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda_dict)
+                third_api_call = get_chat_completion(instructions, conversation_history, [], conversation_id, agenda_dict)
 
                 return third_api_call
             
