@@ -1,9 +1,9 @@
 ## NEW RUN COMMANDS
 Launch 2 terminals
-Terminal 1 in cbt_chatbot/back-end:
+Terminal 1 in cd cbt_chatbot/back-end:
 poetry run python manage.py runserver
 
-Terminal 2 in cbt_chatbot/front-end:
+Terminal 2 in cd cbt_chatbot/front-end:
 npm run start
 
 
