@@ -207,7 +207,6 @@ def chatbot_response(request):
             # behavior = session_instructions_json.get('Behavior', {}).get('1', '')
             # Format = session_instructions_json.get('Format', {}).get('1', '')
             # voice = session_instructions_json.get('Voice', {}).get('1', '')
-            # guardrails = session_instructions_json.get('Guardrails', {}).get('1', '')
             # background = session_instructions_json.get('Background', {}).get('1', '')
 
             instructions = session_instructions_json.get('Conversation Instructions', {}).get('1', '')
@@ -222,7 +221,7 @@ def chatbot_response(request):
 
             # combine all strings into one prompt for the api
             # system_prompt = identity + purpose + behavior + Format + voice + guardrails + background + agenda_instructions
-            system_prompt = instructions + agenda_instructions
+            system_prompt = instructions + guardrails + agenda_instructions
         
             # get just the current agenda item
             current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
