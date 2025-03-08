@@ -60,7 +60,8 @@ const Chatbot = () => {
           // Update conversation state with the fetched messages
           setConversation(response.data.messages.map(message => ({
             text: message.content,
-            sender: message.sender
+            sender: message.sender,
+            timestamp: message.created_at
           })));
         } else {
           // If no conversationId or conversation exist, create a new conversation
@@ -220,7 +221,10 @@ const Chatbot = () => {
         <h1>Chat with our AI Bot</h1>
         <div className="chat-messages">
           <span className="start-message"> This is the beginning of your CBT chat session </span>
-          {conversation.map((message, index) => (
+          {conversation
+            .slice()
+            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+            .map((message, index) => (
             <span key={index} className={`${message.sender}-message message`}>
               <ReactMarkdown>{message.text}</ReactMarkdown>
             </span>
