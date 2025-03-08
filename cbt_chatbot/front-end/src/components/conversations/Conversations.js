@@ -66,9 +66,9 @@ const Conversations = () => {
     }
   };
 
-  const handleResumeConversation = (conversationId) => {
+  const handleResumeConversation = (conversationId, sessionNumber) => {
     console.log(`Resuming conversation with ID: ${conversationId}`);
-    navigate(`/sessions/chatbot/0/${conversationId}`);
+    navigate(`/sessions/chatbot/${sessionNumber}/${conversationId}`);
   };
 
   const handViewConversation = (conversationId) => {
@@ -93,7 +93,7 @@ const Conversations = () => {
                   <button onClick={() => handViewConversation(conversation.id)} className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded">
                     View
                   </button>
-                  <button onClick={() => handleResumeConversation(conversation.id)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
+                  <button onClick={() => handleResumeConversation(conversation.id, conversation.session_number)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
                     Resume
                   </button>
                   <button onClick={() => handleDeleteConversation(conversation.id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded">
