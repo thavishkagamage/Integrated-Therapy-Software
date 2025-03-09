@@ -49,7 +49,7 @@ const Chatbot = () => {
           "conversations/",
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        const conversationExists = existingConversationsResponse.data.some(item => item.id === conversationId);
+        const conversationExists = existingConversationsResponse.data.some(item => item.id == conversationId);
         
         if (conversationId && conversationExists){
           // If a conversationId and corresponding conversation exist, fetch the conversation
@@ -223,7 +223,7 @@ const Chatbot = () => {
           <span className="start-message"> This is the beginning of your CBT chat session </span>
           {conversation
             .slice()
-            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
             .map((message, index) => (
               <span key={index} className={`${message.sender}-message message`}>
                 <ReactMarkdown>{message.text}</ReactMarkdown>
