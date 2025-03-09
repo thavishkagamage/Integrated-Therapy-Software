@@ -21,9 +21,10 @@ const Chatbot = () => {
   const [loading, setLoading] = useState(false);
   const [waitingForResponse, setWaitingForResponse] = useState(false);
   const [conversationFetched, setConversationFetched] = useState(false); // Track if conversation has been fetched
-  const messagesEndRef = useRef(null);
-  const hasMounted = useRef(false);
-
+  
+  // New ref for the chat container
+  const chatContainerRef = useRef(null);
+  
   const agendaRef = useRef(null);
 
   useEffect(() => {
@@ -42,7 +43,7 @@ const Chatbot = () => {
           return;
         }
 
-        // Check all cnversations to see if the conversationId exists
+        // Check all conversations to see if the conversationId exists
         const conversationId = convoId; // using location.state instead of queryParams
         const existingConversationsResponse = await axiosInstance.get(
           "conversations/",
@@ -98,7 +99,7 @@ const Chatbot = () => {
     };
 
     createOrFetchConversation();
-  }, [conversationId, loading, conversationFetched]);
+  }, [conversationId, loading, conversationFetched, sessionId, convoId]);
 
   // Update URL when conversation ID changes to make it bookmarkable/refreshable
   useEffect(() => {
@@ -198,38 +199,36 @@ const Chatbot = () => {
         setWaitingForResponse(false);
       }
     }
-
   };
 
   const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   };
+  
 
   useEffect(() => {
-    if (hasMounted.current) {
-      scrollToBottom();
-    } else {
-      hasMounted.current = true;
-    }
+    scrollToBottom();
   }, [conversation]);
 
   return (
     <>
       <div className="chat-window">
         <h1>Chat with our AI Bot</h1>
-        <div className="chat-messages">
+        <div className="chat-messages" ref={chatContainerRef}>
           <span className="start-message"> This is the beginning of your CBT chat session </span>
           {conversation
             .slice()
             .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
             .map((message, index) => (
-            <span key={index} className={`${message.sender}-message message`}>
-              <ReactMarkdown>{message.text}</ReactMarkdown>
-            </span>
-          ))}
-          <div ref={messagesEndRef} />
+              <span key={index} className={`${message.sender}-message message`}>
+                <ReactMarkdown>{message.text}</ReactMarkdown>
+              </span>
+            ))}
           {waitingForResponse && (
             <div className="loading-container">
               <div className="loading-spinner"></div>
