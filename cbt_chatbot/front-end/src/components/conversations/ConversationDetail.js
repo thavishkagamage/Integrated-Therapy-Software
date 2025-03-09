@@ -27,9 +27,9 @@ const ConversationDetail = () => {
   }, [id]);
 
   return (
-    <div class="chat-window">
+    <div className="chat-window">
       <h1>Conversation Messages</h1>
-      <div class="chat-messages">
+      <div className="chat-messages">
         {messages.map(message => (
           <span key={message.id} className={`${message.sender}-message message`}>
             {message.content}

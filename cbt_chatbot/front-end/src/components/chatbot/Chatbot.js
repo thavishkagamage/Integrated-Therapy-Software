@@ -48,7 +48,7 @@ const Chatbot = () => {
           "conversations/",
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        const conversationExists = existingConversationsResponse.data.some(item => item.id == conversationId);
+        const conversationExists = existingConversationsResponse.data.some(item => item.id === conversationId);
         
         if (conversationId && conversationExists){
           // If a conversationId and corresponding conversation exist, fetch the conversation

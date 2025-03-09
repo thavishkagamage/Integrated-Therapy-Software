@@ -202,27 +202,23 @@ def chatbot_response(request):
 
             # fetch all varibles based on session_number and/or current agenda item
             # example of parsing the session json
-            # identity = session_instructions_json.get('Identity', {}).get('1', '')
-            # purpose = session_instructions_json.get('Purpose', {}).get('1', '')
-            # behavior = session_instructions_json.get('Behavior', {}).get('1', '')
-            # Format = session_instructions_json.get('Format', {}).get('1', '')
-            # voice = session_instructions_json.get('Voice', {}).get('1', '')
-            # background = session_instructions_json.get('Background', {}).get('1', '')
-
             instructions = session_instructions_json.get('Conversation Instructions', {}).get('1', '')
             guardrails = session_instructions_json.get('Guardrails', {}).get('1', '')
             agenda_instructions = session_instructions_json.get('Agenda Instructions', {}).get('1', '')
+
+            # get the titles of the agenda items
+            conversation_agenda_titles = session_instructions_json.get("Conversation Agenda", [])
+            # get the actual agenda item instructions
+            conversation_agenda_instructions = session_instructions_json.get("Current Agenda Item Instructions", [])
             
             # Create a dictionary zipping agenda item strings with its corresponding status from the conversation
-            # EX: {'Welcome the user': 'Current', 'Learn about user': 'Not Started', ...}
-            conversation_agenda = session_instructions_json.get("Conversation Agenda", [])
-            agenda_dict = zip_agenda_with_status(conversation_agenda, agenda_items_status)
+            # EX: {'Welcome the client and...': 'Current', 'Explain what cognitive behavioral therapy is and...': 'Not Started', ...}
+            agenda_dict = zip_agenda_with_status(conversation_agenda_instructions, agenda_items_status)
             print(f"{GREEN}AGENDA STATUS:{RESET} " + str(agenda_items_status) + "\n")
 
             # combine all strings into one prompt for the api
             # system_prompt = identity + purpose + behavior + Format + voice + guardrails + background + agenda_instructions
-            system_prompt = instructions + guardrails + agenda_instructions
-        
+            system_prompt = instructions + guardrails + agenda_instructions + str(agenda_dict)
             # get just the current agenda item
             current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
 
