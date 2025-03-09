@@ -125,7 +125,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
                 agenda_dict = zip_agenda_with_status(agenda_items, updated_agenda_statuses)
 
                 # get just the current agenda item and use it to get the tools
-                current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
+                current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current'][0]
                 tools = get_all_tools(current_agenda_item)
 
                 # we call get_chat_completions() again to give us an actual response to use in the conversation
@@ -216,12 +216,14 @@ def chatbot_response(request):
             agenda_dict = zip_agenda_with_status(conversation_agenda_instructions, agenda_items_status)
             print(f"{GREEN}AGENDA STATUS:{RESET} " + str(agenda_items_status) + "\n")
 
+            # get just the current agenda item
+            current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current'][0]
+
             # combine all strings into one prompt for the api
             # system_prompt = identity + purpose + behavior + Format + voice + guardrails + background + agenda_instructions
-            system_prompt = instructions + guardrails + agenda_instructions + str(agenda_dict)
-            # get just the current agenda item
-            current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
-
+            system_prompt = instructions + guardrails + agenda_instructions + "This is the current agenda item: " + current_agenda_item
+            print(system_prompt)
+            
             # get the tools
             tools = get_all_tools(current_agenda_item)
 
