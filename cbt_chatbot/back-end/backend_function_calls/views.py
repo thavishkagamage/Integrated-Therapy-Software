@@ -71,6 +71,35 @@ API_KEY = os.getenv('OPENAI_API_KEY')
 MODEL = "gpt-4o" # the OpenAI GPT model being used
 MAX_TOKENS = 1000 # the maximum number of tokens that OpenAI will respond with (1 token approx = 3/4 word)
 TEMPERATURE = 0.7 # how random the system response is, from 0.0 to 1.0, with 1.0 being most random
+
+
+
+def summarizer(conversation_history)->str:
+    """
+    Generates a summary of the conversation history using the OpenAI API.
+    Args:
+        conversation_history (str): The conversation history to summarize.
+    Returns:
+        str: The summary of the conversation history.
+    """
+    try:
+        # Create an OpenAI client with the API key
+        client = OpenAI(api_key=API_KEY)
+
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": "Summarize the conversation. Pull out any user details and summarize the conversation."},
+                {"role": "user", "content": conversation_history}
+            ],
+            max_tokens=MAX_TOKENS,
+            temperature=TEMPERATURE
+        )
+
+        return response.choices[0].message.content
+
+    except Exception as error_message:
+        return f"Error: {str(error_message)}"
     
 # Function to call OpenAI API
 def get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda={}, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, model=MODEL, api_key=API_KEY):
@@ -307,6 +336,7 @@ def chatbot_response(request):
             else:
                 # Default to therapeutic response (including when no specific tools are needed)
                 print(f"{GREEN}EXECUTING THERAPEUTIC RESPONSE{RESET}\n")
+                # print(f"{GREEN}CONVERSATION SUMMARY:{RESET} " + summarizer(conversation_history) + "\n")
                 return get_chat_completion(
                     system_prompt,
                     conversation_history,
@@ -327,3 +357,6 @@ def chatbot_response(request):
         return JsonResponse({'message': bot_response})
     else:
         return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+
