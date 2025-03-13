@@ -18,10 +18,12 @@ from backend_function_calls.session_utils import get_agenda_items
 from rest_framework.routers import DefaultRouter
 from conversation_handler.views import ConversationViewSet, ClearConversationsView
 from message_handler.views import MessageViewSet
+from goal_tracking.views import GoalViewSet  # Import the GoalViewSet
 
 router = DefaultRouter()
 router.register(r'conversations', ConversationViewSet)
 router.register(r'messages', MessageViewSet)
+router.register(r'goals', GoalViewSet, basename='goal')  # Register the goal tracking route
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,4 +32,5 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/users/', include('users.urls')),
     path('clear_conversations/', ClearConversationsView.as_view(), name='clear-conversations'),
+    path("api/", include("goal_tracking.urls")),  # Adjust based on your actual API prefix
 ]

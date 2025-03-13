@@ -1,10 +1,11 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets
 from .models import Goal
 from .serializers import GoalSerializer
+from rest_framework.permissions import IsAuthenticated
 
 class GoalViewSet(viewsets.ModelViewSet):
     serializer_class = GoalSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Goal.objects.filter(user=self.request.user)

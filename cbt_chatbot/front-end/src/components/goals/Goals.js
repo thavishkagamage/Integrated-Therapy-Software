@@ -36,7 +36,7 @@ const Goals = () => {
       }
       const response = await axiosInstance.post(
         "goals/",
-        { content: goalInput },
+        { name: goalInput }, // ✅ Changed 'content' to 'name'
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setGoals([...goals, response.data]);
@@ -77,7 +77,7 @@ const Goals = () => {
       <ul className="goal-list">
         {goals.map((goal) => (
           <li key={goal.id}>
-            {goal.content}
+            {goal.name} {/* ✅ Changed 'content' to 'name' */}
             <button onClick={() => deleteGoal(goal.id)}>Delete</button>
           </li>
         ))}

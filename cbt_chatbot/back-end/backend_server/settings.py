@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
     'conversation_handler',
-    'message_handler',  
+    'message_handler', 
+    'goal_tracking', 
 ]
 
 MIDDLEWARE = [
