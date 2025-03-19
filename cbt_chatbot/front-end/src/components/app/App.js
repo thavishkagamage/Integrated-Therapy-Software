@@ -49,7 +49,10 @@ function App() {
       <Router>
         <header className="header"> 
           <nav className="nav-bar">
-            <div className="app-logo">LOGO<br/>HERE</div>
+          <div className="app-logo">
+          <img src="/TheraThrive1.png" alt="TheraThrive Logo" className="logo-img" />
+          </div>
+
             <ul className="nav-list">
               <li className="nav-item"><Link className="nav-link" to="/">Home</Link></li>
               <li className="nav-item"><Link className="nav-link" to="/sessions">Chat</Link></li>
