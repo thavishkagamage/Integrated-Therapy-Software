@@ -77,8 +77,9 @@ const Goals = () => {
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-2xl font-bold mb-4 text-center">Your Goals</h1>
-
+      <h1 className="text-2xl font-bold text-center" style={{ fontFamily: "'Playfair Display', serif" }}>
+      Your Goals
+      </h1>
       {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
       <div className="flex gap-2 mb-4">
@@ -92,7 +93,11 @@ const Goals = () => {
         <button
           onClick={addGoal}
           disabled={loading}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+          style={{
+            backgroundColor: "#E0DDCF", 
+            color: "#000", // Adjust text color for contrast
+          }}
+          className="px-4 py-2 rounded hover:opacity-80 disabled:opacity-50"
         >
           {loading ? "Adding..." : "Add Goal"}
         </button>
