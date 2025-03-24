@@ -7,7 +7,7 @@ def get_all_tools(agenda_item):
       "type": "function",
       "function": {
         "name": "detect_self_harm",
-        "description": "Detects when user has a response that indicates self harm or harm to others based on only the most recent message sent from the user.",
+        "description": "Use this tool to detect when a user expresses suicidal desire, including clear thoughts of ending their life, feeling trapped, hopeless, helpless, or like an unbearable burden. Only activate when distress is explicitly tied to suicide, self-harm, or a belief that suffering is permanent and escape is impossible. Do not trigger for vague sadness, stress, or emotional pain alone.",
         "strict": True,
         "parameters": {
           "type": "object",
