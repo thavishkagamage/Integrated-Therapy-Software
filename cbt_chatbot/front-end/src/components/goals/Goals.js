@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../utils/axios"; // Ensure axios is properly set up
+import "./Goals.css";
 
 const Goals = () => {
   const [goals, setGoals] = useState([]);
@@ -93,10 +94,6 @@ const Goals = () => {
         <button
           onClick={addGoal}
           disabled={loading}
-          style={{
-            backgroundColor: "#E0DDCF", 
-            color: "#000", // Adjust text color for contrast
-          }}
           className="px-4 py-2 rounded hover:opacity-80 disabled:opacity-50"
         >
           {loading ? "Adding..." : "Add Goal"}

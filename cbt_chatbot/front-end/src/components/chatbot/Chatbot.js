@@ -218,7 +218,6 @@ const Chatbot = () => {
   return (
     <>
       <div className="chat-window">
-        <h1>Chat with our AI Bot</h1>
         <div className="chat-messages" ref={chatContainerRef}>
           <span className="start-message"> This is the beginning of your CBT chat session </span>
           {conversation

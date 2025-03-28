@@ -1,26 +1,29 @@
 .conversations-container {
   padding: 20px;
 }
-  
+
+/* Conversation List Item */
 .conversation-item {
-  border: 1px solid #ccc;
+  border: 1px solid var(--text-dark);
   border-radius: 10px;
   padding: 10px;
   margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background-color: var(--secondary-bg);
 }
 
+/* Conversation Title */
 .conversation-title {
   font-weight: bold;
-  color: #333;
+  color: var(--text-dark);
 }
 
 .conversation-item .button,
 .conversation-item button {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--highlight-color);
+  color: var(--text-light);
   border: none;
   border-radius: 20px;
   padding: 5px 10px;
@@ -32,13 +35,17 @@
 
 .conversation-item .button:hover,
 .conversation-item button:hover {
-  background-color: #0056b3;
+  background-color: var(--accent-color); /* Subtle contrast on hover */
 }
 
+
+/* No Conversations Message */
 .no-conversations {
   text-align: center;
   padding-top: 20px;
-  p {
-    font-weight: 600;
-  }
+}
+
+.no-conversations p {
+  font-weight: 600;
+  color: var(--text-dark);
 }
