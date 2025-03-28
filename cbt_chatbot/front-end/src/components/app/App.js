@@ -49,12 +49,12 @@ function App() {
       <Router>
         <header className="header"> 
           <nav className="nav-bar">
-          <div className="app-logo">
+          <Link to="/" className="app-logo">
           <img src="/TheraThrive1.png" alt="TheraThrive Logo" className="logo-img" />
-          </div>
+          </Link>
+
 
             <ul className="nav-list">
-              <li className="nav-item"><Link className="nav-link" to="/">Home</Link></li>
               <li className="nav-item"><Link className="nav-link" to="/sessions">Chat</Link></li>
               {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/conversations">Conversations</Link></li>}
               {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/goals">Goals</Link></li>} 
