@@ -19,7 +19,7 @@ def current_agenda_item_is_complete():
     conversation = get_conversation_object(CONVERSATION_ID)
     
     # fetch agenda from conversation object
-    updated_agenda_statuses = conversation.agenda_items
+    updated_agenda_statuses = conversation.current_sub_items
 
     # mark current agenda item as complete
     for index, item in enumerate(updated_agenda_statuses):
@@ -30,8 +30,8 @@ def current_agenda_item_is_complete():
 
     # update and save agenda statuses in the conversation object
     try:
-        conversation.agenda_items = updated_agenda_statuses
-        conversation.save(update_fields=['agenda_items'])
+        conversation.current_sub_items = updated_agenda_statuses
+        conversation.save(update_fields=['current_sub_items'])
     except Exception as error:
         print(f'ERROR: {error}\n')
 
