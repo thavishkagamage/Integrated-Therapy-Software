@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../utils/axios"; // Ensure axios is properly set up
-import "./Goals.css";
+import "./Goals.css"; // Ensure your custom CSS is linked if needed
 
 const Goals = () => {
   const [goals, setGoals] = useState([]);
@@ -76,10 +76,29 @@ const Goals = () => {
     }
   };
 
+  // Your custom colors
+  const customColors = {
+    primaryBg: "#E0DDCF",
+    secondaryBg: "#F1F0EA",
+    accentColor: "#587B7F",
+    highlightColor: "#729829",
+    textLight: "#F1F0EA",
+    textDark: "#587B7F",
+  };
+
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-2xl font-bold text-center" style={{ fontFamily: "'Playfair Display', serif" }}>
-      Your Goals
+    <div
+      className="max-w-md mx-auto p-6 rounded-lg shadow-lg"
+      style={{ backgroundColor: customColors.accentColor }}
+    >
+      <h1
+        className="text-2xl font-bold text-center"
+        style={{
+          fontFamily: "'Playfair Display', serif",
+          color: customColors.textLight,
+        }}
+      >
+        Your Goals
       </h1>
       {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
@@ -90,14 +109,20 @@ const Goals = () => {
           onChange={(e) => setGoalInput(e.target.value)}
           placeholder="Enter a new goal..."
           className="flex-1 p-2 border rounded"
+          style={{
+            borderColor: customColors.accentColor,
+            color: customColors.textDark,
+          }}
         />
         <button
           onClick={addGoal}
           disabled={loading}
-          className="px-4 py-2 rounded hover:opacity-80 disabled:opacity-50"
+          className={`bg-[${customColors.highlightColor}] text-[${customColors.textLight}] px-4 py-2 rounded`}
         >
           {loading ? "Adding..." : "Add Goal"}
         </button>
+
+
       </div>
 
       {loading && <p className="text-gray-500">Loading goals...</p>}
@@ -106,16 +131,21 @@ const Goals = () => {
         {goals.map((goal) => (
           <li
             key={goal.id}
-            className="flex justify-between items-center p-3 border rounded-lg shadow-sm bg-gray-50"
+            className="flex justify-between items-center p-3 border rounded-lg shadow-sm"
+            style={{
+              backgroundColor: customColors.secondaryBg,
+              color: customColors.textDark,
+            }}
           >
             <span>{goal.name}</span>
             <button
-              onClick={() => deleteGoal(goal.id)}
-              disabled={loading}
-              className="text-red-500 hover:text-red-700"
-            >
-              Delete
-            </button>
+            onClick={() => deleteGoal(goal.id)}
+            disabled={loading}
+            className={`bg-[${customColors.primaryBg}] text-[${customColors.textDark}] hover:bg-[${customColors.primaryBg}] hover:text-red-500 px-4 py-2 rounded`}
+          >
+            Delete
+          </button>
+
           </li>
         ))}
       </ul>

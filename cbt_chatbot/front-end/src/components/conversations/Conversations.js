@@ -107,7 +107,7 @@ const Conversations = () => {
             <button 
               onClick={handlePrevPage} 
               disabled={currentPage === 1}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg---highlight-color hover:bg-accent-color text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
@@ -117,7 +117,7 @@ const Conversations = () => {
             <button 
               onClick={handleNextPage} 
               disabled={currentPage === totalPages}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg---highlight-color hover:bg-accent-color text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>
