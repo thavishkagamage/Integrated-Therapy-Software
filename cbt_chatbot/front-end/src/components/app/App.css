@@ -201,3 +201,148 @@ button:hover {
     transform: rotate(360deg);
   }
 }
+
+
+.home-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3rem 1.5rem;
+  background: linear-gradient(
+    120deg,
+    var(--secondary-bg) 0%,
+    var(--primary-bg) 100%
+  );
+  overflow: hidden; /* For wave divider */
+}
+
+/* Hero Text Content */
+.hero-content {
+  flex: 1 1 300px;
+  max-width: 600px;
+  z-index: 1;
+}
+
+.hero-title {
+  font-size: 2.5rem; /* 40px approx */
+  font-weight: 700;
+  color: var(--highlight-color);
+  margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem; /* Slightly larger than base 16px */
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.hero-button {
+  background-color: var(--highlight-color);
+  color: var(--text-light);
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 5px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+}
+.hero-button:hover {
+  background-color: var(--accent-color);
+}
+
+/* Hero Image */
+.hero-image {
+  flex: 1 1 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+.hero-image img {
+  max-width: 350px;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Wave Divider at Bottom of Hero */
+.wave-divider-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  line-height: 0;
+  transform: translateY(1px);
+}
+
+/* Main Content Container */
+.main-sections {
+  flex: 1;
+  width: 100%;
+  padding: 2rem 1.5rem;
+}
+
+/* Card Section (Wrap text in a "card" look) */
+.card-section {
+  background-color: var(--secondary-bg);
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Section Titles */
+.section-title {
+  font-size: 1.8rem;
+  color: var(--highlight-color);
+  margin-bottom: 1rem;
+}
+
+/* Sub-Title (for smaller headings) */
+.sub-title {
+  font-size: 1.4rem;
+  color: var(--highlight-color);
+  margin-bottom: 0.5rem;
+}
+
+/* Paragraph & List Content */
+.section-content {
+  color: var(--text-dark);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.list {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+}
+
+/* Card Grid Layout (two columns on medium screens) */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+@media (min-width: 768px) {
+  .card-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Footer */
+.footer {
+  background-color: var(--accent-color);
+  color: var(--text-light);
+  text-align: center;
+  padding: 1rem;
+  font-size: 1rem;
+}
