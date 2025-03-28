@@ -13,6 +13,7 @@ class Conversation(models.Model):
     )
     session_number = models.IntegerField(default=0)
     agenda_items = models.JSONField(default=dict)
+    current_sub_items = models.JSONField(default=dict)
 
     def __str__(self):
         return f"{self.title or 'Conversation'} - {self.user.username}"
