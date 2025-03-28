@@ -55,7 +55,7 @@ from django.views.decorators.csrf import csrf_exempt
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
-from backend_function_calls.tools.tools import get_all_tools, pick_new_agenda_item
+from backend_function_calls.tools.tools import get_all_tools, pick_new_agenda_item, update_agenda_item_only
 from backend_function_calls.tools.tool_functions import handle_response
 from backend_function_calls.session_utils import *
 from conversation_handler.models import Conversation
@@ -103,7 +103,7 @@ def summarizer(conversation_history)->str:
 
 
 # Function to call OpenAI API
-def get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda={}, current_item_instructions={}, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, model=MODEL, api_key=API_KEY):
+def get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda={}, current_item_instructions={}, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, model=MODEL, api_key=API_KEY, agent_decision=""):
     """
     Generates a chat completion response using the OpenAI API.
     Args:
@@ -119,18 +119,36 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
     try:
         # Create an OpenAI client with the API key
         client = OpenAI(api_key=api_key)
+        response = None
 
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": instructions},
-                {"role": "user", "content": conversation_history}
-                # Can append messages from continuing conversation here
-            ],
-            tools=tools, # List of tools to be used by the chatbot
-            max_tokens=max_tokens,
-            temperature=temperature  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
-        )
+        # Check if the agent_decision is "AGENDA_UPDATE" to force the tool call
+        if (agent_decision == "AGENDA_UPDATE"):
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": instructions},
+                    {"role": "user", "content": conversation_history}
+                    # Can append messages from continuing conversation here
+                ],
+                tools=tools, # List of tools to be used by the chatbot
+                tool_choice={"type": "function", "function": {"name": "current_agenda_item_is_complete"}},  # Force the tool to be called
+                max_tokens=max_tokens,
+                temperature=temperature  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
+            )
+        # TODO add a conditional for self harm
+        # else return normal theraputic response
+        else: 
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": instructions},
+                    {"role": "user", "content": conversation_history}
+                    # Can append messages from continuing conversation here
+                ],
+                tools=tools, # List of tools to be used by the chatbot
+                max_tokens=max_tokens,
+                temperature=temperature  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
+            )
         
         # Check if the response contains a tool call
         if response.choices[0].message.tool_calls != None:
@@ -154,7 +172,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
                 return second_api_call
             
             # if handle_response returns a list from current_agenda_item_is_complete() AND all current agenda items are complete
-            if isinstance(tool_response, list) and (1 not in tool_response) and (0 not in tool_response):
+            elif isinstance(tool_response, list) and (1 not in tool_response) and (0 not in tool_response):
                 print(f"{GREEN}ALL CURRENT SUB ITEMS COMPLETE{RESET}: switching agenda items\n")
 
                 # change the first 1 to a 2 in the agenda
@@ -186,7 +204,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
                 print(f"{GREEN}current_item_dict:{RESET} " + str(current_item_dict) + "\n")
 
                 # we call get_chat_completions() again to give us an actual response to use in the conversation
-                third_api_call = get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda_dict, current_item_dict)
+                third_api_call = get_chat_completion(instructions, conversation_history, [], conversation_id, agenda_dict, current_item_dict)
 
                 return third_api_call
             
@@ -333,6 +351,7 @@ def chatbot_response(request):
                 
             #     if "HARM_DETECTED" in self_harm_check:
             #         print(f"{GREEN}SELF-HARM DETECTED - EXECUTING SELF-HARM PROTOCOL{RESET}\n")
+            #         # TODO handle self-harm response better here
             #         return "You said something that was harm to self or others. Dont do that bro"
             
             # Step 2: Agent decides whether current message needs tool execution or therapeutic response
@@ -370,18 +389,20 @@ def chatbot_response(request):
             # if "AGENDA_UPDATE" in decision:
             if "update" in decision.lower(): # less chance of error
                 # Get agenda-related tools
-                agenda_tools = [tool for tool in tools if 'agenda_item' in tool['function']['name']]
+                # agenda_tools = [tool for tool in tools if 'agenda_item' in tool['function']['name'].lower()]
+                agenda_tools = update_agenda_item_only(current_agenda_item_instructions)
+                # print(f"{GREEN}AGENDA UPDATE TOOLS:{RESET} " + str(agenda_tools) + "\n")
                 if agenda_tools:
                     print(f"{GREEN}EXECUTING AGENDA UPDATE{RESET}\n")
                     return get_chat_completion(
-                        # "AGENDA UPDATE",
                         system_prompt,
                         conversation_history,
                         agenda_tools,
                         conversation_id,
                         agenda_dict,
                         current_item_dict,
-                        temperature=0.7
+                        temperature=0.7,
+                        agent_decision="AGENDA_UPDATE"  # Pass the decision to force a tool call
                     )
             else:
                 # Default to therapeutic response (including when no specific tools are needed)

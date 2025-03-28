@@ -68,3 +68,21 @@ pick_new_agenda_item = [
     }
   }
 ]
+
+def update_agenda_item_only(agenda_item):
+  return [
+    {
+      "type": "function",
+      "function": {
+        "name": "current_agenda_item_is_complete",
+        "description": f"This is the current agenda item: {agenda_item}. This tool should activate when you believe this current agenda item has been completed. Please use all conversation context to determine if this item has been completed.",
+        "strict": True,
+        "parameters": {
+          "type": "object",
+          "required": [], # Include this if the tool has no arguments
+          "properties": {},
+          "additionalProperties": False
+        }
+      }
+    },
+]
