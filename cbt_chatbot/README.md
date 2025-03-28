@@ -78,3 +78,8 @@ By following these steps, you will have both the backend and frontend servers ru
 - cd chatbot_frontend
 - npm install
 - npm start
+
+
+
+###
+https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver16#download-for-windows

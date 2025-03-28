@@ -86,14 +86,30 @@ WSGI_APPLICATION = 'backend_server.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'postgres',  # Default database name
+#         'USER': os.getenv('POSTGRES_USER'),  
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),  # Set by POSTGRES_PASSWORD
+#         'HOST': 'localhost',  # Since the database is running on your local machine
+#         'PORT': '5432',  # Default PostgreSQL port
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',  # Default database name
-        'USER': os.getenv('POSTGRES_USER'),  
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),  # Set by POSTGRES_PASSWORD
-        'HOST': 'localhost',  # Since the database is running on your local machine
-        'PORT': '5432',  # Default PostgreSQL port
+        'ENGINE': 'mssql',
+        'NAME': 'my-db',  # Your Azure SQL database name
+        'USER': os.getenv('DB_USER'),  # Database username
+        'PASSWORD': os.getenv('DB_PASSWORD'),  # Database password
+        'HOST': 'CBTChatbotSQL.database.windows.net',  # Azure SQL Server host
+        'PORT': '1433',  # Default SQL Server port
+        'OPTIONS': {
+            'driver': 'ODBC Driver 18 for SQL Server',  # Ensure this driver is installed
+            'encrypt': True,
+            'trust_server_certificate': False,
+        },
     }
 }
 
