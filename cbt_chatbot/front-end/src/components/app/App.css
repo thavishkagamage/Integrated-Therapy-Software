@@ -124,7 +124,7 @@ button:hover {
   color: white;
 }
 
-/* Logout Button Styling */
+Logout Button Styling
 .user-state-container button {
   font-size: 25px;         
   padding: 10px 10px;        
@@ -134,8 +134,15 @@ button:hover {
 }
 
 .user-icon {
-  width: 100px;              
+  width: 100px;
   height: 100px;
+  background-color: var(--highlight-color); /* Default highlight color */
+  border-radius: 50%; /* Optional: make it circular */
+  transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+.user-icon:hover {
+  background-color: var(--accent-color); /* Flip to accent color on hover */
 }
 
 .user-state-text {

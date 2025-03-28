@@ -62,10 +62,10 @@ function App() {
             </ul>
             <div className="user-state-container">
               {isLoggedIn ? (
-                <button className="button user-state" onClick={handleLogout}>
+                <Link className="user-state" to="/" onClick={handleLogout}>
                   <img className="user-icon" src={UserIcon} alt="User Icon" />
                   <span className="user-state-text">Logout</span>
-                </button>
+                </Link>
               ) : (
                 <Link className="user-state" to="/login">
                   <img className="user-icon" src={UserIcon} alt="User Icon" />
@@ -76,7 +76,7 @@ function App() {
           </nav>
         </header>
         <div className="main-content-container">
-          <aside className="left-aside"></aside>
+          {/* <aside className="left-aside"></aside> */}
           <main>
             <Routes>
               <Route path="/" element={<Home />} />
@@ -92,9 +92,9 @@ function App() {
               <Route path="/goals" element={<Goals />} />  {/* New Goals Route */}
             </Routes>
           </main>
-          <aside className="right-aside"></aside>
+          {/* <aside className="right-aside"></aside> */}
         </div>
-        <div className="footer"></div>
+        {/* <div className="footer"></div> */}
       </Router>
     </div>
   );
