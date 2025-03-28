@@ -134,8 +134,8 @@ Logout Button Styling
 }
 
 .user-icon {
-  width: 100px;
-  height: 100px;
+  width: 65px;
+  height: 65px;
   background-color: var(--highlight-color); /* Default highlight color */
   border-radius: 50%; /* Optional: make it circular */
   transition: background-color 0.3s ease; /* Smooth transition */
@@ -157,11 +157,12 @@ Logout Button Styling
   padding: 0 20px;
 }
 
-/* Move the logout button to the left */
-.user-state-container {               /* Move the logout button to the far left */
-  margin-left: auto;       /* Pushes the navbar items to the right */
+.user-state-container {
+  margin-left: auto;  /* Pushes the navbar items to the right */
+  display: flex;
+  align-items: center;  /* Centers content vertically */
+  height: 100%; /* Ensure it takes the full height of the parent */
 }
-
 .nav-item a, .nav-item button {
   font-size: 25px;
   font-weight: 800;

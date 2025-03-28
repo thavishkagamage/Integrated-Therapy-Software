@@ -50,7 +50,7 @@ function App() {
         <header className="header"> 
           <nav className="nav-bar">
           <Link to="/" className="app-logo">
-          <img src="/TheraThrive1.png" alt="TheraThrive Logo" className="logo-img" />
+          <img src="/TheraThrive1.png" alt="TheraThrive Logo" className="logo-img" style={{ width: "300px", height: "auto" }}/>
           </Link>
 
 
