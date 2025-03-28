@@ -135,6 +135,20 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
                 max_tokens=max_tokens,
                 temperature=temperature  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
             )
+        # Check if the agent_decision is "PICK_NEW_AGENDA_ITEM" to force the tool call
+        elif (agent_decision == "PICK_NEW_AGENDA_ITEM"):
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": instructions},
+                    {"role": "user", "content": conversation_history}
+                    # Can append messages from continuing conversation here
+                ],
+                tools=tools, # List of tools to be used by the chatbot
+                tool_choice={"type": "function", "function": {"name": "pick_new_current_agenda_item"}},  # Force the tool to be called
+                max_tokens=max_tokens,
+                temperature=temperature  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
+            )
         # TODO add a conditional for self harm
         # else return normal theraputic response
         else: 
@@ -191,7 +205,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
                 conversation_history_with_extra = conversation_history + "user: Now I want to pick a new agenda item that is marked 'Not Started' and make it 'Current'"
 
                 # this should be the list returned from pick_new_current_agenda_item()
-                updated_agenda_statuses = get_chat_completion(prompt, conversation_history_with_extra, pick_new_agenda_item, conversation_id, agenda_dict, current_item_instructions)
+                updated_agenda_statuses = get_chat_completion(prompt, conversation_history_with_extra, pick_new_agenda_item, conversation_id, agenda_dict, current_item_instructions, agent_decision="PICK_NEW_AGENDA_ITEM")
                 
                 # reset new current_sub_items for new agenda item, get new current item dictionary
                 current_item_dict = reset_current_sub_items(updated_agenda_statuses, conversation_id)
