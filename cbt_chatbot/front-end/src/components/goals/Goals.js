@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../utils/axios"; // Ensure axios is properly set up
-import "./Goals.css"; // Ensure your custom CSS is linked if needed
+
 
 const Goals = () => {
   const [goals, setGoals] = useState([]);
