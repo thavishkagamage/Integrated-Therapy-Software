@@ -100,7 +100,8 @@ def summarizer(conversation_history)->str:
 
     except Exception as error_message:
         return f"Error: {str(error_message)}"
-    
+
+
 # Function to call OpenAI API
 def get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda={}, current_item_instructions={}, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, model=MODEL, api_key=API_KEY):
     """
@@ -128,7 +129,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
             ],
             tools=tools, # List of tools to be used by the chatbot
             max_tokens=max_tokens,
-            temperature=temperature  # Controls randomness (0.0 to 1.0 scale, 1.0 being the most random)
+            temperature=temperature  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
         )
         
         # Check if the response contains a tool call
@@ -317,86 +318,90 @@ def chatbot_response(request):
         # create a call to the LLM with the prompt of "Decide what to do" and give it the function calls, and based on the user response
         # it will either do the function call OR it will pass it to the next step to generate the bot response based on the current conversation and agenda item
         
-        # def enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict):
-        #     # Step 1: Analyze if message contains self-harm indicators (this should always be checked)
-        #     # self_harm_tools = [tool for tool in tools if tool['function']['name'] == 'detect_self_harm']
-        #     # if self_harm_tools:
-        #     #     self_harm_check = get_chat_completion(
-        #     #         "You are a mental health professional. Analyze the following message and determine if it contains any indicators of self-harm or harm to others. Respond with 'HARM_DETECTED' only if clear indicators are present, otherwise 'NO_DETECTED'.",
-        #     #         conversation_history,
-        #     #         self_harm_tools,
-        #     #         conversation_id,
-        #     #         temperature=0.1,
-        #     #         max_tokens=50
-        #     #     )
+        def enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict):
+            # Step 1: Analyze if message contains self-harm indicators (this should always be checked)
+            # self_harm_tools = [tool for tool in tools if tool['function']['name'] == 'detect_self_harm']
+            # if self_harm_tools:
+            #     self_harm_check = get_chat_completion(
+            #         "You are a mental health professional. Analyze the following message and determine if it contains any indicators of self-harm or harm to others. Respond with 'HARM_DETECTED' only if clear indicators are present, otherwise 'NO_DETECTED'.",
+            #         conversation_history,
+            #         self_harm_tools,
+            #         conversation_id,
+            #         temperature=0.1,
+            #         max_tokens=50
+            #     )
                 
-        #     #     if "HARM_DETECTED" in self_harm_check:
-        #     #         print(f"{GREEN}SELF-HARM DETECTED - EXECUTING SELF-HARM PROTOCOL{RESET}\n")
-        #     #         return "You said something that was harm to self or others. Dont do that bro"
+            #     if "HARM_DETECTED" in self_harm_check:
+            #         print(f"{GREEN}SELF-HARM DETECTED - EXECUTING SELF-HARM PROTOCOL{RESET}\n")
+            #         return "You said something that was harm to self or others. Dont do that bro"
             
-        #     # Step 2: Agent decides whether current message needs tool execution or therapeutic response
-        #     tool_names = [tool for tool in tools if tool['function']['name'] != 'detect_self_harm']
-        #     decision_prompt = f"""You are an agent coordinator for a CBT therapy chatbot.
-        #     Your job is to analyze the user's message and decide on the appropriate action.
+            # Step 2: Agent decides whether current message needs tool execution or therapeutic response
+            tool_names = [tool for tool in tools if tool['function']['name'] != 'detect_self_harm']
+            decision_prompt = f"""You are an agent coordinator for a CBT therapy chatbot.
+            Your job is to analyze the user's message and decide on the appropriate action.
             
-        #     User message: "{conversation_history}"
-        #     Current agenda item: {current_agenda_item}
-        #     Available tools: {tool_names}
+            User message: "{conversation_history}"
+            Current agenda item: {current_agenda_item_instructions}
+            Available tools: {tool_names}
             
-        #     Task: Decide which of these actions is most appropriate:
-        #     1. AGENDA_UPDATE - Message indicates the current agenda item is complete
-        #     2. THERAPEUTIC_RESPONSE - Message requires empathy, conversation, or therapy guidance
+            Task: Decide which of these actions is most appropriate:
+            1. AGENDA_UPDATE - Message indicates the current agenda item is complete
+            2. THERAPEUTIC_RESPONSE - Message requires empathy, conversation, or therapy guidance
             
-        #     Consider:
-        #     - If the user has fully addressed the current agenda item, choose AGENDA_UPDATE
-        #     - If the user is expressing emotions, asking questions, or engaging in therapeutic conversation, choose THERAPEUTIC_RESPONSE
+            Consider:
+            - If the user has fully addressed the current agenda item, choose AGENDA_UPDATE
+            - If the user is expressing emotions, asking questions, or engaging in therapeutic conversation, choose THERAPEUTIC_RESPONSE
             
-        #     Output only one of these exact terms: "AGENDA_UPDATE" or "THERAPEUTIC_RESPONSE"
-        #     """
+            Output only one of these exact terms: "AGENDA_UPDATE" or "THERAPEUTIC_RESPONSE"
+            """
 
-        #     decision = get_chat_completion(
-        #         decision_prompt,
-        #         conversation_history,
-        #         [],
-        #         conversation_id,
-        #         max_tokens=50,
-        #         temperature=0.1
-        #     ).strip()
+            decision = get_chat_completion(
+                decision_prompt,
+                conversation_history,
+                [],
+                conversation_id,
+                max_tokens=50,
+                temperature=0.1
+            ).strip()
             
-        #     print(f"{GREEN}ENHANCED AGENT DECISION:{RESET} {decision}\n")
+            print(f"{GREEN}ENHANCED AGENT DECISION:{RESET} {decision}\n")
             
-        #     # Step 3: Execute appropriate action based on decision
-        #     if "AGENDA_UPDATE" in decision:
-        #         # Get agenda-related tools
-        #         agenda_tools = [tool for tool in tools if 'agenda_item' in tool['function']['name']]
-        #         if agenda_tools:
-        #             print(f"{GREEN}EXECUTING AGENDA UPDATE{RESET}\n")
-        #             return get_chat_completion(
-        #                 "AGENDA UPDATE",
-        #                 conversation_history,
-        #                 agenda_tools,
-        #                 conversation_id,
-        #                 agenda_dict,
-        #                 temperature=0.3
-        #             )
-        #     else:
-        #         # Default to therapeutic response (including when no specific tools are needed)
-        #         print(f"{GREEN}EXECUTING THERAPEUTIC RESPONSE{RESET}\n")
-        #         # print(f"{GREEN}CONVERSATION SUMMARY:{RESET} " + summarizer(conversation_history) + "\n")
-        #         return get_chat_completion(
-        #             system_prompt,
-        #             conversation_history,
-        #             [],  # No tools to avoid function calling
-        #             conversation_id,
-        #             agenda_dict,
-        #             temperature=0.7
-        #         )
+            # Step 3: Execute appropriate action based on decision
+            # if "AGENDA_UPDATE" in decision:
+            if "update" in decision.lower(): # less chance of error
+                # Get agenda-related tools
+                agenda_tools = [tool for tool in tools if 'agenda_item' in tool['function']['name']]
+                if agenda_tools:
+                    print(f"{GREEN}EXECUTING AGENDA UPDATE{RESET}\n")
+                    return get_chat_completion(
+                        # "AGENDA UPDATE",
+                        system_prompt,
+                        conversation_history,
+                        agenda_tools,
+                        conversation_id,
+                        agenda_dict,
+                        current_item_dict,
+                        temperature=0.7
+                    )
+            else:
+                # Default to therapeutic response (including when no specific tools are needed)
+                print(f"{GREEN}EXECUTING THERAPEUTIC RESPONSE{RESET}\n")
+                # print(f"{GREEN}CONVERSATION SUMMARY:{RESET} " + summarizer(conversation_history) + "\n")
+                return get_chat_completion(
+                    system_prompt,
+                    conversation_history,
+                    [],  # No tools to avoid function calling
+                    conversation_id,
+                    agenda_dict,
+                    current_item_dict,
+                    temperature=0.7
+                )
 
         # Use the enhanced agent mode
-        # bot_response = enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict)
+        bot_response = enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict)
 
         # TODO switch back to enhanced agent mode
-        bot_response = get_chat_completion(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict)
+        # bot_response = get_chat_completion(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict)
         
         # print(f"{GREEN}BOT RESPONSE:{RESET} " + bot_response + "\n")
         return JsonResponse({'message': bot_response})
