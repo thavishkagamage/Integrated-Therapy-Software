@@ -19,12 +19,12 @@
     "Current Agenda Item Instructions": [
         [
             "Welcome the client and ask how they are doing.", 
-            "Let them know that you are a cognitive behavioral therapy chatbot here to help them on their journey out of depression but are not a real person."
+            "Let them know that you are a cognitive behavioral therapy chatbot here to help them on their journey out of depression but are not a real person. Ask them if they're ready to try CBT"
         ],
         [
             "Explain what cognitive behavioral therapy is and how it works on a high level for depression. Explain the foundational principles to the client in a way that is easy for them to understand.",
             "Let them know about the results of CBT and what it has accomplished for clients with depression in the past.", 
-            "Let them know that this CBT program will have 8 sessions that each are about an hour long and are completed on a weekly basis whenever is convenient for them."
+            "Let them know that this CBT program will have 8 sessions that each are about an hour long and are completed on a weekly basis, but sessions don't need to be schduled and can be done whenever is convenient for them. Then ask if they are ready to begin the first session."
         ],
         [
             "Ask the user about their experiences with depression to better understand their history. Begin by asking when they first started feeling this way and whether there were any specific events or life changes that seemed to trigger it.", 
