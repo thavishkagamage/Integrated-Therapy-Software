@@ -6,6 +6,8 @@ import json
 from backend_function_calls.session_utils import get_conversation_object
 
 GREEN = "\033[32m"
+YELLOW = "\033[33m"
+RED = "\033[31m"
 RESET = "\033[0m"
 
 CONVERSATION_ID = -1
@@ -34,7 +36,7 @@ def current_agenda_item_is_complete():
         conversation.current_sub_items = updated_agenda_statuses
         conversation.save(update_fields=['current_sub_items'])
     except Exception as error:
-        print(f'ERROR: {error}\n')
+        print(f'{RED}ERROR:{RESET} {error}\n')
 
     return updated_agenda_statuses
 
@@ -53,10 +55,11 @@ def pick_new_current_agenda_item(**kwargs):
 
     # SAFETY MEASURE
     # Check if the new agenda item is valid and not already completed
-    if (new_agenda_item.lower() not in AGENDA_DICT.keys()) or (new_agenda_item_index == -1) or (updated_agenda_statuses[new_agenda_item_index] != 0):
+    agenda_dict_keys = [key.lower() for key in AGENDA_DICT.keys()] # convert keys to lowercase for case insensitive comparison
+    if (new_agenda_item.lower() not in agenda_dict_keys) or (new_agenda_item_index == -1) or (updated_agenda_statuses[new_agenda_item_index] != 0):
         # get index of first not started item
         new_agenda_item_index = updated_agenda_statuses.index(0)
-        print(f"{GREEN}AGENDA UPDATE SAFETY MEASURE:{RESET} Invalid new agenda item or already completed. Defaulting to first not started agenda item at index {new_agenda_item_index}.")
+        print(f"{YELLOW}AGENDA UPDATE SAFETY MEASURE:{RESET} Invalid new agenda item or already completed. Defaulting to first not started agenda item at index {new_agenda_item_index}.\n")
 
     # update and save agenda statuses in the conversation object
     try:
@@ -65,7 +68,7 @@ def pick_new_current_agenda_item(**kwargs):
         conversation.agenda_items = updated_agenda_statuses
         conversation.save(update_fields=['agenda_items'])
     except Exception as error:
-        print(f'ERROR: {error}\n')
+        print(f'{RED}ERROR:{RESET} {error}\n')
 
     return updated_agenda_statuses
 
@@ -109,4 +112,4 @@ def handle_response(message, conversation_id, agenda_dict):
         return result
 
     except Exception as error_message:
-        return f"Error: {str(error_message)}"
+        return f"{RED}Error:{RESET} {str(error_message)}"

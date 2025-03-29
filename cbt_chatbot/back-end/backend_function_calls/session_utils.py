@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from enum import Enum
 
 GREEN = "\033[32m"
+RED = "\033[31m"
 RESET = "\033[0m"
 
 class AgendaStatus(Enum):
@@ -60,7 +61,7 @@ def reset_current_sub_items(agenda_status, conversation_id):
         conversation.current_sub_items = new_sub_items_status
         conversation.save(update_fields=['current_sub_items'])
     except Exception as error:
-        print(f'ERROR: {error}\n')
+        print(f'{RED}ERROR:{RESET} {error}\n')
 
     return current_item_instructions_dict
 
@@ -75,7 +76,7 @@ def make_next_item_current(current_sub_item_statuses, conversation_id):
         conversation.current_sub_items = current_sub_item_statuses
         conversation.save(update_fields=['current_sub_items'])
     except Exception as error:
-        print(f'ERROR: {error}\n')
+        print(f'{RED}ERROR:{RESET} {error}\n')
 
     return current_sub_item_statuses
 
@@ -94,7 +95,7 @@ def make_current_item_complete(conversation_id):
         conversation.agenda_items = agenda_status
         conversation.save(update_fields=['agenda_items'])
     except Exception as error:
-        print(f'ERROR: {error}\n')
+        print(f'{RED}ERROR:{RESET} {error}\n')
 
     return agenda_status
 
@@ -134,7 +135,7 @@ def get_cache_file(cache_key):
         
         except Exception as error:
             # Optionally, handle the error or re-raise an exception
-            print(f'ERROR: {error}\n')
+            print(f'{RED}ERROR:{RESET} {error}\n')
             prompts = {}
 
     return prompts
