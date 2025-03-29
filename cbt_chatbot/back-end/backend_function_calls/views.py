@@ -55,12 +55,13 @@ from django.views.decorators.csrf import csrf_exempt
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
-from backend_function_calls.tools.tools import get_all_tools, pick_new_agenda_item
+from backend_function_calls.tools.tools import get_all_tools, pick_new_agenda_item, update_agenda_item_only
 from backend_function_calls.tools.tool_functions import handle_response
 from backend_function_calls.session_utils import *
 from conversation_handler.models import Conversation
 
 GREEN = "\033[32m"
+RED = "\033[31m"
 RESET = "\033[0m"
 
 load_dotenv()
@@ -74,35 +75,36 @@ TEMPERATURE = 0.7 # how random the system response is, from 0.0 to 1.0, with 1.0
 
 
 
-def summarizer(conversation_history)->str:
-    """
-    Generates a summary of the conversation history using the OpenAI API.
-    Args:
-        conversation_history (str): The conversation history to summarize.
-    Returns:
-        str: The summary of the conversation history.
-    """
-    try:
-        # Create an OpenAI client with the API key
-        client = OpenAI(api_key=API_KEY)
+# def summarizer(conversation_history)->str:
+#     """
+#     Generates a summary of the conversation history using the OpenAI API.
+#     Args:
+#         conversation_history (str): The conversation history to summarize.
+#     Returns:
+#         str: The summary of the conversation history.
+#     """
+#     try:
+#         # Create an OpenAI client with the API key
+#         client = OpenAI(api_key=API_KEY)
 
-        response = client.chat.completions.create(
-            model=MODEL,
-            messages=[
-                {"role": "system", "content": "Summarize the conversation. Pull out any user details and summarize the conversation."},
-                {"role": "user", "content": conversation_history}
-            ],
-            max_tokens=MAX_TOKENS,
-            temperature=TEMPERATURE
-        )
+#         response = client.chat.completions.create(
+#             model=MODEL,
+#             messages=[
+#                 {"role": "system", "content": "Summarize the conversation. Pull out any user details and summarize the conversation."},
+#                 {"role": "user", "content": conversation_history}
+#             ],
+#             max_tokens=MAX_TOKENS,
+#             temperature=TEMPERATURE
+#         )
 
-        return response.choices[0].message.content
+#         return response.choices[0].message.content
 
-    except Exception as error_message:
-        return f"Error: {str(error_message)}"
-    
+#     except Exception as error_message:
+#         return f"{RED}Error:{RESET} {str(error_message)}"
+
+
 # Function to call OpenAI API
-def get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda={}, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, model=MODEL, api_key=API_KEY):
+def get_chat_completion(instructions, conversation_history, tools, conversation_id, agenda={}, current_item_instructions={}, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, model=MODEL, api_key=API_KEY, agent_decision=""):
     """
     Generates a chat completion response using the OpenAI API.
     Args:
@@ -118,47 +120,111 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
     try:
         # Create an OpenAI client with the API key
         client = OpenAI(api_key=api_key)
+        response = None
 
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": instructions},
-                {"role": "user", "content": conversation_history}
-                # Can append messages from continuing conversation here
-            ],
-            tools=tools, # List of tools to be used by the chatbot
-            max_tokens=max_tokens,
-            temperature=temperature  # Controls randomness (0.0 to 1.0 scale, 1.0 being the most random)
-        )
+        # Check if the agent_decision is "AGENDA_UPDATE" to force the tool call
+        if (agent_decision == "AGENDA_UPDATE"):
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    # TODO dont need to give full system prompt since we force a tool call
+                    {"role": "system", "content": instructions},
+                    {"role": "user", "content": conversation_history}
+                ],
+                tools=tools, # List of tools to be used by the chatbot
+                tool_choice={"type": "function", "function": {"name": "current_agenda_item_is_complete"}},  # Force the tool to be called
+                max_tokens=max_tokens,
+                temperature=0.3  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
+            )
+        # Check if the agent_decision is "PICK_NEW_AGENDA_ITEM" to force the tool call
+        elif (agent_decision == "PICK_NEW_AGENDA_ITEM"):
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    # TODO dont need to give full system prompt since we force a tool call
+                    {"role": "system", "content": instructions},
+                    {"role": "user", "content": conversation_history}
+                ],
+                tools=tools, # List of tools to be used by the chatbot
+                tool_choice={"type": "function", "function": {"name": "pick_new_current_agenda_item"}},  # Force the tool to be called
+                max_tokens=max_tokens,
+                temperature=0.3  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
+            )
+        # TODO add a conditional for self harm
+        # else return normal theraputic response
+        else: 
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": instructions},
+                    {"role": "user", "content": conversation_history}
+                    # Can append messages from continuing conversation here
+                ],
+                # Not needed for therapeutic response
+                # tools=tools, # List of tools to be used by the chatbot
+                max_tokens=max_tokens,
+                temperature=temperature  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
+            )
         
+        print(f"{RED}AGENT DECISION:{RESET} {agent_decision}\n")
+        print(f'{RED}TOOL OPTIONS:{RESET}' + str(tools) + "\n")
         # Check if the response contains a tool call
         if response.choices[0].message.tool_calls != None:
-            tool_response = handle_response(response.choices[0].message, conversation_id)
+            tool_response = handle_response(response.choices[0].message, conversation_id, agenda)
 
-            # if handle_response returns a list from current_agenda_item_is_complete()
-            if isinstance(tool_response, list) and (1 not in tool_response):
+            # if handle_response returns a list from current_agenda_item_is_complete() AND there are still agenda items that are 'Not Started' (list contains a 0)
+            if isinstance(tool_response, list) and (1 not in tool_response) and (0 in tool_response):
+                # change the first 0 to a 1
+                updated_current_item_instructions_status = make_next_item_current(tool_response, conversation_id)
+
+                # get the keys (actual agenda items) from our outdated agenda as a list
+                current_item_instructions_list = list(current_item_instructions.keys())
+
+                # zip updated statuses with the current item instructions
+                current_item_instructions_dict = zip_agenda_with_status(current_item_instructions_list, updated_current_item_instructions_status)
+
+                # we call get_chat_completions() again to give us an actual response to use in the conversation
+                second_api_call = get_chat_completion(instructions, conversation_history, [], conversation_id, agenda, current_item_instructions_dict)
+
+                # return chatbot response
+                return second_api_call
+            
+            # if handle_response returns a list from current_agenda_item_is_complete() AND all current agenda items are complete (list of only 2s)
+            elif isinstance(tool_response, list) and (1 not in tool_response) and (0 not in tool_response):
+                print(f"{GREEN}ALL CURRENT SUB ITEMS COMPLETE{RESET}: switching agenda items\n")
+
+                # change the first 1 to a 2 in the agenda
+                updated_agenda_statuses = make_current_item_complete(conversation_id)
+
+                # TODO if updated_agenda_statuses is all 2s, handle end of conversation
+                if (all(i == 2 for i in updated_agenda_statuses)):
+                    return "END OF CONVERSATION"
+
                 # get the keys (actual agenda items) from our outdated agenda as a list
                 agenda_items = list(agenda.keys())
 
                 # zip up our agenda items and our new agenda status values
-                agenda_dict = zip_agenda_with_status(agenda_items, tool_response)
-
-                # prompt the AI to give usa new agenda item using pick_new_agenda_item tool
-                prompt = f"Here is the current agenda: {agenda_dict}. Based on the entire context of this conversation with the user, please pick a new agenda item that is marked as 'Not Started' by its value in the dictionary."
-                conversation_history_with_extra = conversation_history + "user: Now I want to pick a new agenda item that is not started to make current"
-                
-                # this should be the list returned from pick_new_current_agenda_item()
-                updated_agenda_statuses = get_chat_completion(prompt, conversation_history_with_extra, pick_new_agenda_item, conversation_id, agenda_dict)
-                
-                # zip up our agenda items and our new agenda status values
                 agenda_dict = zip_agenda_with_status(agenda_items, updated_agenda_statuses)
 
+                # prompt the AI to give usa new agenda item using pick_new_agenda_item tool
+                prompt = f"Here is the session agenda: {agenda_dict}. Based on the entire context of this conversation with the user, please pick a new agenda item key that is marked as 'Not Started' by its value in the dictionary."
+                conversation_history_with_extra = conversation_history + "user: Now I want to pick a new agenda item that is marked 'Not Started' and make it 'Current'"
+
+                # this should be the list returned from pick_new_current_agenda_item()
+                updated_agenda_statuses = get_chat_completion(prompt, conversation_history_with_extra, pick_new_agenda_item, conversation_id, agenda_dict, current_item_instructions, temperature=0.3, agent_decision="PICK_NEW_AGENDA_ITEM")
+                
+                # reset new current_sub_items for new agenda item, get new current item dictionary
+                current_item_dict = reset_current_sub_items(updated_agenda_statuses, conversation_id)
+
                 # get just the current agenda item and use it to get the tools
-                current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
-                tools = get_all_tools(current_agenda_item)
+                current_sub_agenda_item = [key for key, value in current_item_dict.items() if value == 'Current']
+                tools = get_all_tools(current_sub_agenda_item)
+
+                print(f"{GREEN}updated_agenda_statuses:{RESET} " + str(updated_agenda_statuses) + "\n")
+                print(f"{GREEN}current_item_dict:{RESET} " + str(current_item_dict) + "\n")
 
                 # we call get_chat_completions() again to give us an actual response to use in the conversation
-                third_api_call = get_chat_completion(instructions, conversation_history, [], conversation_id, agenda_dict)
+                third_api_call = get_chat_completion(instructions, conversation_history, [], conversation_id, agenda_dict, current_item_dict)
 
                 return third_api_call
             
@@ -166,6 +232,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
             elif isinstance(tool_response, list) and (1 in tool_response):
                 return tool_response
 
+            # if handle_response returns a string, we just return that as a message
             return str(tool_response)
 
         # Returns the API response, assumes number of responses is 1 and chooses only that response
@@ -173,7 +240,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
 
     # Returns error message from API
     except Exception as error_message:
-        return f"Error: {str(error_message)}"
+        return f"{RED}Error:{RESET} {str(error_message)}"
 
 
 @csrf_exempt
@@ -200,6 +267,10 @@ def chatbot_response(request):
         # the current list of agenda items statuses
         agenda_items_status = data.get('agenda_items')
 
+        # TODO if updated_agenda_statuses is all 2s, handle end of conversation
+        if (agenda_items_status != {}) and (all(i == 2 for i in agenda_items_status)):
+            return JsonResponse({'message': "END OF CONVERSATION"})
+
         # This is where we will gather and combine details to pass in as the system prompt to the API
         system_prompt = ''
         tools = []
@@ -222,12 +293,21 @@ def chatbot_response(request):
                 agenda_length = len(session_instructions_json.get("Conversation Agenda", []))
                 new_database_agenda = [1 if i == 0 else 0 for i in range(agenda_length)]
 
+                # Extract the "Current Agenda Item Instructions" and build the new list for the database
+                # This will look like [1, 0, 0, ...]
+                sub_items = session_instructions_json.get("Current Agenda Item Instructions", [])
+                new_sub_items_agenda = [1 if i == 0 else 0 for i in range(len(sub_items[0]))]
+
                 # Save the updates to the conversation object
                 conversation.agenda_items = new_database_agenda
-                conversation.save(update_fields=['agenda_items'])
+                conversation.current_sub_items = new_sub_items_agenda
+                conversation.save(update_fields=['agenda_items', 'current_sub_items'])
 
                 # Update local variable
                 agenda_items_status = new_database_agenda
+
+            # fetch the current item statuses
+            current_item_status = conversation.current_sub_items
 
             # fetch all varibles based on session_number and/or current agenda item
             # example of parsing the session json
@@ -239,23 +319,32 @@ def chatbot_response(request):
             conversation_agenda_titles = session_instructions_json.get("Conversation Agenda", [])
             # get the actual agenda item instructions
             conversation_agenda_instructions = session_instructions_json.get("Current Agenda Item Instructions", [])
+            current_item_instructions = conversation_agenda_instructions[agenda_items_status.index(1)]
             
-            # Create a dictionary zipping agenda item strings with its corresponding status from the conversation
+            # Create a dictionary zipping agenda item strings with its corresponding status from the conversation object
             # EX: {'Welcome the client and...': 'Current', 'Explain what cognitive behavioral therapy is and...': 'Not Started', ...}
-            agenda_dict = zip_agenda_with_status(conversation_agenda_instructions, agenda_items_status)
+            agenda_dict = zip_agenda_with_status(conversation_agenda_titles, agenda_items_status)
+            current_item_dict = zip_agenda_with_status(current_item_instructions, current_item_status)
+            
             print(f"{GREEN}AGENDA STATUS:{RESET} " + str(agenda_items_status) + "\n")
+            print(f"{GREEN}CURRENT ITEM STATUS:{RESET} " + str(current_item_status) + "\n")
+            print(f"{GREEN}AGENDA DICT:{RESET} " + str(agenda_dict) + "\n")
+            print(f"{GREEN}CURRENT ITEM DICT:{RESET} " + str(current_item_dict) + "\n")
+
+            # get just the current agenda item title
+            current_agenda_item_title = [key for key, value in agenda_dict.items() if value == 'Current']
+            # get just the current agenda item instruction
+            current_agenda_item_instruction = [key for key, value in current_item_dict.items() if value == 'Current']
+
+            # get the tools
+            tools = get_all_tools(current_agenda_item_instruction)
 
             # combine all strings into one prompt for the api
             # system_prompt = identity + purpose + behavior + Format + voice + guardrails + background + agenda_instructions
-            system_prompt = instructions + guardrails + agenda_instructions + str(agenda_dict)
-            # get just the current agenda item
-            current_agenda_item = [key for key, value in agenda_dict.items() if value == 'Current']
-
-            # get the tools
-            tools = get_all_tools(current_agenda_item)
+            system_prompt = instructions + guardrails + agenda_instructions + str(current_item_dict)
 
         except Exception as e:
-            print(f'ERROR buildin system prompt: {e}\n')
+            print(f'{RED}ERROR buildin system prompt:{RESET} {e}\n')
 
             # # You'll definitely know when there's an error
             # system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
@@ -271,7 +360,7 @@ def chatbot_response(request):
         # create a call to the LLM with the prompt of "Decide what to do" and give it the function calls, and based on the user response
         # it will either do the function call OR it will pass it to the next step to generate the bot response based on the current conversation and agenda item
         
-        def enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict):
+        def enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict):
             # Step 1: Analyze if message contains self-harm indicators (this should always be checked)
             # self_harm_tools = [tool for tool in tools if tool['function']['name'] == 'detect_self_harm']
             # if self_harm_tools:
@@ -286,6 +375,7 @@ def chatbot_response(request):
                 
             #     if "HARM_DETECTED" in self_harm_check:
             #         print(f"{GREEN}SELF-HARM DETECTED - EXECUTING SELF-HARM PROTOCOL{RESET}\n")
+            #         # TODO handle self-harm response better here
             #         return "You said something that was harm to self or others. Dont do that bro"
             
             # Step 2: Agent decides whether current message needs tool execution or therapeutic response
@@ -294,7 +384,7 @@ def chatbot_response(request):
             Your job is to analyze the user's message and decide on the appropriate action.
             
             User message: "{conversation_history}"
-            Current agenda item: {current_agenda_item}
+            Current agenda item: {current_agenda_item_instruction}
             Available tools: {tool_names}
             
             Task: Decide which of these actions is most appropriate:
@@ -314,28 +404,35 @@ def chatbot_response(request):
                 [],
                 conversation_id,
                 max_tokens=50,
-                temperature=0.1
+                temperature=0.1,
+                agent_decision=""
             ).strip()
             
             print(f"{GREEN}ENHANCED AGENT DECISION:{RESET} {decision}\n")
             
             # Step 3: Execute appropriate action based on decision
-            if "AGENDA_UPDATE" in decision:
+            # if "AGENDA_UPDATE" in decision:
+            if "update" in decision.lower(): # less chance of error
                 # Get agenda-related tools
-                agenda_tools = [tool for tool in tools if 'agenda_item' in tool['function']['name']]
-                if agenda_tools:
-                    print(f"{GREEN}EXECUTING AGENDA UPDATE{RESET}\n")
+                # agenda_tools = [tool for tool in tools if 'agenda_item' in tool['function']['name'].lower()]
+                update_agenda_item_tool = update_agenda_item_only(current_agenda_item_instruction)
+                # print(f"{GREEN}AGENDA UPDATE TOOLS:{RESET} " + str(agenda_tools) + "\n")
+                if update_agenda_item_tool:
+                    print(f"{GREEN}AGENT IS EXECUTING AGENDA UPDATE{RESET}\n")
                     return get_chat_completion(
-                        "AGENDA UPDATE",
+                        system_prompt,
                         conversation_history,
-                        agenda_tools,
+                        # agenda_tools,
+                        update_agenda_item_tool,  # Use the specific tool for updating agenda items
                         conversation_id,
                         agenda_dict,
-                        temperature=0.3
+                        current_item_dict,
+                        temperature=0.7,
+                        agent_decision="AGENDA_UPDATE"  # Pass the decision to force a tool call
                     )
             else:
                 # Default to therapeutic response (including when no specific tools are needed)
-                print(f"{GREEN}EXECUTING THERAPEUTIC RESPONSE{RESET}\n")
+                print(f"{GREEN}AGENT IS EXECUTING THERAPEUTIC RESPONSE{RESET}\n")
                 # print(f"{GREEN}CONVERSATION SUMMARY:{RESET} " + summarizer(conversation_history) + "\n")
                 return get_chat_completion(
                     system_prompt,
@@ -343,17 +440,17 @@ def chatbot_response(request):
                     [],  # No tools to avoid function calling
                     conversation_id,
                     agenda_dict,
-                    temperature=0.7
+                    current_item_dict,
+                    temperature=0.7,
+                    agent_decision=""  # Default decision for therapeutic response
                 )
 
         # Use the enhanced agent mode
-        bot_response = enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict)
-        # Comment out the direct call
-        # bot_response = get_chat_completion(system_prompt, conversation_history, tools, conversation_id, agenda_dict)
-        # bot_response = agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict)
-        # Some values have defaults, but we can add custom inputs for tools, model, max_tokens, temperature
-        # bot_response = get_chat_completion(system_prompt, conversation_history, tools, conversation_id, agenda_dict) 
-        print(f"{GREEN}BOT RESPONSE:{RESET} " + bot_response + "\n")
+        bot_response = enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict)
+
+        # bot_response = get_chat_completion(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict)
+        
+        # print(f"{GREEN}BOT RESPONSE:{RESET} " + bot_response + "\n")
         return JsonResponse({'message': bot_response})
     else:
         return JsonResponse({'error': 'Invalid request'}, status=400)

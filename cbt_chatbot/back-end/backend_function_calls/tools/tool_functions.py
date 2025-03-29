@@ -6,9 +6,12 @@ import json
 from backend_function_calls.session_utils import get_conversation_object
 
 GREEN = "\033[32m"
+YELLOW = "\033[33m"
+RED = "\033[31m"
 RESET = "\033[0m"
 
 CONVERSATION_ID = -1
+AGENDA_DICT = {}
 
 def detect_self_harm(**kwargs):
     user_response = kwargs.get('user_response', 'No user response provided')
@@ -19,7 +22,7 @@ def current_agenda_item_is_complete():
     conversation = get_conversation_object(CONVERSATION_ID)
     
     # fetch agenda from conversation object
-    updated_agenda_statuses = conversation.agenda_items
+    updated_agenda_statuses = conversation.current_sub_items
 
     # mark current agenda item as complete
     for index, item in enumerate(updated_agenda_statuses):
@@ -30,10 +33,10 @@ def current_agenda_item_is_complete():
 
     # update and save agenda statuses in the conversation object
     try:
-        conversation.agenda_items = updated_agenda_statuses
-        conversation.save(update_fields=['agenda_items'])
+        conversation.current_sub_items = updated_agenda_statuses
+        conversation.save(update_fields=['current_sub_items'])
     except Exception as error:
-        print(f'ERROR: {error}\n')
+        print(f'{RED}ERROR:{RESET} {error}\n')
 
     return updated_agenda_statuses
 
@@ -45,16 +48,27 @@ def pick_new_current_agenda_item(**kwargs):
     
     # fetch agenda from conversation object
     updated_agenda_statuses = conversation.agenda_items
+    print(f"{GREEN}AGENDA UPDATE:{RESET} updated agenda statuses: " + str(updated_agenda_statuses) + "\n")
 
-    # use agenda_item_index to assign the new agenda item as current
-    updated_agenda_statuses[kwargs.get('agenda_item_index', -1)] = 1
+    new_agenda_item = kwargs.get('agenda_item', '')
+    new_agenda_item_index = kwargs.get('agenda_item_index', -1)
+
+    # SAFETY MEASURE
+    # Check if the new agenda item is valid and not already completed
+    agenda_dict_keys = [key.lower() for key in AGENDA_DICT.keys()] # convert keys to lowercase for case insensitive comparison
+    if (new_agenda_item.lower() not in agenda_dict_keys) or (new_agenda_item_index == -1) or (updated_agenda_statuses[new_agenda_item_index] != 0):
+        # get index of first not started item
+        new_agenda_item_index = updated_agenda_statuses.index(0)
+        print(f"{YELLOW}AGENDA UPDATE SAFETY MEASURE:{RESET} Invalid new agenda item or already completed. Defaulting to first not started agenda item at index {new_agenda_item_index}.\n")
 
     # update and save agenda statuses in the conversation object
     try:
+        # use agenda_item_index to assign the new agenda item as current
+        updated_agenda_statuses[new_agenda_item_index] = 1
         conversation.agenda_items = updated_agenda_statuses
         conversation.save(update_fields=['agenda_items'])
     except Exception as error:
-        print(f'ERROR: {error}\n')
+        print(f'{RED}ERROR:{RESET} {error}\n')
 
     return updated_agenda_statuses
 
@@ -69,7 +83,7 @@ function_mapping = {
 
 
 # Handle the function call from OpenAI API response
-def handle_response(message, conversation_id):
+def handle_response(message, conversation_id, agenda_dict):
     """
     Extracts the function name and arguments from the OpenAI API response message, and calls the corresponding function with the argments
     Args:
@@ -80,6 +94,8 @@ def handle_response(message, conversation_id):
 
     global CONVERSATION_ID
     CONVERSATION_ID = conversation_id
+    global AGENDA_DICT
+    AGENDA_DICT = agenda_dict
 
     try:
         # Extract function name and arguments from the message in the API response
@@ -96,4 +112,4 @@ def handle_response(message, conversation_id):
         return result
 
     except Exception as error_message:
-        return f"Error: {str(error_message)}"
+        return f"{RED}Error:{RESET} {str(error_message)}"
