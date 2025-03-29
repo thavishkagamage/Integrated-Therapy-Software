@@ -160,11 +160,21 @@ const Chatbot = () => {
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+
+        // Create an array of paragraphs from the chatbot's response, slit on 2+ newlines
+        const paragraphs = response.data.message.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+
         // Append the chatbot's response to the conversation state
-        setConversation([
-          ...newConversation,
-          { text: response.data.message, sender: "ai" },
-        ]);
+        // setConversation([
+        //   ...newConversation,
+        //   { text: response.data.message, sender: "ai" },
+        // ]);
+        paragraphs.forEach(paragraph => {
+          setConversation(prevConversation => [
+            ...prevConversation,
+            { text: paragraph, sender: "ai" }
+          ]);
+        });
 
         // Save the user's message to the database
         await axiosInstance.post(

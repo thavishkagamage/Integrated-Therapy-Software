@@ -129,3 +129,13 @@ input {
     width: 100%;
   }
 }
+
+/* Remove extra top margin between consecutive ai messages */
+.ai-message + .ai-message {
+  margin-top: 1px;
+}
+
+/* Remove bottom margin for any AI message that is not the last child of its container */
+.chat-messages span.ai-message:not(:last-child) {
+  margin-bottom: 1px;
+}
