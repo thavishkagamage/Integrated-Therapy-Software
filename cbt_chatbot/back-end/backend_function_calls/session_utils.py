@@ -125,7 +125,8 @@ def get_cache_file(cache_key):
         file_path = os.path.join(settings.BASE_DIR, 'backend_function_calls', 'prompts', file_name)
         
         try:
-            with open(file_path, 'r') as json_file:
+            # utf-8 encoding allows python's open() to read single quotes (') on all devices
+            with open(file_path, 'r', encoding='utf-8') as json_file:
                 prompts = json.load(json_file)
 
             # Cache the file with a long timeout (or use None)
