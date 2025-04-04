@@ -55,7 +55,7 @@ from django.views.decorators.csrf import csrf_exempt
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
-from backend_function_calls.tools.tools import get_all_tools, pick_new_agenda_item, update_agenda_item_only, get_self_harm_tool
+from backend_function_calls.tools.tools import *
 from backend_function_calls.tools.tool_functions import handle_response
 from backend_function_calls.session_utils import *
 from conversation_handler.models import Conversation
@@ -126,7 +126,8 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
         tool_function_map = {
             "AGENDA_UPDATE": "current_agenda_item_is_complete",
             "PICK_NEW_AGENDA_ITEM": "pick_new_current_agenda_item",
-            "SELF_HARM": "detect_self_harm"
+            "SELF_HARM": "detect_self_harm",
+            "NO_CRISIS": "exit_crisis_mode"
         }
 
         # Common message payload
@@ -220,8 +221,9 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
             elif isinstance(tool_response, list) and (1 in tool_response):
                 return tool_response
 
-            # if handle_response returns a string, we enter crisis mode (this should only happen after self_harm tool)
+            # if handle_response returns a string, we enter or exit crisis mode
             else: 
+                # TODO i user is leaving crisis mode maybe rebuild the system prompt here before getting response?
                 crisisResponse = get_chat_completion(tool_response, conversation_history, [], conversation_id)
                 return crisisResponse
 
@@ -270,6 +272,14 @@ def chatbot_response(request):
 
         # Retrieve the conversation object
         conversation = get_conversation_object(conversation_id)
+
+        # get only the users most recent message from the conversation history to use in the prompt
+        most_recent_user_message = ""
+        if conversation_history:
+            lines = conversation_history.strip().split('\n')
+            user_lines = [line for line in lines if line.startswith('user:')]
+            most_recent_user_message = user_lines[-1][len('user:'):].strip() if user_lines else ""
+        # print(f"{GREEN}MOST RECENT USER MESSAGE:{RESET} '{most_recent_user_message}'\n")
 
         # handle crisis mode
         if conversation.isCrisisModeActive:
@@ -355,14 +365,6 @@ def chatbot_response(request):
                 # system_prompt = identity + purpose + behavior + Format + voice + guardrails + background + agenda_instructions
                 system_prompt = instructions + guardrails + agenda_instructions + str(current_item_dict)
 
-                # get only the users most recent message from the conversation history to use in the prompt
-                most_recent_user_message = ""
-                if conversation_history:
-                    lines = conversation_history.strip().split('\n')
-                    user_lines = [line for line in lines if line.startswith('user:')]
-                    most_recent_user_message = user_lines[-1][len('user:'):].strip() if user_lines else ""
-                # print(f"{GREEN}MOST RECENT USER MESSAGE:{RESET} '{most_recent_user_message}'\n")
-
             except Exception as e:
                 print(f'{RED}ERROR building system prompt:{RESET} {e}\n')
 
@@ -383,120 +385,156 @@ def chatbot_response(request):
         # create a call to the LLM with the prompt of "Decide what to do" and give it the function calls, and based on the user response
         # it will either do the function call OR it will pass it to the next step to generate the bot response based on the current conversation and agenda item
         
-        def enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict):
-            # Step 1: Analyze if message contains self-harm indicators (this should always be checked)
-            self_harm_tools = get_self_harm_tool()
-            if self_harm_tools:
-                decision_prompt = f"""You are a mental health professional and your patient says this: '{most_recent_user_message}'. 
+        def enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict={}, current_item_dict={}):
+            # check for crisis mode first
+            if conversation.isCrisisModeActive:
+                if tools:
+
+                    decision_prompt = f"""You are a mental health professional and your patient says this: '{most_recent_user_message}'. 
+                    
+                    Analyze this message and determine if the user very clearly indicates that they are joking, not suicidal, not planning to harm anyone, or that your crisis assessment may be incorrect.
+                    
+                    Respond with 'NO_CRISIS' only when there is clear indication that there is no crisis, no harm may come to the user or anyone else, or the user is joking.
+                    You may also detect that the assessment that the user is in a crisis is incorrect based on this message.
+                    
+                    Respond with 'NO_CRISIS' only if clear indicators are present, otherwise 'NOT_DETECTED'."""
+                    self_harm_check = get_chat_completion(
+                        decision_prompt,
+                        f"user: {most_recent_user_message}",
+                        [],
+                        conversation_id,
+                        temperature=0.1,
+                        max_tokens=50
+                    )
+                    
+                    if "no_crisis" in self_harm_check.lower():
+                        print(f"{RED}NO CRISIS - ATTEMPTING TO EXIT CRISIS MODE{RESET}\n")
+                        # TODO handle self-harm response better here
+                        return get_chat_completion(
+                            system_prompt,
+                            conversation_history,
+                            tools,  # Use the specific tool for self harm
+                            conversation_id,
+                            temperature=0.7,
+                            agent_decision="NO_CRISIS"  # Pass the decision to force a tool call
+                        )
+
+            elif not conversation.isCrisisModeActive:
+                # Step 1: Analyze if message contains self-harm indicators (this should always be checked)
+                self_harm_tools = get_self_harm_tool()
+                if self_harm_tools:
+                    decision_prompt = f"""You are a mental health professional and your patient says this: '{most_recent_user_message}'. 
+                    
+                    Analyze this message and determine if the user expresses suicidal desire, including clear thoughts of ending their life, 
+                    feeling trapped, hopeless, helpless, or like an unbearable burden. 
+                    
+                    Respond with 'HARM_DETECTED' only when distress is explicitly tied to suicide, self-harm, harm to others, or a belief that 
+                    suffering is permanent and escape is impossible. Do not trigger for vague sadness, stress, or emotional pain alone. 
+                    
+                    Respond with 'HARM_DETECTED' only if clear indicators are present, otherwise 'NOT_DETECTED'."""
+                    self_harm_check = get_chat_completion(
+                        decision_prompt,
+                        f"user: {most_recent_user_message}",
+                        [],
+                        conversation_id,
+                        temperature=0.1,
+                        max_tokens=50
+                    )
+                    
+                    if "harm_detected" in self_harm_check.lower():
+                        print(f"{RED}SELF-HARM DETECTED - EXECUTING SELF-HARM PROTOCOL{RESET}\n")
+                        # TODO handle self-harm response better here
+                        return get_chat_completion(
+                            system_prompt,
+                            conversation_history,
+                            self_harm_tools,  # Use the specific tool for self harm
+                            conversation_id,
+                            agenda_dict,
+                            current_item_dict,
+                            temperature=0.7,
+                            agent_decision="SELF_HARM"  # Pass the decision to force a tool call
+                        )
                 
-                Analyze this message and determine if the user expresses suicidal desire, including clear thoughts of ending their life, 
-                feeling trapped, hopeless, helpless, or like an unbearable burden. 
+                # Step 2: Agent decides whether current message needs tool execution or therapeutic response
+                tool_names = [tool for tool in tools if tool['function']['name'] != 'detect_self_harm']
+                decision_prompt = f"""You are an agent coordinator for a CBT therapy chatbot.
+                Your job is to analyze the user's message and decide on the appropriate action.
                 
-                Respond with 'HARM_DETECTED' only when distress is explicitly tied to suicide, self-harm, harm to others, or a belief that 
-                suffering is permanent and escape is impossible. Do not trigger for vague sadness, stress, or emotional pain alone. 
+                Conversation History: "{conversation_history}"
+                Current agenda item: {current_agenda_item_instruction}
+                Available tools: {tool_names}
                 
-                Respond with 'HARM_DETECTED' only if clear indicators are present, otherwise 'NOT_DETECTED'."""
-                self_harm_check = get_chat_completion(
+                Task: Decide which of these actions is most appropriate:
+                1. AGENDA_UPDATE - Message indicates the current agenda item is complete
+                2. THERAPEUTIC_RESPONSE - Message requires empathy, conversation, or therapy guidance
+                
+                Consider:
+                - If the user has fully addressed the current agenda item, choose AGENDA_UPDATE
+                - If the user is expressing emotions, asking questions, or engaging in therapeutic conversation, choose THERAPEUTIC_RESPONSE
+                
+                Output only one of these exact terms: "AGENDA_UPDATE" or "THERAPEUTIC_RESPONSE"
+                """
+
+                decision = get_chat_completion(
                     decision_prompt,
-                    f"user: {most_recent_user_message}",
+                    conversation_history,
                     [],
                     conversation_id,
+                    max_tokens=50,
                     temperature=0.1,
-                    max_tokens=50
-                )
+                    agent_decision=""
+                ).strip()
                 
-                if "harm_detected" in self_harm_check.lower():
-                    print(f"{RED}SELF-HARM DETECTED - EXECUTING SELF-HARM PROTOCOL{RESET}\n")
-                    # TODO handle self-harm response better here
-                    return get_chat_completion(
-                        system_prompt,
-                        conversation_history,
-                        self_harm_tools,  # Use the specific tool for self harm
-                        conversation_id,
-                        agenda_dict,
-                        current_item_dict,
-                        temperature=0.7,
-                        agent_decision="SELF_HARM"  # Pass the decision to force a tool call
-                    )
-            
-            # Step 2: Agent decides whether current message needs tool execution or therapeutic response
-            tool_names = [tool for tool in tools if tool['function']['name'] != 'detect_self_harm']
-            decision_prompt = f"""You are an agent coordinator for a CBT therapy chatbot.
-            Your job is to analyze the user's message and decide on the appropriate action.
-            
-            Conversation History: "{conversation_history}"
-            Current agenda item: {current_agenda_item_instruction}
-            Available tools: {tool_names}
-            
-            Task: Decide which of these actions is most appropriate:
-            1. AGENDA_UPDATE - Message indicates the current agenda item is complete
-            2. THERAPEUTIC_RESPONSE - Message requires empathy, conversation, or therapy guidance
-            
-            Consider:
-            - If the user has fully addressed the current agenda item, choose AGENDA_UPDATE
-            - If the user is expressing emotions, asking questions, or engaging in therapeutic conversation, choose THERAPEUTIC_RESPONSE
-            
-            Output only one of these exact terms: "AGENDA_UPDATE" or "THERAPEUTIC_RESPONSE"
-            """
-
-            decision = get_chat_completion(
-                decision_prompt,
+                print(f"{GREEN}ENHANCED AGENT DECISION:{RESET} {decision}\n")
+                
+                # Step 3: Execute appropriate action based on decision
+                # if "AGENDA_UPDATE" in decision:
+                if "update" in decision.lower(): # less chance of error
+                    # Get agenda-related tools
+                    # agenda_tools = [tool for tool in tools if 'agenda_item' in tool['function']['name'].lower()]
+                    update_agenda_item_tool = update_agenda_item_only(current_agenda_item_instruction)
+                    # print(f"{GREEN}AGENDA UPDATE TOOLS:{RESET} " + str(agenda_tools) + "\n")
+                    if update_agenda_item_tool:
+                        print(f"{GREEN}AGENT IS EXECUTING AGENDA UPDATE{RESET}\n")
+                        return get_chat_completion(
+                            system_prompt,
+                            conversation_history,
+                            # agenda_tools,
+                            update_agenda_item_tool,  # Use the specific tool for updating agenda items
+                            conversation_id,
+                            agenda_dict,
+                            current_item_dict,
+                            temperature=0.7,
+                            agent_decision="AGENDA_UPDATE"  # Pass the decision to force a tool call
+                        )
+                
+            # Default to therapeutic response (including when no specific tools are needed)
+            print(f"{GREEN}AGENT IS EXECUTING THERAPEUTIC RESPONSE{RESET}\n")
+            # print(f"{GREEN}CONVERSATION SUMMARY:{RESET} " + summarizer(conversation_history) + "\n")
+            return get_chat_completion(
+                system_prompt,
                 conversation_history,
-                [],
+                [],  # No tools to avoid function calling
                 conversation_id,
-                max_tokens=50,
-                temperature=0.1,
-                agent_decision=""
-            ).strip()
-            
-            print(f"{GREEN}ENHANCED AGENT DECISION:{RESET} {decision}\n")
-            
-            # Step 3: Execute appropriate action based on decision
-            # if "AGENDA_UPDATE" in decision:
-            if "update" in decision.lower(): # less chance of error
-                # Get agenda-related tools
-                # agenda_tools = [tool for tool in tools if 'agenda_item' in tool['function']['name'].lower()]
-                update_agenda_item_tool = update_agenda_item_only(current_agenda_item_instruction)
-                # print(f"{GREEN}AGENDA UPDATE TOOLS:{RESET} " + str(agenda_tools) + "\n")
-                if update_agenda_item_tool:
-                    print(f"{GREEN}AGENT IS EXECUTING AGENDA UPDATE{RESET}\n")
-                    return get_chat_completion(
-                        system_prompt,
-                        conversation_history,
-                        # agenda_tools,
-                        update_agenda_item_tool,  # Use the specific tool for updating agenda items
-                        conversation_id,
-                        agenda_dict,
-                        current_item_dict,
-                        temperature=0.7,
-                        agent_decision="AGENDA_UPDATE"  # Pass the decision to force a tool call
-                    )
-            else:
-                # Default to therapeutic response (including when no specific tools are needed)
-                print(f"{GREEN}AGENT IS EXECUTING THERAPEUTIC RESPONSE{RESET}\n")
-                # print(f"{GREEN}CONVERSATION SUMMARY:{RESET} " + summarizer(conversation_history) + "\n")
-                return get_chat_completion(
-                    system_prompt,
-                    conversation_history,
-                    [],  # No tools to avoid function calling
-                    conversation_id,
-                    agenda_dict,
-                    current_item_dict,
-                    temperature=0.7,
-                    agent_decision=""  # Default decision for therapeutic response
-                )
+                agenda_dict,
+                current_item_dict,
+                temperature=0.7,
+                agent_decision=""  # Default decision for therapeutic response
+            )
 
         bot_response = ""
 
         # just get normal response in crisis mode
         if conversation.isCrisisModeActive:
-            bot_response = get_chat_completion(
-                system_prompt,
-                conversation_history,
-                [],  # No tools to avoid function calling
-                conversation_id,
-                temperature=0.7,
-            )
+            exit_tool = exit_crisis_mode(most_recent_user_message)
+            bot_response = enhanced_agent_mode(system_prompt, conversation_history, exit_tool, conversation_id)
+            # bot_response = get_chat_completion(
+            #     system_prompt,
+            #     conversation_history,
+            #     exit_tool,  # No tools to avoid function calling
+            #     conversation_id,
+            #     temperature=0.7,
+            # )
         
         # use enhanced agent mode for normal session
         else: 

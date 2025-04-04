@@ -111,3 +111,21 @@ def update_agenda_item_only(agenda_item):
       }
     },
   ] 
+
+def exit_crisis_mode(user_message):
+  return [
+    {
+      "type": "function",
+      "function": {
+        "name": "exit_crisis_mode",
+        "description": f"The user said: {user_message}. This tool should activate when the user is clearly indicating that they are not in danger or suicidal, they are not planning to harm themselves or others, want to resume the CBT session, or that this mode has been actiated by mistake.",
+        "strict": True,
+        "parameters": {
+          "type": "object",
+          "required": [], # Include this if the tool has no arguments
+          "properties": {},
+          "additionalProperties": False
+        }
+      }
+    },
+  ]
