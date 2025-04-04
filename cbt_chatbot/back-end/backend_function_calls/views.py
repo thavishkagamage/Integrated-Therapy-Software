@@ -135,6 +135,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
             {"role": "user", "content": conversation_history}
         ]
 
+        # force appropriate tool call based on agent_decision
         if agent_decision in tool_function_map:
             response = client.chat.completions.create(
                 model=model,
@@ -144,6 +145,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
                 max_tokens=max_tokens,
                 temperature=0.3  # Fixed randomness for tool calls
             )
+        # theraputic response for no agent decision
         else:
             response = client.chat.completions.create(
                 model=model,
@@ -218,8 +220,10 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
             elif isinstance(tool_response, list) and (1 in tool_response):
                 return tool_response
 
-            # if handle_response returns a string, we just return that as a message
-            return str(tool_response)
+            # if handle_response returns a string, we enter crisis mode (this should only happen after self_harm tool)
+            else: 
+                crisisResponse = get_chat_completion(tool_response, conversation_history, [], conversation_id)
+                return crisisResponse
 
         # Returns the API response, assumes number of responses is 1 and chooses only that response
         return response.choices[0].message.content
@@ -261,97 +265,119 @@ def chatbot_response(request):
         system_prompt = ''
         tools = []
         agenda_dict = {}
+        guardrails = ""
+        most_recent_user_message = ""
 
-        try:
-            # session file retrieval/caching
-            cache_key = f'session{session_number}'
-            session_instructions_json = get_cache_file(cache_key)
+        # Retrieve the conversation object
+        conversation = get_conversation_object(conversation_id)
 
-            # Retrieve the conversation object
-            conversation = get_conversation_object(conversation_id)
+        # handle crisis mode
+        if conversation.isCrisisModeActive:
+            print(f"{GREEN}CRISIS MODE IS ACTIVE{RESET} for conversation {conversation_id=}\n")
+            try:
+                # session file retrieval/caching
+                cache_key = f'crisisMode'
+                crisis_instructions_json = get_cache_file(cache_key)
 
-            # set agenda items the first time
-            if agenda_items_status == {}:
-                print(f"{GREEN}SETTING AGENDA{RESET} for conversation {conversation_id=}\n")
+                # build the system prompt for crisis mode
+                instructions = crisis_instructions_json.get('Conversation Instructions', {}).get('1', '')
+                guardrails = crisis_instructions_json.get('Guardrails', {}).get('1', '')
 
-                # Extract the "Conversation Agenda" and build the new list for the database
-                # This will look like [1, 0, 0, ...]
-                agenda_length = len(session_instructions_json.get("Conversation Agenda", []))
-                new_database_agenda = [1 if i == 0 else 0 for i in range(agenda_length)]
+                system_prompt = instructions + guardrails
 
-                # Extract the "Current Agenda Item Instructions" and build the new list for the database
-                # This will look like [1, 0, 0, ...]
-                sub_items = session_instructions_json.get("Current Agenda Item Instructions", [])
-                new_sub_items_agenda = [1 if i == 0 else 0 for i in range(len(sub_items[0]))]
+            except Exception as e:
+                print(f'{RED}ERROR in crisis mode handling:{RESET} {e}\n')
 
-                # Save the updates to the conversation object
-                conversation.agenda_items = new_database_agenda
-                conversation.current_sub_items = new_sub_items_agenda
-                conversation.save(update_fields=['agenda_items', 'current_sub_items'])
+        # handle normal conversation
+        else: 
+            try:
+                # session file retrieval/caching
+                cache_key = f'session{session_number}'
+                session_instructions_json = get_cache_file(cache_key)
 
-                # Update local variable
-                agenda_items_status = new_database_agenda
+                # set agenda items the first time
+                if agenda_items_status == {}:
+                    print(f"{GREEN}SETTING AGENDA{RESET} for conversation {conversation_id=}\n")
 
-            # fetch the current item statuses
-            current_item_status = conversation.current_sub_items
+                    # Extract the "Conversation Agenda" and build the new list for the database
+                    # This will look like [1, 0, 0, ...]
+                    agenda_length = len(session_instructions_json.get("Conversation Agenda", []))
+                    new_database_agenda = [1 if i == 0 else 0 for i in range(agenda_length)]
 
-            # fetch all varibles based on session_number and/or current agenda item
-            # example of parsing the session json
-            instructions = session_instructions_json.get('Conversation Instructions', {}).get('1', '')
-            guardrails = session_instructions_json.get('Guardrails', {}).get('1', '')
-            agenda_instructions = session_instructions_json.get('Agenda Instructions', {}).get('1', '')
+                    # Extract the "Current Agenda Item Instructions" and build the new list for the database
+                    # This will look like [1, 0, 0, ...]
+                    sub_items = session_instructions_json.get("Current Agenda Item Instructions", [])
+                    new_sub_items_agenda = [1 if i == 0 else 0 for i in range(len(sub_items[0]))]
 
-            # get the titles of the agenda items
-            conversation_agenda_titles = session_instructions_json.get("Conversation Agenda", [])
-            # get the actual agenda item instructions
-            conversation_agenda_instructions = session_instructions_json.get("Current Agenda Item Instructions", [])
-            current_item_instructions = conversation_agenda_instructions[agenda_items_status.index(1)]
-            
-            # Create a dictionary zipping agenda item strings with its corresponding status from the conversation object
-            # EX: {'Welcome the client and...': 'Current', 'Explain what cognitive behavioral therapy is and...': 'Not Started', ...}
-            agenda_dict = zip_agenda_with_status(conversation_agenda_titles, agenda_items_status)
-            current_item_dict = zip_agenda_with_status(current_item_instructions, current_item_status)
-            
-            print(f"{GREEN}AGENDA STATUS:{RESET} " + str(agenda_items_status) + "\n")
-            print(f"{GREEN}CURRENT ITEM STATUS:{RESET} " + str(current_item_status) + "\n")
-            print(f"{GREEN}AGENDA DICT:{RESET} " + str(agenda_dict) + "\n")
-            print(f"{GREEN}CURRENT ITEM DICT:{RESET} " + str(current_item_dict) + "\n")
+                    # Save the updates to the conversation object
+                    conversation.agenda_items = new_database_agenda
+                    conversation.current_sub_items = new_sub_items_agenda
+                    conversation.save(update_fields=['agenda_items', 'current_sub_items'])
 
-            # get just the current agenda item title
-            current_agenda_item_title = [key for key, value in agenda_dict.items() if value == 'Current']
-            # get just the current agenda item instruction
-            current_agenda_item_instruction = [key for key, value in current_item_dict.items() if value == 'Current']
+                    # Update local variable
+                    agenda_items_status = new_database_agenda
 
-            # get the tools
-            tools = get_all_tools(current_agenda_item_instruction)
+                # fetch the current item statuses
+                current_item_status = conversation.current_sub_items
 
-            # combine all strings into one prompt for the api
-            # system_prompt = identity + purpose + behavior + Format + voice + guardrails + background + agenda_instructions
-            system_prompt = instructions + guardrails + agenda_instructions + str(current_item_dict)
+                # fetch all varibles based on session_number and/or current agenda item
+                # example of parsing the session json
+                instructions = session_instructions_json.get('Conversation Instructions', {}).get('1', '')
+                guardrails = session_instructions_json.get('Guardrails', {}).get('1', '')
+                agenda_instructions = session_instructions_json.get('Agenda Instructions', {}).get('1', '')
 
-            # get only the users most recent message from the conversation history to use in the prompt
-            most_recent_user_message = ""
-            if conversation_history:
-                lines = conversation_history.strip().split('\n')
-                user_lines = [line for line in lines if line.startswith('user:')]
-                most_recent_user_message = user_lines[-1][len('user:'):].strip() if user_lines else ""
-            # print(f"{GREEN}MOST RECENT USER MESSAGE:{RESET} '{most_recent_user_message}'\n")
+                # get the titles of the agenda items
+                conversation_agenda_titles = session_instructions_json.get("Conversation Agenda", [])
+                # get the actual agenda item instructions
+                conversation_agenda_instructions = session_instructions_json.get("Current Agenda Item Instructions", [])
+                
+                current_item_instructions = conversation_agenda_instructions[agenda_items_status.index(1)]
+                
+                # Create a dictionary zipping agenda item strings with its corresponding status from the conversation object
+                # EX: {'Welcome the client and...': 'Current', 'Explain what cognitive behavioral therapy is and...': 'Not Started', ...}
+                agenda_dict = zip_agenda_with_status(conversation_agenda_titles, agenda_items_status)
+                current_item_dict = zip_agenda_with_status(current_item_instructions, current_item_status)
+                
+                print(f"{GREEN}AGENDA STATUS:{RESET} " + str(agenda_items_status) + "\n")
+                print(f"{GREEN}CURRENT ITEM STATUS:{RESET} " + str(current_item_status) + "\n")
+                print(f"{GREEN}AGENDA DICT:{RESET} " + str(agenda_dict) + "\n")
+                print(f"{GREEN}CURRENT ITEM DICT:{RESET} " + str(current_item_dict) + "\n")
 
-        except Exception as e:
-            print(f'{RED}ERROR buildin system prompt:{RESET} {e}\n')
+                # get just the current agenda item title
+                current_agenda_item_title = [key for key, value in agenda_dict.items() if value == 'Current']
+                # get just the current agenda item instruction
+                current_agenda_item_instruction = [key for key, value in current_item_dict.items() if value == 'Current']
 
-            # # You'll definitely know when there's an error
-            # system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
-            #                     Witty but Subtle: Use light humor and innuendo that's more about charm than overt flirtation.
-            #                     In Character: You remain the dark knight, but you've learned to use a bit of charm as part of your strategy against Gotham's villains.
-            #                     Respectful and Tasteful: Your interactions are playful but always respectful, avoiding anything too suggestive or personal.
-            #                     Gotham-Focused: Your primary duty is still to protect the city, with flirtation being a light-hearted, secondary aspect.
-            #                     You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
-            #                     Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
-            if instructions and guardrails:
-                system_prompt = instructions + guardrails + "Let the user know there has been an error creating a response and to try sending another message or create a new conversation if the error persists."
-            else:
-                system_prompt = "Do not acknowledge the users message. Let the user know there has been an error creating a response and to try sending another message or create a new conversation if the error persists."
+                # get the tools
+                tools = get_all_tools(current_agenda_item_instruction)
+
+                # combine all strings into one prompt for the api
+                # system_prompt = identity + purpose + behavior + Format + voice + guardrails + background + agenda_instructions
+                system_prompt = instructions + guardrails + agenda_instructions + str(current_item_dict)
+
+                # get only the users most recent message from the conversation history to use in the prompt
+                most_recent_user_message = ""
+                if conversation_history:
+                    lines = conversation_history.strip().split('\n')
+                    user_lines = [line for line in lines if line.startswith('user:')]
+                    most_recent_user_message = user_lines[-1][len('user:'):].strip() if user_lines else ""
+                # print(f"{GREEN}MOST RECENT USER MESSAGE:{RESET} '{most_recent_user_message}'\n")
+
+            except Exception as e:
+                print(f'{RED}ERROR building system prompt:{RESET} {e}\n')
+
+                # # You'll definitely know when there's an error
+                # system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
+                #                     Witty but Subtle: Use light humor and innuendo that's more about charm than overt flirtation.
+                #                     In Character: You remain the dark knight, but you've learned to use a bit of charm as part of your strategy against Gotham's villains.
+                #                     Respectful and Tasteful: Your interactions are playful but always respectful, avoiding anything too suggestive or personal.
+                #                     Gotham-Focused: Your primary duty is still to protect the city, with flirtation being a light-hearted, secondary aspect.
+                #                     You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
+                #                     Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
+                if guardrails != "":
+                    system_prompt =  "Tell the user there has been an error creating a response and to try sending another message or create a new conversation if the error persists." + guardrails
+                else:
+                    system_prompt = "Do not acknowledge the users message. Let the user know there has been an error creating a response and to try sending another message or create a new conversation if the error persists."
         
         # TODO Create the agent mode here. Instead of passing in the tools list to the bot_response
         # create a call to the LLM with the prompt of "Decide what to do" and give it the function calls, and based on the user response
@@ -460,10 +486,21 @@ def chatbot_response(request):
                     agent_decision=""  # Default decision for therapeutic response
                 )
 
-        # Use the enhanced agent mode
-        bot_response = enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict)
+        bot_response = ""
 
-        # bot_response = get_chat_completion(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict)
+        # just get normal response in crisis mode
+        if conversation.isCrisisModeActive:
+            bot_response = get_chat_completion(
+                system_prompt,
+                conversation_history,
+                [],  # No tools to avoid function calling
+                conversation_id,
+                temperature=0.7,
+            )
+        
+        # use enhanced agent mode for normal session
+        else: 
+            bot_response = enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict)
         
         # print(f"{GREEN}BOT RESPONSE:{RESET} " + bot_response + "\n")
         return JsonResponse({'message': bot_response})

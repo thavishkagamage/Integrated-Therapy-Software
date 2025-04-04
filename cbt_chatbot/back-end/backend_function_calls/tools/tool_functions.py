@@ -15,7 +15,16 @@ AGENDA_DICT = {}
 
 def detect_self_harm(**kwargs):
     user_response = kwargs.get('user_response', 'No user response provided')
-    return f"You said '{user_response}', which indicates you may harm yourself or harm others. Please call 911 or go to your nearest emergency room."
+    conversation = get_conversation_object(CONVERSATION_ID)
+
+    try: # Turn on crisis mode
+        conversation.isCrisisModeActive = True
+        conversation.save(update_fields=['isCrisisModeActive'])
+        print(f"{YELLOW}CRISIS MODE ACTIVE{RESET}.\n")
+    except Exception as error:
+        print(f'{RED}ERROR:{RESET} {error}\n')
+
+    return f"The user said '{user_response}', which indicates they may harm themselves or harm others. Tell them to call 911 or go to your nearest emergency room, then provide emotional support."
 
 def current_agenda_item_is_complete():
     # get the conversation
