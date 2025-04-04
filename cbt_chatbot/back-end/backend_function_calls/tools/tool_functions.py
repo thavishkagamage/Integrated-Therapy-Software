@@ -15,7 +15,16 @@ AGENDA_DICT = {}
 
 def detect_self_harm(**kwargs):
     user_response = kwargs.get('user_response', 'No user response provided')
-    return f"You said '{user_response}', which indicates you may harm yourself or harm others. Please call 911 or go to your nearest emergency room."
+    conversation = get_conversation_object(CONVERSATION_ID)
+
+    try: # Turn on crisis mode
+        conversation.isCrisisModeActive = True
+        conversation.save(update_fields=['isCrisisModeActive'])
+        print(f"{YELLOW}CRISIS MODE ACTIVE{RESET}.\n")
+    except Exception as error:
+        print(f'{RED}ERROR:{RESET} {error}\n')
+
+    return f"The user said '{user_response}', which indicates they may harm themselves or harm others. Tell them to call 911 or go to your nearest emergency room, then provide emotional support."
 
 def current_agenda_item_is_complete():
     # get the conversation
@@ -72,13 +81,26 @@ def pick_new_current_agenda_item(**kwargs):
 
     return updated_agenda_statuses
 
+def exit_crisis_mode():
+    conversation = get_conversation_object(CONVERSATION_ID)
+
+    try: # Turn on crisis mode
+        conversation.isCrisisModeActive = False
+        conversation.save(update_fields=['isCrisisModeActive'])
+        print(f"{YELLOW}CRISIS MODE DEACTIVATED{RESET}.\n")
+    except Exception as error:
+        print(f'{RED}ERROR:{RESET} {error}\n')
+
+    return f"Tell the user they are about to resume their conversation and continue working though the CBT session. Confirm with the user that this is okay."
+
 # Dictionary to map the function name from the response to the function it corresponds to
 #   - Functions should have the same name as the tool it corresponds to in tools.py
 #   - This allows us to call a function defined here based on the name of the tool passed in by the API response
 function_mapping = {
     "detect_self_harm": detect_self_harm,
     "current_agenda_item_is_complete": current_agenda_item_is_complete,
-    "pick_new_current_agenda_item": pick_new_current_agenda_item
+    "pick_new_current_agenda_item": pick_new_current_agenda_item,
+    "exit_crisis_mode": exit_crisis_mode
 }
 
 

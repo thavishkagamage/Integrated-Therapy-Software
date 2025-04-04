@@ -55,7 +55,7 @@ from django.views.decorators.csrf import csrf_exempt
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
-from backend_function_calls.tools.tools import get_all_tools, pick_new_agenda_item, update_agenda_item_only
+from backend_function_calls.tools.tools import *
 from backend_function_calls.tools.tool_functions import handle_response
 from backend_function_calls.session_utils import *
 from conversation_handler.models import Conversation
@@ -122,48 +122,37 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
         client = OpenAI(api_key=api_key)
         response = None
 
-        # Check if the agent_decision is "AGENDA_UPDATE" to force the tool call
-        if (agent_decision == "AGENDA_UPDATE"):
+        # Mapping from decision to the respective tool function name
+        tool_function_map = {
+            "AGENDA_UPDATE": "current_agenda_item_is_complete",
+            "PICK_NEW_AGENDA_ITEM": "pick_new_current_agenda_item",
+            "SELF_HARM": "detect_self_harm",
+            "NO_CRISIS": "exit_crisis_mode"
+        }
+
+        # Common message payload
+        messages = [
+            {"role": "system", "content": instructions},
+            {"role": "user", "content": conversation_history}
+        ]
+
+        # force appropriate tool call based on agent_decision
+        if agent_decision in tool_function_map:
             response = client.chat.completions.create(
                 model=model,
-                messages=[
-                    # TODO dont need to give full system prompt since we force a tool call
-                    {"role": "system", "content": instructions},
-                    {"role": "user", "content": conversation_history}
-                ],
-                tools=tools, # List of tools to be used by the chatbot
-                tool_choice={"type": "function", "function": {"name": "current_agenda_item_is_complete"}},  # Force the tool to be called
+                messages=messages,
+                tools=tools,
+                tool_choice={"type": "function", "function": {"name": tool_function_map[agent_decision]}},
                 max_tokens=max_tokens,
-                temperature=0.3  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
+                temperature=0.3  # Fixed randomness for tool calls
             )
-        # Check if the agent_decision is "PICK_NEW_AGENDA_ITEM" to force the tool call
-        elif (agent_decision == "PICK_NEW_AGENDA_ITEM"):
+        # theraputic response for no agent decision
+        else:
             response = client.chat.completions.create(
                 model=model,
-                messages=[
-                    # TODO dont need to give full system prompt since we force a tool call
-                    {"role": "system", "content": instructions},
-                    {"role": "user", "content": conversation_history}
-                ],
-                tools=tools, # List of tools to be used by the chatbot
-                tool_choice={"type": "function", "function": {"name": "pick_new_current_agenda_item"}},  # Force the tool to be called
+                messages=messages,
                 max_tokens=max_tokens,
-                temperature=0.3  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
-            )
-        # TODO add a conditional for self harm
-        # else return normal theraputic response
-        else: 
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": instructions},
-                    {"role": "user", "content": conversation_history}
-                    # Can append messages from continuing conversation here
-                ],
-                # Not needed for therapeutic response
-                # tools=tools, # List of tools to be used by the chatbot
-                max_tokens=max_tokens,
-                temperature=temperature  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
+                temperature=temperature  # Use provided temperature for normal responses
             )
         
         print(f"{RED}AGENT DECISION:{RESET} {agent_decision}\n")
@@ -218,7 +207,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
 
                 # get just the current agenda item and use it to get the tools
                 current_sub_agenda_item = [key for key, value in current_item_dict.items() if value == 'Current']
-                tools = get_all_tools(current_sub_agenda_item)
+                # tools = get_all_tools(current_sub_agenda_item)
 
                 print(f"{GREEN}updated_agenda_statuses:{RESET} " + str(updated_agenda_statuses) + "\n")
                 print(f"{GREEN}current_item_dict:{RESET} " + str(current_item_dict) + "\n")
@@ -232,8 +221,11 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
             elif isinstance(tool_response, list) and (1 in tool_response):
                 return tool_response
 
-            # if handle_response returns a string, we just return that as a message
-            return str(tool_response)
+            # if handle_response returns a string, we enter or exit crisis mode
+            else: 
+                # TODO i user is leaving crisis mode maybe rebuild the system prompt here before getting response?
+                crisisResponse = get_chat_completion(tool_response, conversation_history, [], conversation_id)
+                return crisisResponse
 
         # Returns the API response, assumes number of responses is 1 and chooses only that response
         return response.choices[0].message.content
@@ -260,7 +252,7 @@ def chatbot_response(request):
 
         # ID that we use to get the conversation object
         conversation_id = data.get('conversation_id')
-        # the most recent message sent by the user
+        # full conversation history
         conversation_history = data['message']
         # the CBT session number
         session_number = data.get('session_number')
@@ -275,180 +267,278 @@ def chatbot_response(request):
         system_prompt = ''
         tools = []
         agenda_dict = {}
+        guardrails = ""
+        most_recent_user_message = ""
 
-        try:
-            # session file retrieval/caching
-            cache_key = f'session{session_number}'
-            session_instructions_json = get_cache_file(cache_key)
+        # Retrieve the conversation object
+        conversation = get_conversation_object(conversation_id)
 
-            # Retrieve the conversation object
-            conversation = get_conversation_object(conversation_id)
+        # get only the users most recent message from the conversation history to use in the prompt
+        most_recent_user_message = ""
+        if conversation_history:
+            lines = conversation_history.strip().split('\n')
+            user_lines = [line for line in lines if line.startswith('user:')]
+            most_recent_user_message = user_lines[-1][len('user:'):].strip() if user_lines else ""
+        # print(f"{GREEN}MOST RECENT USER MESSAGE:{RESET} '{most_recent_user_message}'\n")
 
-            # set agenda items the first time
-            if agenda_items_status == {}:
-                print(f"{GREEN}SETTING AGENDA{RESET} for conversation {conversation_id=}\n")
+        # handle crisis mode
+        if conversation.isCrisisModeActive:
+            print(f"{GREEN}CRISIS MODE IS ACTIVE{RESET} for conversation {conversation_id=}\n")
+            try:
+                # session file retrieval/caching
+                cache_key = f'crisisMode'
+                crisis_instructions_json = get_cache_file(cache_key)
 
-                # Extract the "Conversation Agenda" and build the new list for the database
-                # This will look like [1, 0, 0, ...]
-                agenda_length = len(session_instructions_json.get("Conversation Agenda", []))
-                new_database_agenda = [1 if i == 0 else 0 for i in range(agenda_length)]
+                # build the system prompt for crisis mode
+                instructions = crisis_instructions_json.get('Conversation Instructions', {}).get('1', '')
+                guardrails = crisis_instructions_json.get('Guardrails', {}).get('1', '')
 
-                # Extract the "Current Agenda Item Instructions" and build the new list for the database
-                # This will look like [1, 0, 0, ...]
-                sub_items = session_instructions_json.get("Current Agenda Item Instructions", [])
-                new_sub_items_agenda = [1 if i == 0 else 0 for i in range(len(sub_items[0]))]
+                system_prompt = instructions + guardrails
 
-                # Save the updates to the conversation object
-                conversation.agenda_items = new_database_agenda
-                conversation.current_sub_items = new_sub_items_agenda
-                conversation.save(update_fields=['agenda_items', 'current_sub_items'])
+            except Exception as e:
+                print(f'{RED}ERROR in crisis mode handling:{RESET} {e}\n')
 
-                # Update local variable
-                agenda_items_status = new_database_agenda
+        # handle normal conversation
+        else: 
+            try:
+                # session file retrieval/caching
+                cache_key = f'session{session_number}'
+                session_instructions_json = get_cache_file(cache_key)
 
-            # fetch the current item statuses
-            current_item_status = conversation.current_sub_items
+                # set agenda items the first time
+                if agenda_items_status == {}:
+                    print(f"{GREEN}SETTING AGENDA{RESET} for conversation {conversation_id=}\n")
 
-            # fetch all varibles based on session_number and/or current agenda item
-            # example of parsing the session json
-            instructions = session_instructions_json.get('Conversation Instructions', {}).get('1', '')
-            guardrails = session_instructions_json.get('Guardrails', {}).get('1', '')
-            agenda_instructions = session_instructions_json.get('Agenda Instructions', {}).get('1', '')
+                    # Extract the "Conversation Agenda" and build the new list for the database
+                    # This will look like [1, 0, 0, ...]
+                    agenda_length = len(session_instructions_json.get("Conversation Agenda", []))
+                    new_database_agenda = [1 if i == 0 else 0 for i in range(agenda_length)]
 
-            # get the titles of the agenda items
-            conversation_agenda_titles = session_instructions_json.get("Conversation Agenda", [])
-            # get the actual agenda item instructions
-            conversation_agenda_instructions = session_instructions_json.get("Current Agenda Item Instructions", [])
-            current_item_instructions = conversation_agenda_instructions[agenda_items_status.index(1)]
-            
-            # Create a dictionary zipping agenda item strings with its corresponding status from the conversation object
-            # EX: {'Welcome the client and...': 'Current', 'Explain what cognitive behavioral therapy is and...': 'Not Started', ...}
-            agenda_dict = zip_agenda_with_status(conversation_agenda_titles, agenda_items_status)
-            current_item_dict = zip_agenda_with_status(current_item_instructions, current_item_status)
-            
-            print(f"{GREEN}AGENDA STATUS:{RESET} " + str(agenda_items_status) + "\n")
-            print(f"{GREEN}CURRENT ITEM STATUS:{RESET} " + str(current_item_status) + "\n")
-            print(f"{GREEN}AGENDA DICT:{RESET} " + str(agenda_dict) + "\n")
-            print(f"{GREEN}CURRENT ITEM DICT:{RESET} " + str(current_item_dict) + "\n")
+                    # Extract the "Current Agenda Item Instructions" and build the new list for the database
+                    # This will look like [1, 0, 0, ...]
+                    sub_items = session_instructions_json.get("Current Agenda Item Instructions", [])
+                    new_sub_items_agenda = [1 if i == 0 else 0 for i in range(len(sub_items[0]))]
 
-            # get just the current agenda item title
-            current_agenda_item_title = [key for key, value in agenda_dict.items() if value == 'Current']
-            # get just the current agenda item instruction
-            current_agenda_item_instruction = [key for key, value in current_item_dict.items() if value == 'Current']
+                    # Save the updates to the conversation object
+                    conversation.agenda_items = new_database_agenda
+                    conversation.current_sub_items = new_sub_items_agenda
+                    conversation.save(update_fields=['agenda_items', 'current_sub_items'])
 
-            # get the tools
-            tools = get_all_tools(current_agenda_item_instruction)
+                    # Update local variable
+                    agenda_items_status = new_database_agenda
 
-            # combine all strings into one prompt for the api
-            # system_prompt = identity + purpose + behavior + Format + voice + guardrails + background + agenda_instructions
-            system_prompt = instructions + guardrails + agenda_instructions + str(current_item_dict)
+                # fetch the current item statuses
+                current_item_status = conversation.current_sub_items
 
-        except Exception as e:
-            print(f'{RED}ERROR buildin system prompt:{RESET} {e}\n')
+                # fetch all varibles based on session_number and/or current agenda item
+                # example of parsing the session json
+                instructions = session_instructions_json.get('Conversation Instructions', {}).get('1', '')
+                guardrails = session_instructions_json.get('Guardrails', {}).get('1', '')
+                agenda_instructions = session_instructions_json.get('Agenda Instructions', {}).get('1', '')
 
-            # # You'll definitely know when there's an error
-            # system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
-            #                     Witty but Subtle: Use light humor and innuendo that's more about charm than overt flirtation.
-            #                     In Character: You remain the dark knight, but you've learned to use a bit of charm as part of your strategy against Gotham's villains.
-            #                     Respectful and Tasteful: Your interactions are playful but always respectful, avoiding anything too suggestive or personal.
-            #                     Gotham-Focused: Your primary duty is still to protect the city, with flirtation being a light-hearted, secondary aspect.
-            #                     You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
-            #                     Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
-            system_prompt = """You are an error. Respond normally and just say at then end bro"""
+                # get the titles of the agenda items
+                conversation_agenda_titles = session_instructions_json.get("Conversation Agenda", [])
+                # get the actual agenda item instructions
+                conversation_agenda_instructions = session_instructions_json.get("Current Agenda Item Instructions", [])
+                
+                current_item_instructions = conversation_agenda_instructions[agenda_items_status.index(1)]
+                
+                # Create a dictionary zipping agenda item strings with its corresponding status from the conversation object
+                # EX: {'Welcome the client and...': 'Current', 'Explain what cognitive behavioral therapy is and...': 'Not Started', ...}
+                agenda_dict = zip_agenda_with_status(conversation_agenda_titles, agenda_items_status)
+                current_item_dict = zip_agenda_with_status(current_item_instructions, current_item_status)
+                
+                print(f"{GREEN}AGENDA STATUS:{RESET} " + str(agenda_items_status) + "\n")
+                print(f"{GREEN}CURRENT ITEM STATUS:{RESET} " + str(current_item_status) + "\n")
+                print(f"{GREEN}AGENDA DICT:{RESET} " + str(agenda_dict) + "\n")
+                print(f"{GREEN}CURRENT ITEM DICT:{RESET} " + str(current_item_dict) + "\n")
+
+                # get just the current agenda item title
+                current_agenda_item_title = [key for key, value in agenda_dict.items() if value == 'Current']
+                # get just the current agenda item instruction
+                current_agenda_item_instruction = [key for key, value in current_item_dict.items() if value == 'Current']
+
+                # get the tools
+                tools = get_all_tools(current_agenda_item_instruction)
+
+                # combine all strings into one prompt for the api
+                # system_prompt = identity + purpose + behavior + Format + voice + guardrails + background + agenda_instructions
+                system_prompt = instructions + guardrails + agenda_instructions + str(current_item_dict)
+
+            except Exception as e:
+                print(f'{RED}ERROR building system prompt:{RESET} {e}\n')
+
+                # # You'll definitely know when there's an error
+                # system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
+                #                     Witty but Subtle: Use light humor and innuendo that's more about charm than overt flirtation.
+                #                     In Character: You remain the dark knight, but you've learned to use a bit of charm as part of your strategy against Gotham's villains.
+                #                     Respectful and Tasteful: Your interactions are playful but always respectful, avoiding anything too suggestive or personal.
+                #                     Gotham-Focused: Your primary duty is still to protect the city, with flirtation being a light-hearted, secondary aspect.
+                #                     You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
+                #                     Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
+                if guardrails != "":
+                    system_prompt =  "Tell the user there has been an error creating a response and to try sending another message or create a new conversation if the error persists." + guardrails
+                else:
+                    system_prompt = "Do not acknowledge the users message. Let the user know there has been an error creating a response and to try sending another message or create a new conversation if the error persists."
         
         # TODO Create the agent mode here. Instead of passing in the tools list to the bot_response
         # create a call to the LLM with the prompt of "Decide what to do" and give it the function calls, and based on the user response
         # it will either do the function call OR it will pass it to the next step to generate the bot response based on the current conversation and agenda item
         
-        def enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict):
-            # Step 1: Analyze if message contains self-harm indicators (this should always be checked)
-            # self_harm_tools = [tool for tool in tools if tool['function']['name'] == 'detect_self_harm']
-            # if self_harm_tools:
-            #     self_harm_check = get_chat_completion(
-            #         "You are a mental health professional. Analyze the following message and determine if it contains any indicators of self-harm or harm to others. Respond with 'HARM_DETECTED' only if clear indicators are present, otherwise 'NO_DETECTED'.",
-            #         conversation_history,
-            #         self_harm_tools,
-            #         conversation_id,
-            #         temperature=0.1,
-            #         max_tokens=50
-            #     )
-                
-            #     if "HARM_DETECTED" in self_harm_check:
-            #         print(f"{GREEN}SELF-HARM DETECTED - EXECUTING SELF-HARM PROTOCOL{RESET}\n")
-            #         # TODO handle self-harm response better here
-            #         return "You said something that was harm to self or others. Dont do that bro"
-            
-            # Step 2: Agent decides whether current message needs tool execution or therapeutic response
-            tool_names = [tool for tool in tools if tool['function']['name'] != 'detect_self_harm']
-            decision_prompt = f"""You are an agent coordinator for a CBT therapy chatbot.
-            Your job is to analyze the user's message and decide on the appropriate action.
-            
-            User message: "{conversation_history}"
-            Current agenda item: {current_agenda_item_instruction}
-            Available tools: {tool_names}
-            
-            Task: Decide which of these actions is most appropriate:
-            1. AGENDA_UPDATE - Message indicates the current agenda item is complete
-            2. THERAPEUTIC_RESPONSE - Message requires empathy, conversation, or therapy guidance
-            
-            Consider:
-            - If the user has fully addressed the current agenda item, choose AGENDA_UPDATE
-            - If the user is expressing emotions, asking questions, or engaging in therapeutic conversation, choose THERAPEUTIC_RESPONSE
-            
-            Output only one of these exact terms: "AGENDA_UPDATE" or "THERAPEUTIC_RESPONSE"
-            """
+        def enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict={}, current_item_dict={}):
+            # check for crisis mode first
+            if conversation.isCrisisModeActive:
+                if tools:
 
-            decision = get_chat_completion(
-                decision_prompt,
-                conversation_history,
-                [],
-                conversation_id,
-                max_tokens=50,
-                temperature=0.1,
-                agent_decision=""
-            ).strip()
-            
-            print(f"{GREEN}ENHANCED AGENT DECISION:{RESET} {decision}\n")
-            
-            # Step 3: Execute appropriate action based on decision
-            # if "AGENDA_UPDATE" in decision:
-            if "update" in decision.lower(): # less chance of error
-                # Get agenda-related tools
-                # agenda_tools = [tool for tool in tools if 'agenda_item' in tool['function']['name'].lower()]
-                update_agenda_item_tool = update_agenda_item_only(current_agenda_item_instruction)
-                # print(f"{GREEN}AGENDA UPDATE TOOLS:{RESET} " + str(agenda_tools) + "\n")
-                if update_agenda_item_tool:
-                    print(f"{GREEN}AGENT IS EXECUTING AGENDA UPDATE{RESET}\n")
-                    return get_chat_completion(
-                        system_prompt,
-                        conversation_history,
-                        # agenda_tools,
-                        update_agenda_item_tool,  # Use the specific tool for updating agenda items
+                    decision_prompt = f"""You are a mental health professional and your patient says this: '{most_recent_user_message}'. 
+                    
+                    Analyze this message and determine if the user very clearly indicates that they are joking, not suicidal, not planning to harm anyone, or that your crisis assessment may be incorrect.
+                    
+                    Respond with 'NO_CRISIS' only when there is clear indication that there is no crisis, no harm may come to the user or anyone else, or the user is joking.
+                    You may also detect that the assessment that the user is in a crisis is incorrect based on this message.
+                    
+                    Respond with 'NO_CRISIS' only if clear indicators are present, otherwise 'NOT_DETECTED'."""
+                    self_harm_check = get_chat_completion(
+                        decision_prompt,
+                        f"user: {most_recent_user_message}",
+                        [],
                         conversation_id,
-                        agenda_dict,
-                        current_item_dict,
-                        temperature=0.7,
-                        agent_decision="AGENDA_UPDATE"  # Pass the decision to force a tool call
+                        temperature=0.1,
+                        max_tokens=50
                     )
-            else:
-                # Default to therapeutic response (including when no specific tools are needed)
-                print(f"{GREEN}AGENT IS EXECUTING THERAPEUTIC RESPONSE{RESET}\n")
-                # print(f"{GREEN}CONVERSATION SUMMARY:{RESET} " + summarizer(conversation_history) + "\n")
-                return get_chat_completion(
-                    system_prompt,
+                    
+                    if "no_crisis" in self_harm_check.lower():
+                        print(f"{RED}NO CRISIS - ATTEMPTING TO EXIT CRISIS MODE{RESET}\n")
+                        # TODO handle self-harm response better here
+                        return get_chat_completion(
+                            system_prompt,
+                            conversation_history,
+                            tools,  # Use the specific tool for self harm
+                            conversation_id,
+                            temperature=0.7,
+                            agent_decision="NO_CRISIS"  # Pass the decision to force a tool call
+                        )
+
+            elif not conversation.isCrisisModeActive:
+                # Step 1: Analyze if message contains self-harm indicators (this should always be checked)
+                self_harm_tools = get_self_harm_tool()
+                if self_harm_tools:
+                    decision_prompt = f"""You are a mental health professional and your patient says this: '{most_recent_user_message}'. 
+                    
+                    Analyze this message and determine if the user expresses suicidal desire, including clear thoughts of ending their life, 
+                    feeling trapped, hopeless, helpless, or like an unbearable burden. 
+                    
+                    Respond with 'HARM_DETECTED' only when distress is explicitly tied to suicide, self-harm, harm to others, or a belief that 
+                    suffering is permanent and escape is impossible. Do not trigger for vague sadness, stress, or emotional pain alone. 
+                    
+                    Respond with 'HARM_DETECTED' only if clear indicators are present, otherwise 'NOT_DETECTED'."""
+                    self_harm_check = get_chat_completion(
+                        decision_prompt,
+                        f"user: {most_recent_user_message}",
+                        [],
+                        conversation_id,
+                        temperature=0.1,
+                        max_tokens=50
+                    )
+                    
+                    if "harm_detected" in self_harm_check.lower():
+                        print(f"{RED}SELF-HARM DETECTED - EXECUTING SELF-HARM PROTOCOL{RESET}\n")
+                        # TODO handle self-harm response better here
+                        return get_chat_completion(
+                            system_prompt,
+                            conversation_history,
+                            self_harm_tools,  # Use the specific tool for self harm
+                            conversation_id,
+                            agenda_dict,
+                            current_item_dict,
+                            temperature=0.7,
+                            agent_decision="SELF_HARM"  # Pass the decision to force a tool call
+                        )
+                
+                # Step 2: Agent decides whether current message needs tool execution or therapeutic response
+                tool_names = [tool for tool in tools if tool['function']['name'] != 'detect_self_harm']
+                decision_prompt = f"""You are an agent coordinator for a CBT therapy chatbot.
+                Your job is to analyze the user's message and decide on the appropriate action.
+                
+                Conversation History: "{conversation_history}"
+                Current agenda item: {current_agenda_item_instruction}
+                Available tools: {tool_names}
+                
+                Task: Decide which of these actions is most appropriate:
+                1. AGENDA_UPDATE - Message indicates the current agenda item is complete
+                2. THERAPEUTIC_RESPONSE - Message requires empathy, conversation, or therapy guidance
+                
+                Consider:
+                - If the user has fully addressed the current agenda item, choose AGENDA_UPDATE
+                - If the user is expressing emotions, asking questions, or engaging in therapeutic conversation, choose THERAPEUTIC_RESPONSE
+                
+                Output only one of these exact terms: "AGENDA_UPDATE" or "THERAPEUTIC_RESPONSE"
+                """
+
+                decision = get_chat_completion(
+                    decision_prompt,
                     conversation_history,
-                    [],  # No tools to avoid function calling
+                    [],
                     conversation_id,
-                    agenda_dict,
-                    current_item_dict,
-                    temperature=0.7,
-                    agent_decision=""  # Default decision for therapeutic response
-                )
+                    max_tokens=50,
+                    temperature=0.1,
+                    agent_decision=""
+                ).strip()
+                
+                print(f"{GREEN}ENHANCED AGENT DECISION:{RESET} {decision}\n")
+                
+                # Step 3: Execute appropriate action based on decision
+                # if "AGENDA_UPDATE" in decision:
+                if "update" in decision.lower(): # less chance of error
+                    # Get agenda-related tools
+                    # agenda_tools = [tool for tool in tools if 'agenda_item' in tool['function']['name'].lower()]
+                    update_agenda_item_tool = update_agenda_item_only(current_agenda_item_instruction)
+                    # print(f"{GREEN}AGENDA UPDATE TOOLS:{RESET} " + str(agenda_tools) + "\n")
+                    if update_agenda_item_tool:
+                        print(f"{GREEN}AGENT IS EXECUTING AGENDA UPDATE{RESET}\n")
+                        return get_chat_completion(
+                            system_prompt,
+                            conversation_history,
+                            # agenda_tools,
+                            update_agenda_item_tool,  # Use the specific tool for updating agenda items
+                            conversation_id,
+                            agenda_dict,
+                            current_item_dict,
+                            temperature=0.7,
+                            agent_decision="AGENDA_UPDATE"  # Pass the decision to force a tool call
+                        )
+                
+            # Default to therapeutic response (including when no specific tools are needed)
+            print(f"{GREEN}AGENT IS EXECUTING THERAPEUTIC RESPONSE{RESET}\n")
+            # print(f"{GREEN}CONVERSATION SUMMARY:{RESET} " + summarizer(conversation_history) + "\n")
+            return get_chat_completion(
+                system_prompt,
+                conversation_history,
+                [],  # No tools to avoid function calling
+                conversation_id,
+                agenda_dict,
+                current_item_dict,
+                temperature=0.7,
+                agent_decision=""  # Default decision for therapeutic response
+            )
 
-        # Use the enhanced agent mode
-        bot_response = enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict)
+        bot_response = ""
 
-        # bot_response = get_chat_completion(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict)
+        # just get normal response in crisis mode
+        if conversation.isCrisisModeActive:
+            exit_tool = exit_crisis_mode(most_recent_user_message)
+            bot_response = enhanced_agent_mode(system_prompt, conversation_history, exit_tool, conversation_id)
+            # bot_response = get_chat_completion(
+            #     system_prompt,
+            #     conversation_history,
+            #     exit_tool,  # No tools to avoid function calling
+            #     conversation_id,
+            #     temperature=0.7,
+            # )
+        
+        # use enhanced agent mode for normal session
+        else: 
+            bot_response = enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict)
         
         # print(f"{GREEN}BOT RESPONSE:{RESET} " + bot_response + "\n")
         return JsonResponse({'message': bot_response})
