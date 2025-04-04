@@ -55,7 +55,7 @@ from django.views.decorators.csrf import csrf_exempt
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
-from backend_function_calls.tools.tools import get_all_tools, pick_new_agenda_item, update_agenda_item_only
+from backend_function_calls.tools.tools import get_all_tools, pick_new_agenda_item, update_agenda_item_only, get_self_harm_tool
 from backend_function_calls.tools.tool_functions import handle_response
 from backend_function_calls.session_utils import *
 from conversation_handler.models import Conversation
@@ -150,7 +150,20 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
                 max_tokens=max_tokens,
                 temperature=0.3  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
             )
-        # TODO add a conditional for self harm
+        # Check if the agent_decision is "SELF_HARM" to force the tool call
+        elif (agent_decision == "SELF_HARM"):
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    # TODO dont need to give full system prompt since we force a tool call
+                    {"role": "system", "content": instructions},
+                    {"role": "user", "content": conversation_history}
+                ],
+                tools=tools, # List of tools to be used by the chatbot
+                tool_choice={"type": "function", "function": {"name": "detect_self_harm"}},  # Force the tool to be called
+                max_tokens=max_tokens,
+                temperature=0.3  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
+            )
         # else return normal theraputic response
         else: 
             response = client.chat.completions.create(
@@ -218,7 +231,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
 
                 # get just the current agenda item and use it to get the tools
                 current_sub_agenda_item = [key for key, value in current_item_dict.items() if value == 'Current']
-                tools = get_all_tools(current_sub_agenda_item)
+                # tools = get_all_tools(current_sub_agenda_item)
 
                 print(f"{GREEN}updated_agenda_statuses:{RESET} " + str(updated_agenda_statuses) + "\n")
                 print(f"{GREEN}current_item_dict:{RESET} " + str(current_item_dict) + "\n")
@@ -260,7 +273,7 @@ def chatbot_response(request):
 
         # ID that we use to get the conversation object
         conversation_id = data.get('conversation_id')
-        # the most recent message sent by the user
+        # full conversation history
         conversation_history = data['message']
         # the CBT session number
         session_number = data.get('session_number')
@@ -343,6 +356,14 @@ def chatbot_response(request):
             # system_prompt = identity + purpose + behavior + Format + voice + guardrails + background + agenda_instructions
             system_prompt = instructions + guardrails + agenda_instructions + str(current_item_dict)
 
+            # get only the users most recent message from the conversation history to use in the prompt
+            most_recent_user_message = ""
+            if conversation_history:
+                lines = conversation_history.strip().split('\n')
+                user_lines = [line for line in lines if line.startswith('user:')]
+                most_recent_user_message = user_lines[-1][len('user:'):].strip() if user_lines else ""
+            # print(f"{GREEN}MOST RECENT USER MESSAGE:{RESET} '{most_recent_user_message}'\n")
+
         except Exception as e:
             print(f'{RED}ERROR buildin system prompt:{RESET} {e}\n')
 
@@ -362,28 +383,46 @@ def chatbot_response(request):
         
         def enhanced_agent_mode(system_prompt, conversation_history, tools, conversation_id, agenda_dict, current_item_dict):
             # Step 1: Analyze if message contains self-harm indicators (this should always be checked)
-            # self_harm_tools = [tool for tool in tools if tool['function']['name'] == 'detect_self_harm']
-            # if self_harm_tools:
-            #     self_harm_check = get_chat_completion(
-            #         "You are a mental health professional. Analyze the following message and determine if it contains any indicators of self-harm or harm to others. Respond with 'HARM_DETECTED' only if clear indicators are present, otherwise 'NO_DETECTED'.",
-            #         conversation_history,
-            #         self_harm_tools,
-            #         conversation_id,
-            #         temperature=0.1,
-            #         max_tokens=50
-            #     )
+            self_harm_tools = get_self_harm_tool()
+            if self_harm_tools:
+                decision_prompt = f"""You are a mental health professional and your patient says this: '{most_recent_user_message}'. 
                 
-            #     if "HARM_DETECTED" in self_harm_check:
-            #         print(f"{GREEN}SELF-HARM DETECTED - EXECUTING SELF-HARM PROTOCOL{RESET}\n")
-            #         # TODO handle self-harm response better here
-            #         return "You said something that was harm to self or others. Dont do that bro"
+                Analyze this message and determine if the user expresses suicidal desire, including clear thoughts of ending their life, 
+                feeling trapped, hopeless, helpless, or like an unbearable burden. 
+                
+                Respond with 'HARM_DETECTED' only when distress is explicitly tied to suicide, self-harm, harm to others, or a belief that 
+                suffering is permanent and escape is impossible. Do not trigger for vague sadness, stress, or emotional pain alone. 
+                
+                Respond with 'HARM_DETECTED' only if clear indicators are present, otherwise 'NOT_DETECTED'."""
+                self_harm_check = get_chat_completion(
+                    decision_prompt,
+                    f"user: {most_recent_user_message}",
+                    [],
+                    conversation_id,
+                    temperature=0.1,
+                    max_tokens=50
+                )
+                
+                if "harm_detected" in self_harm_check.lower():
+                    print(f"{RED}SELF-HARM DETECTED - EXECUTING SELF-HARM PROTOCOL{RESET}\n")
+                    # TODO handle self-harm response better here
+                    return get_chat_completion(
+                        system_prompt,
+                        conversation_history,
+                        self_harm_tools,  # Use the specific tool for self harm
+                        conversation_id,
+                        agenda_dict,
+                        current_item_dict,
+                        temperature=0.7,
+                        agent_decision="SELF_HARM"  # Pass the decision to force a tool call
+                    )
             
             # Step 2: Agent decides whether current message needs tool execution or therapeutic response
             tool_names = [tool for tool in tools if tool['function']['name'] != 'detect_self_harm']
             decision_prompt = f"""You are an agent coordinator for a CBT therapy chatbot.
             Your job is to analyze the user's message and decide on the appropriate action.
             
-            User message: "{conversation_history}"
+            Conversation History: "{conversation_history}"
             Current agenda item: {current_agenda_item_instruction}
             Available tools: {tool_names}
             

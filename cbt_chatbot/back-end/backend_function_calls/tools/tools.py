@@ -7,7 +7,7 @@ def get_all_tools(agenda_item):
     #   "type": "function",
     #   "function": {
     #     "name": "detect_self_harm",
-    #     "description": "Detects when user has a response that indicates self harm or harm to others based on only the most recent message sent from the user.",
+    #     "description": "Use this tool to detect when a user expresses suicidal desire, including clear thoughts of ending their life, feeling trapped, hopeless, helpless, or like an unbearable burden. Only activate when distress is explicitly tied to suicide, self-harm, or a belief that suffering is permanent and escape is impossible. Do not trigger for vague sadness, stress, or emotional pain alone.",
     #     "strict": True,
     #     "parameters": {
     #       "type": "object",
@@ -34,6 +34,31 @@ def get_all_tools(agenda_item):
           "type": "object",
           "required": [], # Include this if the tool has no arguments
           "properties": {},
+          "additionalProperties": False
+        }
+      }
+    },
+  ]
+
+def get_self_harm_tool():
+  return [
+    {
+      "type": "function",
+      "function": {
+        "name": "detect_self_harm",
+        "description": "Use this tool to detect when a user expresses suicidal desire, including clear thoughts of ending their life, feeling trapped, hopeless, helpless, or like an unbearable burden. Only activate when distress is explicitly tied to suicide, self-harm, or a belief that suffering is permanent and escape is impossible. Do not trigger for vague sadness, stress, or emotional pain alone.",
+        "strict": True,
+        "parameters": {
+          "type": "object",
+          "required": [
+            "user_response"
+          ],
+          "properties": {
+            "user_response": {
+              "type": "string",
+              "description": "Response from the user that may indicate self harm or harm to others"
+            }
+          },
           "additionalProperties": False
         }
       }
@@ -85,4 +110,4 @@ def update_agenda_item_only(agenda_item):
         }
       }
     },
-]
+  ] 
