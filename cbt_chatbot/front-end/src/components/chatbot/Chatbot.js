@@ -169,12 +169,19 @@ const Chatbot = () => {
         //   ...newConversation,
         //   { text: response.data.message, sender: "ai" },
         // ]);
-        paragraphs.forEach(paragraph => {
-          setConversation(prevConversation => [
-            ...prevConversation,
-            { text: paragraph, sender: "ai" }
-          ]);
-        });
+        
+        // Use a timeout to display each paragraph one by one
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        const displayParagraphs = async () => {
+          for (const paragraph of paragraphs) {
+            setConversation(prevConversation => [
+              ...prevConversation,
+              { text: paragraph, sender: "ai" }
+            ]);
+            await sleep(1000); // Sleep for 1 second
+          }
+        };
+        displayParagraphs();
 
         // Save the user's message to the database
         await axiosInstance.post(
