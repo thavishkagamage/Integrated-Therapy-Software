@@ -28,6 +28,7 @@ const Login = ({ setIsLoggedIn }) => {
                 headers: { Authorization: `Bearer ${response.data.access}` }
             });
             localStorage.setItem('userId', userResponse.data.user_id);
+            localStorage.setItem('first_name', response.data.firstName);
 
             setIsLoggedIn(true);
             alert('Login successful!');
