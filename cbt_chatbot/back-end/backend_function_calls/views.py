@@ -348,7 +348,10 @@ def chatbot_response(request):
             #                     Gotham-Focused: Your primary duty is still to protect the city, with flirtation being a light-hearted, secondary aspect.
             #                     You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
             #                     Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
-            system_prompt = """You are an error. Respond normally and just say at then end bro"""
+            if instructions and guardrails:
+                system_prompt = instructions + guardrails + "Let the user know there has been an error creating a response and to try sending another message or create a new conversation if the error persists."
+            else:
+                system_prompt = "Do not acknowledge the users message. Let the user know there has been an error creating a response and to try sending another message or create a new conversation if the error persists."
         
         # TODO Create the agent mode here. Instead of passing in the tools list to the bot_response
         # create a call to the LLM with the prompt of "Decide what to do" and give it the function calls, and based on the user response
