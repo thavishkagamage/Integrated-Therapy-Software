@@ -54,7 +54,7 @@
 
 .login-button {
     width: 100%;
-    background-color: #4f46e5;
+    background-color: var(--accent-color); /* Fallback to accent color if var is not defined */
     color: white;
     padding: 0.5rem;
     border-radius: 0.375rem;
@@ -64,7 +64,7 @@
 }
 
 .login-button:hover {
-    background-color: #4338ca;
+    background-color: var(--highlight-color);
 }
 
 .login-button:disabled {
@@ -93,30 +93,30 @@
 .tooltip-wrapper {
     position: relative;
     display: inline-block;
-    margin-left: 6px;
+    /* margin-left: 6px; */
     cursor: pointer;
 }
 .info-icon {
-    font-size: 14px;
+    font-size: 12px;
     vertical-align: middle;
 }
 .tooltip-text {
     visibility: hidden;
     opacity: 0;
-    width: 220px;
+    width: 240px;
     background-color: #333;
     color: #fff;
-    text-align: left;
+    text-align: center;
     border-radius: 6px;
     padding: 6px 10px;
     position: absolute;
     z-index: 1;
-    bottom: 125%; /* above the icon */
+    bottom: 100%; /* above the icon */
     left: 50%;
     transform: translateX(-50%);
     transition: opacity 0.1s;
     white-space: normal;
-    font-size: 12px;
+    font-size: 14px;
 }
 .tooltip-wrapper:hover .tooltip-text {
     visibility: visible;
