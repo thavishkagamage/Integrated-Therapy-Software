@@ -7,6 +7,7 @@ const Register = ({ setIsLoggedIn }) => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [firstName, setFirstName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -22,7 +23,9 @@ const Register = ({ setIsLoggedIn }) => {
                 username,
                 email,
                 password,
+                first_name: firstName,
             });
+            localStorage.setItem('first_name', firstName); // Store username for potential use in conversation
             // Login new user
             const response = await axios.post('http://127.0.0.1:8000/api/users/login/', {
                 username,
@@ -70,11 +73,27 @@ const Register = ({ setIsLoggedIn }) => {
                 <h2 className="login-title">Register</h2>
                 {error && <p className="login-error">{error}</p>}
                 <div className="login-field">
-                    <label className="login-label">Username:</label>
+                    <label className="login-label">
+                        Username:
+                        <div className="tooltip-wrapper">
+                            <span className="info-icon">ℹ️</span>
+                            <div className="tooltip-text">Your unique username used to log in. It must be unique.</div>
+                        </div>
+                    </label>
                     <input
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
+                        required
+                        className="login-input"
+                    />
+                </div>
+                <div className="login-field">
+                    <label className="login-label">First Name:</label>
+                    <input
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
                         required
                         className="login-input"
                     />
