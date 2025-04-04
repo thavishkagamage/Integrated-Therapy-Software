@@ -122,61 +122,34 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
         client = OpenAI(api_key=api_key)
         response = None
 
-        # Check if the agent_decision is "AGENDA_UPDATE" to force the tool call
-        if (agent_decision == "AGENDA_UPDATE"):
+        # Mapping from decision to the respective tool function name
+        tool_function_map = {
+            "AGENDA_UPDATE": "current_agenda_item_is_complete",
+            "PICK_NEW_AGENDA_ITEM": "pick_new_current_agenda_item",
+            "SELF_HARM": "detect_self_harm"
+        }
+
+        # Common message payload
+        messages = [
+            {"role": "system", "content": instructions},
+            {"role": "user", "content": conversation_history}
+        ]
+
+        if agent_decision in tool_function_map:
             response = client.chat.completions.create(
                 model=model,
-                messages=[
-                    # TODO dont need to give full system prompt since we force a tool call
-                    {"role": "system", "content": instructions},
-                    {"role": "user", "content": conversation_history}
-                ],
-                tools=tools, # List of tools to be used by the chatbot
-                tool_choice={"type": "function", "function": {"name": "current_agenda_item_is_complete"}},  # Force the tool to be called
+                messages=messages,
+                tools=tools,
+                tool_choice={"type": "function", "function": {"name": tool_function_map[agent_decision]}},
                 max_tokens=max_tokens,
-                temperature=0.3  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
+                temperature=0.3  # Fixed randomness for tool calls
             )
-        # Check if the agent_decision is "PICK_NEW_AGENDA_ITEM" to force the tool call
-        elif (agent_decision == "PICK_NEW_AGENDA_ITEM"):
+        else:
             response = client.chat.completions.create(
                 model=model,
-                messages=[
-                    # TODO dont need to give full system prompt since we force a tool call
-                    {"role": "system", "content": instructions},
-                    {"role": "user", "content": conversation_history}
-                ],
-                tools=tools, # List of tools to be used by the chatbot
-                tool_choice={"type": "function", "function": {"name": "pick_new_current_agenda_item"}},  # Force the tool to be called
+                messages=messages,
                 max_tokens=max_tokens,
-                temperature=0.3  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
-            )
-        # Check if the agent_decision is "SELF_HARM" to force the tool call
-        elif (agent_decision == "SELF_HARM"):
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    # TODO dont need to give full system prompt since we force a tool call
-                    {"role": "system", "content": instructions},
-                    {"role": "user", "content": conversation_history}
-                ],
-                tools=tools, # List of tools to be used by the chatbot
-                tool_choice={"type": "function", "function": {"name": "detect_self_harm"}},  # Force the tool to be called
-                max_tokens=max_tokens,
-                temperature=0.3  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
-            )
-        # else return normal theraputic response
-        else: 
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": instructions},
-                    {"role": "user", "content": conversation_history}
-                    # Can append messages from continuing conversation here
-                ],
-                # Not needed for therapeutic response
-                # tools=tools, # List of tools to be used by the chatbot
-                max_tokens=max_tokens,
-                temperature=temperature  # Controls randomness (0.0 to 2.0 scale, 2.0 being the most random)
+                temperature=temperature  # Use provided temperature for normal responses
             )
         
         print(f"{RED}AGENT DECISION:{RESET} {agent_decision}\n")
