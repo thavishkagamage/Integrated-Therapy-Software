@@ -15,12 +15,24 @@ import Profile from '../profile/Profile';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (token) {
       setIsLoggedIn(true);
     }
+
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -50,17 +62,17 @@ function App() {
       <Router>
         <header className="header"> 
           <nav className="nav-bar">
-          <Link to="/" className="app-logo">
-          <img src="/TheraThrive1.png" alt="TheraThrive Logo" className="logo-img" style={{ width: "300px", height: "auto" }}/>
-          </Link>
+            <Link to="/" className="app-logo">
+              <img src="/TheraThrive1.png" alt="TheraThrive Logo" className="logo-img" />
+            </Link>
 
-
+            {/* Regular navigation items, hidden on mobile */}
             <ul className="nav-list">
               <li className="nav-item"><Link className="nav-link" to="/sessions">Chat</Link></li>
               {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/conversations">Conversations</Link></li>}
-              {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/goals">Goals</Link></li>} 
-              {/* New Goals Link */}
+              {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/goals">Goals</Link></li>}
             </ul>
+
             <div className="user-state-container">
               {isLoggedIn ? (
                 <Link className="user-state" to="/profile">
@@ -74,7 +86,47 @@ function App() {
                 </Link>
               )}
             </div>
+
+            {/* Hamburger menu icon, visible on mobile */}
+            <div className="hamburger-menu" onClick={() => setIsMobileMenuOpen(true)}>
+              <span className="hamburger-icon">☰</span>
+            </div>
           </nav>
+          
+          {/* Mobile side menu */}
+          <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
+            <div className="mobile-menu-header">
+              <button className="close-menu" onClick={() => setIsMobileMenuOpen(false)}>
+                <span className="close-icon">&times;</span>
+              </button>
+            </div>
+            <ul>
+              <li onClick={() => setIsMobileMenuOpen(false)}>
+                <Link to="/">Home</Link>
+              </li>
+              <li onClick={() => setIsMobileMenuOpen(false)}>
+                <Link to="/sessions">Chat</Link>
+              </li>
+              {isLoggedIn && (
+                <>
+                  <li onClick={() => setIsMobileMenuOpen(false)}>
+                    <Link to="/conversations">Conversations</Link>
+                  </li>
+                  <li onClick={() => setIsMobileMenuOpen(false)}>
+                    <Link to="/goals">Goals</Link>
+                  </li>
+                  <li onClick={() => setIsMobileMenuOpen(false)}>
+                    <Link to="/profile">Profile</Link>
+                  </li>
+                </>
+              )}
+              {!isLoggedIn && (
+                <li onClick={() => setIsMobileMenuOpen(false)}>
+                  <Link to="/login">Login</Link>
+                </li>
+              )}
+            </ul>
+          </div>
         </header>
         <div className="main-content-container">
           {/* <aside className="left-aside"></aside> */}
@@ -83,7 +135,6 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/sessions" element={<Sessions />} />
               <Route path="/sessions/chatbot" element={<Chatbot />} />
-              {/* Add these new routes with parameters */}
               <Route path="/sessions/chatbot/:sessionId" element={<Chatbot />} />
               <Route path="/sessions/chatbot/:sessionId/:conversationId" element={<Chatbot />} />
               <Route path="/conversations" element={<Conversations />} />
