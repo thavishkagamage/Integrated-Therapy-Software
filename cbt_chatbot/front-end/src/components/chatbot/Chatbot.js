@@ -156,7 +156,8 @@ const Chatbot = () => {
             conversation_id: conversationId,
             message: conversationHistory,
             session_number: session_number,
-            agenda_items: agenda_items
+            agenda_items: agenda_items,
+            first_name: localStorage.getItem('first_name') || '',
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );

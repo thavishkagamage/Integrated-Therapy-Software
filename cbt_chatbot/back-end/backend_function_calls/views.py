@@ -258,6 +258,8 @@ def chatbot_response(request):
         session_number = data.get('session_number')
         # the current list of agenda items statuses
         agenda_items_status = data.get('agenda_items')
+        # users name to be called in the session
+        first_name = data.get('first_name')
 
         # TODO if updated_agenda_statuses is all 2s, handle end of conversation
         if (agenda_items_status != {}) and (all(i == 2 for i in agenda_items_status)):
@@ -270,6 +272,7 @@ def chatbot_response(request):
         guardrails = ""
         most_recent_user_message = ""
         is_free_chat = (session_number == 0) # if session_number is not None else False
+        users_name_instruction = f"The users name is {first_name}. You may only address them by this name." if first_name != '' else "The user's name is unknown. You may refer to them as 'User' or 'patient'."
 
         # Retrieve the conversation object
         conversation = get_conversation_object(conversation_id)
@@ -294,7 +297,7 @@ def chatbot_response(request):
                 instructions = crisis_instructions_json.get('Conversation Instructions', {}).get('1', '')
                 guardrails = crisis_instructions_json.get('Guardrails', {}).get('1', '')
 
-                system_prompt = instructions + guardrails
+                system_prompt = users_name_instruction + instructions + guardrails
 
             except Exception as e:
                 print(f'{RED}ERROR in crisis mode handling:{RESET} {e}\n')
@@ -309,7 +312,7 @@ def chatbot_response(request):
             guardrails = session_instructions_json.get('Guardrails', {}).get('1', '')
             agenda_instructions = session_instructions_json.get('Agenda Instructions', {}).get('1', '')
 
-            system_prompt = instructions + guardrails + agenda_instructions
+            system_prompt = users_name_instruction + instructions + guardrails + agenda_instructions
 
         # handle normal conversation
         else: 
@@ -375,8 +378,7 @@ def chatbot_response(request):
                 tools = get_all_tools(current_agenda_item_instruction)
 
                 # combine all strings into one prompt for the api
-                # system_prompt = identity + purpose + behavior + Format + voice + guardrails + background + agenda_instructions
-                system_prompt = instructions + guardrails + agenda_instructions + str(current_item_dict)
+                system_prompt = users_name_instruction + instructions + guardrails + agenda_instructions + str(current_item_dict)
 
             except Exception as e:
                 print(f'{RED}ERROR building system prompt:{RESET} {e}\n')
