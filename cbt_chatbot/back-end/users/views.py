@@ -15,11 +15,17 @@ class RegisterView(APIView):
 
 class UserIdView(APIView):
     permission_classes = [IsAuthenticated]
-    print(permission_classes)
 
     def get(self, request):
         user = request.user
         return Response({'user_id': user.id, 'first_name': user.first_name}, status=status.HTTP_200_OK)
+
+class UserInfoView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({'username': user.username, 'first_name': user.first_name, 'email': user.email}, status=status.HTTP_200_OK)
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer

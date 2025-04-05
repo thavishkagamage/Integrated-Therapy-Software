@@ -124,7 +124,7 @@ button:hover {
   color: white;
 }
 
-Logout Button Styling
+/* Logout Button Styling */
 .user-state-container button {
   font-size: 25px;         
   padding: 10px 10px;        
