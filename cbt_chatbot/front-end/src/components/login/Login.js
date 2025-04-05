@@ -23,12 +23,13 @@ const Login = ({ setIsLoggedIn }) => {
             });
             localStorage.setItem('accessToken', response.data.access);
             localStorage.setItem('refreshToken', response.data.refresh);
-            // Fetch user ID
+            // Fetch user ID AND first name
             const userResponse = await axios.get('http://127.0.0.1:8000/api/users/me/', {
                 headers: { Authorization: `Bearer ${response.data.access}` }
             });
+            console.log('Login response:', userResponse.data); // For debugging purposes
             localStorage.setItem('userId', userResponse.data.user_id);
-            localStorage.setItem('first_name', response.data.firstName);
+            localStorage.setItem('first_name', userResponse.data.first_name);
 
             setIsLoggedIn(true);
             alert('Login successful!');
