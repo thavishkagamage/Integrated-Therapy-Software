@@ -9,7 +9,8 @@ import Login from '../login/Login';
 import Register from '../register/Register';
 import Conversations from '../conversations/Conversations';
 import ConversationDetail from '../conversations/ConversationDetail';
-import Goals from '../goals/Goals';  // Import Goals component
+import Goals from '../goals/Goals';  
+import Teams from '../teams/Teams';
 import UserIcon from "../../images/user-icon.png";
 
 function App() {
@@ -54,12 +55,12 @@ function App() {
           </Link>
 
 
-            <ul className="nav-list">
-              <li className="nav-item"><Link className="nav-link" to="/sessions">Chat</Link></li>
-              {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/conversations">Conversations</Link></li>}
-              {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/goals">Goals</Link></li>} 
-              {/* New Goals Link */}
-            </ul>
+          <ul className="nav-list">
+            <li className="nav-item"><Link className="nav-link" to="/sessions">Chat</Link></li>
+            {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/conversations">Conversations</Link></li>}
+            {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/goals">Goals</Link></li>}
+            {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/teams">Meet the Team</Link></li>}  {/* <-- Step 3 */}
+          </ul>
             <div className="user-state-container">
               {isLoggedIn ? (
                 <Link className="user-state" to="/" onClick={handleLogout}>
@@ -78,19 +79,19 @@ function App() {
         <div className="main-content-container">
           {/* <aside className="left-aside"></aside> */}
           <main>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/sessions" element={<Sessions />} />
-              <Route path="/sessions/chatbot" element={<Chatbot />} />
-              {/* Add these new routes with parameters */}
-              <Route path="/sessions/chatbot/:sessionId" element={<Chatbot />} />
-              <Route path="/sessions/chatbot/:sessionId/:conversationId" element={<Chatbot />} />
-              <Route path="/conversations" element={<Conversations />} />
-              <Route path="/conversations/:id" element={<ConversationDetail />} />
-              <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-              <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
-              <Route path="/goals" element={<Goals />} />  {/* New Goals Route */}
-            </Routes>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/sessions" element={<Sessions />} />
+            <Route path="/sessions/chatbot" element={<Chatbot />} />
+            <Route path="/sessions/chatbot/:sessionId" element={<Chatbot />} />
+            <Route path="/sessions/chatbot/:sessionId/:conversationId" element={<Chatbot />} />
+            <Route path="/conversations" element={<Conversations />} />
+            <Route path="/conversations/:id" element={<ConversationDetail />} />
+            <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+            <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
+            <Route path="/goals" element={<Goals />} />
+            <Route path="/teams" element={<Teams />} /> {/* <-- Step 2 */}
+          </Routes>
           </main>
           {/* <aside className="right-aside"></aside> */}
         </div>

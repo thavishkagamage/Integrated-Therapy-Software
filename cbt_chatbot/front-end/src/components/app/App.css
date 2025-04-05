@@ -354,3 +354,21 @@ Logout Button Styling
   padding: 1rem;
   font-size: 1rem;
 }
+
+.link-button {
+  display: inline-block;
+  margin: 0 4px;
+  padding: 6px 12px;
+  background-color: var(--highlight-color); /* Use a real color or CSS variable */
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.link-button:hover {
+  background-color: var(--accent-color);
+}
+
+  
+
