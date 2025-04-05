@@ -6,7 +6,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password']
+        fields = ['id', 'username', 'email', 'password', 'first_name']
         extra_kwargs = {'password': {'write_only': True}}
     
     def validate_email(self, value):
@@ -30,4 +30,5 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['user_id'] = self.user.id
         data['username'] = self.user.username
         data['email'] = self.user.email
+        data['first_name'] = self.user.first_name
         return data
