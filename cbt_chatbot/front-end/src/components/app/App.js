@@ -11,6 +11,7 @@ import Conversations from '../conversations/Conversations';
 import ConversationDetail from '../conversations/ConversationDetail';
 import Goals from '../goals/Goals';  // Import Goals component
 import UserIcon from "../../images/user-icon.png";
+import Profile from '../profile/Profile';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -62,9 +63,9 @@ function App() {
             </ul>
             <div className="user-state-container">
               {isLoggedIn ? (
-                <Link className="user-state" to="/" onClick={handleLogout}>
+                <Link className="user-state" to="/profile">
                   <img className="user-icon" src={UserIcon} alt="User Icon" />
-                  <span className="user-state-text">Logout</span>
+                  <span className="user-state-text">Profile</span>
                 </Link>
               ) : (
                 <Link className="user-state" to="/login">
@@ -89,6 +90,7 @@ function App() {
               <Route path="/conversations/:id" element={<ConversationDetail />} />
               <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
               <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
+              <Route path="/profile" element={<Profile handleLogout={handleLogout} />} />
               <Route path="/goals" element={<Goals />} />  {/* New Goals Route */}
             </Routes>
           </main>
