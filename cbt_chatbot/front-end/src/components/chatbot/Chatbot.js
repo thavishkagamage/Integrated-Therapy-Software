@@ -28,6 +28,11 @@ const Chatbot = () => {
   const agendaRef = useRef(null);
 
   useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+      if (!token) {
+        navigate('/login'); // Redirect to login if no token found
+      }
+
     const createOrFetchConversation = async () => {
       if (loading || conversationFetched) return;  // Prevent repeated fetching if conversation is already fetched
 
