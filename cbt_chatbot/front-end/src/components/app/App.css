@@ -17,6 +17,20 @@
   margin: 5px;
 }
 
+html, #root{
+  margin-top: 0;
+}
+
+@media (max-width: 768px) {
+  html, #root {
+    margin: 0;
+  }
+  .footer {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
 body {
   background-color: var(--primary-bg);
   color: var(--text-dark);
@@ -53,17 +67,103 @@ button {
 
 /* Header */
 header {
-  padding: 1em 0;
   background-color: var(--accent-color);
   color: var(--text-light);
   text-align: center;
+  margin: 0;
 }
 
-/* Sidebars */
-.left-aside, .right-aside {
-  padding: 3em 0;
-  flex: 1 1 50px;
-  background-color: var(--secondary-bg);
+.logo-img {
+  width: 200px;
+  height: auto;
+}
+
+/* Hide regular nav items on mobile */
+@media (max-width: 768px) {
+  .nav-bar {
+    .nav-list,
+    .user-state-container {
+      display: none;
+    }
+    .hamburger-menu {
+      display: flex;
+      cursor: pointer;
+    }
+  }
+  .logo-img {
+    width: 150px;
+    height: auto;
+  }
+}
+
+/* Hide hamburger menu on larger screens */
+.hamburger-menu {
+  display: none;
+}
+
+/* Style the hamburger icon */
+.hamburger-icon {
+  font-size: 50px;
+  color: var(--text-light);
+}
+
+/* Mobile Menu (off-canvas sidebar) */
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--accent-color);
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 1000;
+  padding: 20px;
+  display: none;
+}
+
+/* Display mobile menu when open */
+.mobile-menu.open {
+  transform: translateX(0);
+  display: block;
+  margin: 0;
+  
+  a {
+    font-weight: bold;
+    font-size: 30px;
+  }
+}
+
+/* Mobile Menu Header (close button container) */
+.mobile-menu-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.close-menu {
+  padding: 10px;
+}
+/* Style the close icon */
+.close-icon {
+  font-size: 40px;
+  color: var(--text-light);
+}
+
+/* Mobile Menu List */
+.mobile-menu ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.mobile-menu li {
+  margin-bottom: 20px;
+}
+
+.mobile-menu a {
+  text-decoration: none;
+  color: var(--text-light);
+  font-size: 20px;
 }
 
 /* Main Section */
@@ -71,13 +171,6 @@ main {
   padding: 1em 0;
   flex: 7 7 150px;
   background-color: var(--primary-bg);
-}
-
-/* Footer */
-.footer {
-  padding: 1em 0;
-  background-color: var(--secondary-bg);
-  text-align: center;
 }
 
 /* Goals Section */
@@ -134,8 +227,8 @@ button:hover {
 }
 
 .user-icon {
-  width: 65px;
-  height: 65px;
+  width: 50px;
+  height: 50px;
   background-color: var(--highlight-color); /* Default highlight color */
   border-radius: 50%; /* Optional: make it circular */
   transition: background-color 0.3s ease; /* Smooth transition */
@@ -154,23 +247,25 @@ button:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;  /* Spread items across the navbar */
-  padding: 0 20px;
+  /* padding: 0 20px; */
 }
 
 .user-state-container {
-  margin-left: auto;  /* Pushes the navbar items to the right */
+  margin-left: auto;
   display: flex;
-  align-items: center;  /* Centers content vertically */
-  height: 100%; /* Ensure it takes the full height of the parent */
+  align-items: center;
+  height: 100%;
+  flex-shrink: 0; /* Prevents shrinking */
+  /* min-width: 120px; Optional: ensures a minimum width */
 }
 .nav-item a, .nav-item button {
-  font-size: 25px;
+  font-size: 30px;
   font-weight: 800;
   color: var(--text-light);
 }
 
 .nav-list {
-  margin: 20px;
+  margin: auto 15px;
   display: flex;
   gap: 20px;
   padding-left: 0px;
@@ -189,10 +284,7 @@ button:hover {
     flex-direction: column;
   }
   main {
-    padding: 5em 0;
-  }
-  .left-aside, .right-aside {
-    display: none;
+    padding: 0;
   }
   .chat-goals-container {
     flex-direction: column;
@@ -352,7 +444,6 @@ button:hover {
   color: var(--text-light);
   text-align: center;
   padding: 1rem;
-  font-size: 1rem;
 }
 
 .link-button {
@@ -369,6 +460,3 @@ button:hover {
 .link-button:hover {
   background-color: var(--accent-color);
 }
-
-  
-

@@ -1,15 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../conversations/Conversations.css';
 
 const Sessions = () => {
-	
+	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const navigate = useNavigate();
 	const sessions = Array.from({ length: 3 }, (_, index) => index + 1);
 
+	useEffect(() => {
+		const token = localStorage.getItem('accessToken');
+		if (token) {
+			setIsLoggedIn(true);
+		}
+	}, []);
+
 	const handleStartConversation = (session) => {
-		console.log(`Starting CBT session number: ${session}`);
-		navigate(`/sessions/chatbot/${session}`);
+		if (isLoggedIn) {
+			console.log(`Starting CBT session number: ${session}`);
+			navigate(`/sessions/chatbot/${session}`);
+		} else {
+			navigate('/login'); // Redirect to login if not logged in
+		}
 	};
 	
 	return (

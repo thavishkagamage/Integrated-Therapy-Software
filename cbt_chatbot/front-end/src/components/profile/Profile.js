@@ -14,8 +14,9 @@ const Profile = ({handleLogout}) => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
+                const accesToken = localStorage.getItem('accessToken') // Ensure the token exists before making the request
                 const userResponse = await axios.get('http://127.0.0.1:8000/api/users/userinfo/', {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` }
+                    headers: { Authorization: `Bearer ${accesToken}` }
                 });
                 console.log('Fetched user data:', userResponse.data); // For debugging purposes
                 setUsername(userResponse.data.username || 'Error fetching username!');

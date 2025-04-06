@@ -16,12 +16,24 @@ import Profile from '../profile/Profile';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (token) {
       setIsLoggedIn(true);
     }
+
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -51,17 +63,17 @@ function App() {
       <Router>
         <header className="header"> 
           <nav className="nav-bar">
-          <Link to="/" className="app-logo">
-          <img src="/TheraThrive1.png" alt="TheraThrive Logo" className="logo-img" style={{ width: "300px", height: "auto" }}/>
-          </Link>
+            <Link to="/" className="app-logo">
+              <img src="/TheraThrive1.png" alt="TheraThrive Logo" className="logo-img" />
+            </Link>
+    
+            <ul className="nav-list">
+              <li className="nav-item"><Link className="nav-link" to="/sessions">Chat</Link></li>
+              {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/conversations">Conversations</Link></li>}
+              {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/goals">Goals</Link></li>}
+              {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/teams">Meet the Team</Link></li>}  {/* <-- Step 3 */}
+            </ul>
 
-
-          <ul className="nav-list">
-            <li className="nav-item"><Link className="nav-link" to="/sessions">Chat</Link></li>
-            {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/conversations">Conversations</Link></li>}
-            {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/goals">Goals</Link></li>}
-            {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/teams">Meet the Team</Link></li>}  {/* <-- Step 3 */}
-          </ul>
             <div className="user-state-container">
               {isLoggedIn ? (
                 <Link className="user-state" to="/profile">
@@ -75,30 +87,71 @@ function App() {
                 </Link>
               )}
             </div>
-          </nav>
-        </header>
-        <div className="main-content-container">
-          {/* <aside className="left-aside"></aside> */}
-<main>
-  <Routes>
-    <Route path="/" element={<Home />} />
-    <Route path="/sessions" element={<Sessions />} />
-    <Route path="/sessions/chatbot" element={<Chatbot />} />
-    <Route path="/sessions/chatbot/:sessionId" element={<Chatbot />} />
-    <Route path="/sessions/chatbot/:sessionId/:conversationId" element={<Chatbot />} />
-    <Route path="/conversations" element={<Conversations />} />
-    <Route path="/conversations/:id" element={<ConversationDetail />} />
-    <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-    <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
-    <Route path="/profile" element={<Profile handleLogout={handleLogout} />} />
-    <Route path="/goals" element={<Goals />} />
-    <Route path="/teams" element={<Teams />} />
-  </Routes>
-</main>
 
-          {/* <aside className="right-aside"></aside> */}
+            {/* Hamburger menu icon, visible on mobile */}
+            <div className="hamburger-menu" onClick={() => setIsMobileMenuOpen(true)}>
+              <span className="hamburger-icon">☰</span>
+            </div>
+          </nav>
+          
+          {/* Mobile side menu */}
+          <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
+            <div className="mobile-menu-header">
+              <button className="close-menu" onClick={() => setIsMobileMenuOpen(false)}>
+                <span className="close-icon">&times;</span>
+              </button>
+            </div>
+            <ul>
+              <li onClick={() => setIsMobileMenuOpen(false)}>
+                <Link to="/">Home</Link>
+              </li>
+              <li onClick={() => setIsMobileMenuOpen(false)}>
+                <Link to="/sessions">Chat</Link>
+              </li>
+              {isLoggedIn && (
+                <>
+                  <li onClick={() => setIsMobileMenuOpen(false)}>
+                    <Link to="/conversations">Conversations</Link>
+                  </li>
+                  <li onClick={() => setIsMobileMenuOpen(false)}>
+                    <Link to="/goals">Goals</Link>
+                  </li>
+                  <li onClick={() => setIsMobileMenuOpen(false)}>
+                    <Link to="/profile">Profile</Link>
+                  </li>
+                </>
+              )}
+              {!isLoggedIn && (
+                <li onClick={() => setIsMobileMenuOpen(false)}>
+                  <Link to="/login">Login</Link>
+                </li>
+              )}
+            </ul>
+          </div>
+        </header>
+        
+        <div className="main-content-container">
+          <main>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/sessions" element={<Sessions />} />
+              <Route path="/sessions/chatbot" element={<Chatbot />} />
+              <Route path="/sessions/chatbot/:sessionId" element={<Chatbot />} />
+              <Route path="/sessions/chatbot/:sessionId/:conversationId" element={<Chatbot />} />
+              <Route path="/conversations" element={<Conversations />} />
+              <Route path="/conversations/:id" element={<ConversationDetail />} />
+              <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+              <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
+              <Route path="/profile" element={<Profile handleLogout={handleLogout} />} />
+              <Route path="/goals" element={<Goals />} />
+              <Route path="/teams" element={<Teams />} />
+            </Routes>
+          </main>
         </div>
-        {/* <div className="footer"></div> */}
+        
+        <div className="footer">
+          &copy; 2025 - TheraThrive Integrated Therapy Software
+        </div>
       </Router>
     </div>
   );
