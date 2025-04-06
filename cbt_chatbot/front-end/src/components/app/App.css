@@ -17,12 +17,17 @@
   margin: 5px;
 }
 
+html, #root{
+  margin-top: 0;
+}
+
 @media (max-width: 768px) {
-  html {
+  html, #root {
     margin: 0;
   }
-  #root {
-    margin: 0;
+  .footer {
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 
@@ -161,25 +166,11 @@ header {
   font-size: 20px;
 }
 
-/* Sidebars */
-.left-aside, .right-aside {
-  padding: 3em 0;
-  flex: 1 1 50px;
-  background-color: var(--secondary-bg);
-}
-
 /* Main Section */
 main {
   padding: 1em 0;
   flex: 7 7 150px;
   background-color: var(--primary-bg);
-}
-
-/* Footer */
-.footer {
-  padding: 1em 0;
-  background-color: var(--secondary-bg);
-  text-align: center;
 }
 
 /* Goals Section */
@@ -294,9 +285,6 @@ button:hover {
   }
   main {
     padding: 0;
-  }
-  .left-aside, .right-aside {
-    display: none;
   }
   .chat-goals-container {
     flex-direction: column;

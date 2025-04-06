@@ -129,7 +129,6 @@ function App() {
           </div>
         </header>
         <div className="main-content-container">
-          {/* <aside className="left-aside"></aside> */}
           <main>
             <Routes>
               <Route path="/" element={<Home />} />
@@ -145,9 +144,10 @@ function App() {
               <Route path="/goals" element={<Goals />} />  {/* New Goals Route */}
             </Routes>
           </main>
-          {/* <aside className="right-aside"></aside> */}
         </div>
-        {/* <div className="footer"></div> */}
+        <div className="footer">
+          &copy; {new Date().getFullYear()} TheraThrive Integrated Therapy Software
+        </div>
       </Router>
     </div>
   );
