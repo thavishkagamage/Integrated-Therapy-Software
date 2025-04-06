@@ -6,7 +6,7 @@ import axiosInstance from '../utils/axios';
 const Conversations = () => {
   const [conversations, setConversations] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 5;
   const navigate = useNavigate();
 
   useEffect(() => {

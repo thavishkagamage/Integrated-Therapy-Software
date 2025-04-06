@@ -17,8 +17,14 @@
   margin: 5px;
 }
 
+.content-container {
+  min-height: 100vh;
+}
+
 html, #root{
   margin-top: 0;
+  margin-bottom: 0;
+  min-height: 100vh;
 }
 
 @media (max-width: 768px) {
@@ -384,6 +390,9 @@ button:hover {
 }
 
 /* Main Content Container */
+.main-content-container {
+  flex: 1;
+}
 .main-sections {
   flex: 1;
   width: 100%;
@@ -440,10 +449,18 @@ button:hover {
 
 /* Footer */
 .footer {
+  margin-bottom: 0;
   background-color: var(--accent-color);
   color: var(--text-light);
   text-align: center;
-  padding: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  
+  .footer-link {
+    text-decoration: underline;
+  }
 }
 
 .link-button {

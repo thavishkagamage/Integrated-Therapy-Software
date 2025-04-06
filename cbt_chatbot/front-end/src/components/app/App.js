@@ -71,7 +71,6 @@ function App() {
               <li className="nav-item"><Link className="nav-link" to="/sessions">Chat</Link></li>
               {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/conversations">Conversations</Link></li>}
               {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/goals">Goals</Link></li>}
-              {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/teams">Meet the Team</Link></li>}  {/* <-- Step 3 */}
             </ul>
 
             <div className="user-state-container">
@@ -150,7 +149,8 @@ function App() {
         </div>
         
         <div className="footer">
-          &copy; 2025 - TheraThrive Integrated Therapy Software
+          <span>&copy; 2025 - TheraThrive Integrated Therapy Software</span>
+          <Link className="footer-link" to="/teams">Meet the Team</Link>
         </div>
       </Router>
     </div>

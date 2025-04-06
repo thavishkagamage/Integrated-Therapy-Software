@@ -54,10 +54,6 @@ function Team() {
         </section>
       </main>
 
-      {/* FOOTER */}
-      <footer className="footer">
-        &copy; {new Date().getFullYear()} TheraThrive Integrated Therapy Software
-      </footer>
     </div>
   );
 }
