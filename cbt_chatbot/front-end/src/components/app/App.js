@@ -12,6 +12,7 @@ import ConversationDetail from '../conversations/ConversationDetail';
 import Goals from '../goals/Goals';  
 import Teams from '../teams/Teams';
 import UserIcon from "../../images/user-icon.png";
+import Profile from '../profile/Profile';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -63,9 +64,9 @@ function App() {
           </ul>
             <div className="user-state-container">
               {isLoggedIn ? (
-                <Link className="user-state" to="/" onClick={handleLogout}>
+                <Link className="user-state" to="/profile">
                   <img className="user-icon" src={UserIcon} alt="User Icon" />
-                  <span className="user-state-text">Logout</span>
+                  <span className="user-state-text">Profile</span>
                 </Link>
               ) : (
                 <Link className="user-state" to="/login">
@@ -79,6 +80,7 @@ function App() {
         <div className="main-content-container">
           {/* <aside className="left-aside"></aside> */}
           <main>
+<<<<<<< HEAD
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/sessions" element={<Sessions />} />
@@ -92,6 +94,22 @@ function App() {
             <Route path="/goals" element={<Goals />} />
             <Route path="/teams" element={<Teams />} /> {/* <-- Step 2 */}
           </Routes>
+=======
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/sessions" element={<Sessions />} />
+              <Route path="/sessions/chatbot" element={<Chatbot />} />
+              {/* Add these new routes with parameters */}
+              <Route path="/sessions/chatbot/:sessionId" element={<Chatbot />} />
+              <Route path="/sessions/chatbot/:sessionId/:conversationId" element={<Chatbot />} />
+              <Route path="/conversations" element={<Conversations />} />
+              <Route path="/conversations/:id" element={<ConversationDetail />} />
+              <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+              <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
+              <Route path="/profile" element={<Profile handleLogout={handleLogout} />} />
+              <Route path="/goals" element={<Goals />} />  {/* New Goals Route */}
+            </Routes>
+>>>>>>> 3646717f9d58881e54a6bfc35e54eac80a9fe166
           </main>
           {/* <aside className="right-aside"></aside> */}
         </div>
