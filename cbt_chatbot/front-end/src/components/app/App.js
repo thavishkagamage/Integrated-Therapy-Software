@@ -9,7 +9,8 @@ import Login from '../login/Login';
 import Register from '../register/Register';
 import Conversations from '../conversations/Conversations';
 import ConversationDetail from '../conversations/ConversationDetail';
-import Goals from '../goals/Goals';  // Import Goals component
+import Goals from '../goals/Goals';  
+import Teams from '../teams/Teams';
 import UserIcon from "../../images/user-icon.png";
 import Profile from '../profile/Profile';
 
@@ -65,12 +66,12 @@ function App() {
             <Link to="/" className="app-logo">
               <img src="/TheraThrive1.png" alt="TheraThrive Logo" className="logo-img" />
             </Link>
-
-            {/* Regular navigation items, hidden on mobile */}
+    
             <ul className="nav-list">
               <li className="nav-item"><Link className="nav-link" to="/sessions">Chat</Link></li>
               {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/conversations">Conversations</Link></li>}
               {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/goals">Goals</Link></li>}
+              {isLoggedIn && <li className="nav-item"><Link className="nav-link" to="/teams">Meet the Team</Link></li>}  {/* <-- Step 3 */}
             </ul>
 
             <div className="user-state-container">
@@ -128,6 +129,7 @@ function App() {
             </ul>
           </div>
         </header>
+        
         <div className="main-content-container">
           <main>
             <Routes>
@@ -141,12 +143,14 @@ function App() {
               <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
               <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
               <Route path="/profile" element={<Profile handleLogout={handleLogout} />} />
-              <Route path="/goals" element={<Goals />} />  {/* New Goals Route */}
+              <Route path="/goals" element={<Goals />} />
+              <Route path="/teams" element={<Teams />} />
             </Routes>
           </main>
         </div>
+        
         <div className="footer">
-          &copy; {new Date().getFullYear()} TheraThrive Integrated Therapy Software
+          &copy; 2025 - TheraThrive Integrated Therapy Software
         </div>
       </Router>
     </div>
