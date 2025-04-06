@@ -79,38 +79,23 @@ function App() {
         </header>
         <div className="main-content-container">
           {/* <aside className="left-aside"></aside> */}
-          <main>
-<<<<<<< HEAD
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/sessions" element={<Sessions />} />
-            <Route path="/sessions/chatbot" element={<Chatbot />} />
-            <Route path="/sessions/chatbot/:sessionId" element={<Chatbot />} />
-            <Route path="/sessions/chatbot/:sessionId/:conversationId" element={<Chatbot />} />
-            <Route path="/conversations" element={<Conversations />} />
-            <Route path="/conversations/:id" element={<ConversationDetail />} />
-            <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-            <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
-            <Route path="/goals" element={<Goals />} />
-            <Route path="/teams" element={<Teams />} /> {/* <-- Step 2 */}
-          </Routes>
-=======
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/sessions" element={<Sessions />} />
-              <Route path="/sessions/chatbot" element={<Chatbot />} />
-              {/* Add these new routes with parameters */}
-              <Route path="/sessions/chatbot/:sessionId" element={<Chatbot />} />
-              <Route path="/sessions/chatbot/:sessionId/:conversationId" element={<Chatbot />} />
-              <Route path="/conversations" element={<Conversations />} />
-              <Route path="/conversations/:id" element={<ConversationDetail />} />
-              <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-              <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
-              <Route path="/profile" element={<Profile handleLogout={handleLogout} />} />
-              <Route path="/goals" element={<Goals />} />  {/* New Goals Route */}
-            </Routes>
->>>>>>> 3646717f9d58881e54a6bfc35e54eac80a9fe166
-          </main>
+<main>
+  <Routes>
+    <Route path="/" element={<Home />} />
+    <Route path="/sessions" element={<Sessions />} />
+    <Route path="/sessions/chatbot" element={<Chatbot />} />
+    <Route path="/sessions/chatbot/:sessionId" element={<Chatbot />} />
+    <Route path="/sessions/chatbot/:sessionId/:conversationId" element={<Chatbot />} />
+    <Route path="/conversations" element={<Conversations />} />
+    <Route path="/conversations/:id" element={<ConversationDetail />} />
+    <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+    <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
+    <Route path="/profile" element={<Profile handleLogout={handleLogout} />} />
+    <Route path="/goals" element={<Goals />} />
+    <Route path="/teams" element={<Teams />} />
+  </Routes>
+</main>
+
           {/* <aside className="right-aside"></aside> */}
         </div>
         {/* <div className="footer"></div> */}
