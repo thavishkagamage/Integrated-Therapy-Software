@@ -2,11 +2,28 @@ h1 {
   text-align: center;
 }
 
+.chat-and-agenda-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+  justify-content: space-evenly;
+}
+
+.agenda-container {
+  flex: 1;
+  max-width: 300px;
+  position: sticky;
+  top: 0;
+  z-index: 7;
+}
+
 /* Chat Window */
 .chat-window {
-  width: 90%;
+  /* width: 90%; */
+  flex: 3;
   max-width: 768px;
-  margin: 25px auto;
+  margin: 25px 0;
   background: var(--accent-color);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   border: 1px solid var(--text-dark);

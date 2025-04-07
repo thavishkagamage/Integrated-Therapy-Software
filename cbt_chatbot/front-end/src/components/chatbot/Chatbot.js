@@ -96,6 +96,17 @@ const Chatbot = () => {
         // Mark conversation as fetched to prevent further calls
         setConversationFetched(true);
 
+        // update agenda component on page load/refresh as well
+        if (agendaRef.current) {
+          // Fetch the updated agenda items for the conversation from the backend
+          const updatedConversation = await axiosInstance.get(`conversations/${conversationId}/`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const updated_status = (updatedConversation.data.agenda_items);
+          
+          agendaRef.current.update(updated_status);
+        }
+
       } catch (error) {
         console.error("Error creating or fetching conversation:", error.response ? error.response.data : error.message);
       } finally {
@@ -210,9 +221,7 @@ const Chatbot = () => {
           });
           const updated_status = (updatedConversation.data.agenda_items);
           
-          if (JSON.stringify(updated_status) !== JSON.stringify(agenda_items)) {
-            agendaRef.current.update(updated_status);
-          }
+          agendaRef.current.update(updated_status);
         }
       } catch (error) {
         // Log any errors that occur during the process
@@ -239,7 +248,7 @@ const Chatbot = () => {
   }, [conversation]);
 
   return (
-    <>
+    <div className="chat-and-agenda-container">
       <div className="chat-window">
         <div className="chat-messages" ref={chatContainerRef}>
           <span className="start-message"> This is the beginning of your CBT chat session </span>
@@ -269,8 +278,13 @@ const Chatbot = () => {
           </button>
         </div>
       </div>
-      <Agenda ref={agendaRef} conversationId={convoId} sessionNumber={sessionId} />
-    </>
+
+      {sessionId !== 0 && (
+        <div className="agenda-container">
+          <Agenda ref={agendaRef} conversationId={convoId} sessionNumber={sessionId} />
+        </div>
+      )}
+    </div>
   );
 };
 

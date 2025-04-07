@@ -1,0 +1,53 @@
+.agenda-progress-container {
+    width: 100%; 
+    margin: 25px 0;
+    list-style: none;
+    padding: 0;
+}
+
+.agenda-item {
+    position: relative;
+    padding-left: 20px;
+    padding-top: 2px;
+    margin: 0 0 20px 0;
+}
+
+.agenda-item::before {
+    content: "";
+    z-index: 10;
+    position: absolute;
+    left: 0;
+    top: 0.3em;     
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #ccc;
+    border: 1px solid black;
+}
+
+.agenda-item:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 9px;         
+    top: 15px;   
+    width: 2px;
+    height: calc(100% + 25px); 
+    background-color: grey;  
+}
+
+.agenda-text {
+    font-size: 18px;
+    color: #333; /* default text color */
+}
+
+.agenda-dot-completed::before {
+    background-color: var(--highlight-color);
+}
+
+.agenda-dot-inprogress::before {
+    background-color: var(--accent-color);
+}
+
+.agenda-dot-notstarted::before {
+    background-color: #808080; /* Red color for high priority */
+}
