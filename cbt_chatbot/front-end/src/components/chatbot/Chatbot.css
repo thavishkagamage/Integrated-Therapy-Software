@@ -20,7 +20,7 @@ h1 {
 .chat-window {
   /* width: 90%; */
   flex: 3;
-  max-width: 768px;
+  max-width: 1000px;
   margin: 25px 0;
   background: var(--accent-color);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -41,7 +41,8 @@ h1 {
   padding: 10px 30px;
   display: flex;
   flex-direction: column;
-  height: 850px;
+  /* height: 850px; */
+  height: calc(100vh - 120px); 
   overflow-y: auto;
   background-color: var(--primary-bg);
   border-radius: 20px;
@@ -100,6 +101,14 @@ input {
   word-wrap: break-word;
   color: white;
 }
+@media (max-width: 768px) {
+  .message {
+    max-width: 85%; /* Make the chat bubbles wider on mobile */
+  }
+  .chat-messages {
+    padding: 10px 15px; /* Adjust height for mobile */
+  }
+}
 
 .user-message {
   background-color: var(--highlight-color);
@@ -135,9 +144,10 @@ input {
 @media (max-width: 768px) {
   .chat-window {
     width: 100%;
+    margin-bottom: 0
   }
   .input-container {
-    flex-direction: column;
+    /* flex-direction: column; */
     gap: 5px;
   }
   input {
@@ -171,7 +181,7 @@ input {
   .view-agenda-btn {
     display: block;
     margin: 10px auto;
-    padding: 10px 20px;
+    padding: 10px 40px;
     background-color: var(--highlight-color);
     color: var(--text-light);
     border: none;

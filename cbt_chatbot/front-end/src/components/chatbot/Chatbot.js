@@ -29,9 +29,9 @@ const Chatbot = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
-      if (!token) {
-        navigate('/login'); // Redirect to login if no token found
-      }
+    if (!token) {
+      navigate('/login'); // Redirect to login if no token found
+    }
 
     const createOrFetchConversation = async () => {
       if (loading || conversationFetched) return;  // Prevent repeated fetching if conversation is already fetched
@@ -131,6 +131,7 @@ const Chatbot = () => {
   const sendMessage = async () => {
     // Set the waiting state to true before processing the message
     setWaitingForResponse(true);
+    console.log("BUTTON DISABLED")
 
     // Check if user input is not empty (after trimming) and a conversationId exists
     if (userInput.trim() && conversationId) {
@@ -198,7 +199,7 @@ const Chatbot = () => {
             await sleep(1000); // Sleep for 1 second
           }
         };
-        displayParagraphs();
+        await displayParagraphs();
 
         // Save the user's message to the database
         await axiosInstance.post(
@@ -229,6 +230,7 @@ const Chatbot = () => {
       } finally {
         // Set waiting state to false once processing is complete, regardless of success or error
         setWaitingForResponse(false);
+        console.log("BUTTON ENABLED")
       }
     }
   };
@@ -271,7 +273,17 @@ const Chatbot = () => {
             type="text"
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                // If we’re still waiting, do nothing
+                if (waitingForResponse) {
+                  e.preventDefault();
+                } else {
+                  // Otherwise, send the message
+                  sendMessage();
+                }
+              }
+            }}
           />
           <button className="send-button" disabled={waitingForResponse} onClick={sendMessage}>
             {waitingForResponse ? 'Sending...' : 'Send'}

@@ -19,7 +19,7 @@ function Home() {
           <p className="hero-subtitle">
             Get immediate, affordable, and always-available therapy support through AI-driven sessions.
           </p>
-          <button className="hero-button">Get Started</button>
+          <Link to="/sessions" className="hero-button">Get Started</Link>
         </div>
 
         {/* Right Column: Hero Image */}
@@ -64,9 +64,9 @@ function Home() {
             <li>Create an account using a unique username, email, and password.</li>
             <li>
               Once logged in, access the 
-              <Link to="/chatbot" className="link-button"> Chat</Link>, 
-              <Link to="/conversations" className="link-button"> Conversations</Link>, and 
-              <Link to="/goals" className="link-button"> Goals</Link> pages from your dashboard.
+              <Link to="/sessions" className="link-button">Chat</Link>, 
+              <Link to="/conversations" className="link-button">Conversations</Link>, and 
+              <Link to="/goals" className="link-button">Goals</Link> pages from your dashboard.
             </li>
           </ul>
         </section>
@@ -78,7 +78,7 @@ function Home() {
             Jump into your first CBT session with our AI therapeutic assistant:
           </p>
           <ul className="section-content list">
-            <li>Go to the <Link to="/chatbot" className="link-button">Chat</Link> page.</li>
+            <li>Go to the <Link to="/sessions" className="link-button">Chat</Link> page.</li>
             <li>Click on <strong>Session 1</strong> to begin.</li>
             <li>Type your message into the chat box and click <strong>Send</strong>.</li>
             <li>Follow the prompts to progress through your first CBT experience.</li>

@@ -25,24 +25,24 @@ const Sessions = () => {
 	
 	return (
 		<div className="sessions-container">
-		<h1>CBT Sessions</h1>
-		<ul>
-			<li className="conversation-item">
-				<div className="conversation-title">Free Chat</div>
-				<div>
-					<button onClick={() => handleStartConversation(0)}>Start</button>
-				</div>
-			</li>
-
-			{sessions.map(session => (
-				<li key={session} className="conversation-item">
-					<div className="conversation-title">Session {session}</div>
+			<h1 className='mb-4 font-bold'>CBT Sessions</h1>
+			<ul>
+				<li className="conversation-item">
+					<div className="conversation-title">Free Chat</div>
 					<div>
-						<button onClick={() => handleStartConversation(session)}>Start</button>
+						<button onClick={() => handleStartConversation(0)}>Start</button>
 					</div>
 				</li>
-			))}
-		</ul>
+
+				{sessions.map(session => (
+					<li key={session} className="conversation-item">
+						<div className="conversation-title">Session {session}</div>
+						<div>
+							<button onClick={() => handleStartConversation(session)}>Start</button>
+						</div>
+					</li>
+				))}
+			</ul>
 		</div>
 	)
 }
