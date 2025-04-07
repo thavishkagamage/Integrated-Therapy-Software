@@ -133,7 +133,6 @@ const Chatbot = () => {
     // Set the waiting state to true before processing the message
     setWaitingForResponse(true);
     setShowSpinner(true);
-    console.log("BUTTON DISABLED")
 
     // Check if user input is not empty (after trimming) and a conversationId exists
     if (userInput.trim() && conversationId) {
@@ -233,10 +232,18 @@ const Chatbot = () => {
       } catch (error) {
         // Log any errors that occur during the process
         console.error("Error sending message:", error.response ? error.response.data : error.message);
+        // add chat error message
+        setConversation(prev => [
+          ...prev,
+          {
+            text: "Something went wrong. Please try again.",
+            sender: "ai"
+          }
+        ]);
       } finally {
         // Set waiting state to false once processing is complete, regardless of success or error
         setWaitingForResponse(false);
-        console.log("BUTTON ENABLED")
+        setShowSpinner(false);
       }
     }
   };

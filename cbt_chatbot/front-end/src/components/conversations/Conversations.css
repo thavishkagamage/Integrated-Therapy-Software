@@ -61,7 +61,7 @@
 
 @media (max-width: 768px) {
   .conversation-item {
-    width: 100%; 
+    width: 90vw; 
   }
   .conversations-container {
     padding: 10px;

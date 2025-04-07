@@ -156,7 +156,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
             )
         
         print(f"{RED}AGENT DECISION:{RESET} {agent_decision}\n")
-        print(f'{RED}TOOL OPTIONS:{RESET}' + str(tools) + "\n")
+        # print(f'{RED}TOOL OPTIONS:{RESET}' + str(tools) + "\n")
         # Check if the response contains a tool call
         if response.choices[0].message.tool_calls != None:
             tool_response = handle_response(response.choices[0].message, conversation_id, agenda)
@@ -374,7 +374,7 @@ def chatbot_response(request):
                     print(f"{GREEN}AGENDA STATUS:{RESET} " + str(agenda_items_status) + "\n")
                     print(f"{GREEN}CURRENT ITEM STATUS:{RESET} " + str(current_item_status) + "\n")
                     print(f"{GREEN}AGENDA DICT:{RESET} " + str(agenda_dict) + "\n")
-                    print(f"{GREEN}CURRENT ITEM DICT:{RESET} " + str(current_item_dict) + "\n")
+                    # print(f"{GREEN}CURRENT ITEM DICT:{RESET} " + str(current_item_dict) + "\n")
 
                     # get just the current agenda item title
                     current_agenda_item_title = [key for key, value in agenda_dict.items() if value == 'Current']
