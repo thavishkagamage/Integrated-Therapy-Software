@@ -5,7 +5,7 @@ import '../conversations/Conversations.css';
 const Sessions = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const navigate = useNavigate();
-	const sessions = Array.from({ length: 3 }, (_, index) => index + 1);
+	const sessions = Array.from({ length: 1 }, (_, index) => index + 1);
 
 	useEffect(() => {
 		const token = localStorage.getItem('accessToken');
@@ -43,6 +43,7 @@ const Sessions = () => {
 					</li>
 				))}
 			</ul>
+			<span className="text-lg font-bold italic">More sessions coming soon...</span>
 		</div>
 	)
 }

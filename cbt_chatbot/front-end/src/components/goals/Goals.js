@@ -43,6 +43,11 @@ const Goals = () => {
   const addGoal = async () => {
     if (!goalInput.trim()) return;
 
+    if (goals.length >= 10) {
+      setError("You can only have up to 10 goals.");
+      return;
+    }
+
     setLoading(true);
     setError("");
     try {
@@ -115,6 +120,7 @@ const Goals = () => {
             type="text"
             value={goalInput}
             onChange={(e) => setGoalInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { addGoal() } } }
             placeholder="Enter a new goal..."
             className="flex-1 p-2 border rounded"
             style={{
@@ -134,29 +140,33 @@ const Goals = () => {
         </div>
 
         {loading && <p className="text-gray-500">Loading goals...</p>}
-
-        <ul className="space-y-2">
-          {goals.map((goal) => (
-            <li
-              key={goal.id}
-              className="flex justify-between items-center p-3 border rounded-lg shadow-sm"
-              style={{
-                backgroundColor: customColors.secondaryBg,
-                color: customColors.textDark,
-              }}
-            >
+        
+        {goals.length === 0 ? (
+          <p className='text-lg text-[--text-light] font-bold italic text-center'>You have no current goals.</p>
+        ) : (
+          <ul className="space-y-2">
+            {goals.map((goal) => (
+              <li
+                key={goal.id}
+                className="flex justify-between items-center p-3 border rounded-lg shadow-sm"
+                style={{
+                  backgroundColor: customColors.secondaryBg,
+                  color: customColors.textDark,
+                }}
+              >
               <span>{goal.name}</span>
               <button
-              onClick={() => deleteGoal(goal.id)}
-              disabled={loading}
-              className={`bg-[${customColors.primaryBg}] text-[${customColors.textDark}] hover:bg-[${customColors.primaryBg}] hover:text-red-500 px-4 py-2 rounded`}
-            >
-              Delete
-            </button>
+                onClick={() => deleteGoal(goal.id)}
+                disabled={loading}
+                className={`bg-[${customColors.primaryBg}] text-[${customColors.textDark}] hover:bg-[${customColors.primaryBg}] hover:text-red-500 px-4 py-2 rounded`}
+              >
+                Delete
+              </button>
 
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </>
   );

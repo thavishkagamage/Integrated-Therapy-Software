@@ -85,9 +85,7 @@ const Conversations = () => {
     <div className="conversations-container">
       <h1 className="font-bold mb-4">Your Conversations</h1>
       {conversations.length === 0 ? (
-        <div className="no-conversations">
-          <p>You have no previous conversations.</p>
-        </div>
+        <p className='text-lg font-bold italic'>You have no previous conversations.</p>
       ) : (
         <>
           <ul>
