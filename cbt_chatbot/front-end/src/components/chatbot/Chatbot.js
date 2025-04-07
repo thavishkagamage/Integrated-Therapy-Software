@@ -20,6 +20,7 @@ const Chatbot = () => {
   const [conversationId, setConversationId] = useState(convoId);
   const [loading, setLoading] = useState(false);
   const [waitingForResponse, setWaitingForResponse] = useState(false);
+  const [showSpinner, setShowSpinner] = useState(false);
   const [conversationFetched, setConversationFetched] = useState(false); // Track if conversation has been fetched
   const [showAgendaModal, setShowAgendaModal] = useState(false);
   
@@ -131,6 +132,7 @@ const Chatbot = () => {
   const sendMessage = async () => {
     // Set the waiting state to true before processing the message
     setWaitingForResponse(true);
+    setShowSpinner(true);
     console.log("BUTTON DISABLED")
 
     // Check if user input is not empty (after trimming) and a conversationId exists
@@ -191,12 +193,16 @@ const Chatbot = () => {
         // Use a timeout to display each paragraph one by one
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         const displayParagraphs = async () => {
-          for (const paragraph of paragraphs) {
+          for (let i = 0; i < paragraphs.length; i++) {
             setConversation(prevConversation => [
               ...prevConversation,
-              { text: paragraph, sender: "ai" }
+              { text: paragraphs[i], sender: "ai" }
             ]);
-            await sleep(1000); // Sleep for 1 second
+            if (i === paragraphs.length - 1) {
+              setShowSpinner(false);
+            } else {
+              await sleep(1000);
+            }
           }
         };
         await displayParagraphs();
@@ -262,7 +268,7 @@ const Chatbot = () => {
                 <ReactMarkdown>{message.text}</ReactMarkdown>
               </span>
             ))}
-          {waitingForResponse && (
+          {showSpinner && (
             <div className="loading-container">
               <div className="loading-spinner"></div>
             </div>
