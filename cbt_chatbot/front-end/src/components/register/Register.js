@@ -103,7 +103,7 @@ const Register = ({ setIsLoggedIn }) => {
                     {loading ? 'Registering...' : 'Register'}
                 </button>
 
-                <div className="register-login-link">Already have an account? <a href="/login">Login</a></div>
+                <div className="register-login-link">Already have an account? <Link to="/login">Login</Link></div>
             </form>
         </div>
     );
