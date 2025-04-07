@@ -4,11 +4,12 @@ import axios from 'axios';
 import { useState } from 'react';
 import './Profile.css';
 
-const Profile = ({handleLogout}) => {
+const Profile = ({handleLogout, handleDeleteProfile}) => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [firstName, setFirstName] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [loggingOut, setLoggingOut] = useState(false);
+    const [deleting, setDeleting] = useState(false); // State to manage deletion loading state
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -30,7 +31,7 @@ const Profile = ({handleLogout}) => {
     }, []);
 
     const logout = () => {
-        setLoading(true);
+        setLoggingOut(true);
         try {
             handleLogout();
             alert('Logout successful!');
@@ -39,10 +40,27 @@ const Profile = ({handleLogout}) => {
             console.error('Logout failed:', error);
             alert('An error occurred while logging out. Please try again.');
         } finally {
-            setLoading(false);
+            setLoggingOut(false);
         }
     }
 
+    const deleteProfile = () => {
+        setDeleting(true);
+        try {
+            const confirmed = window.confirm("Are you sure you want to delete your profile? This action cannot be undone.");
+            if (!confirmed) {
+                return;
+            }  
+            handleDeleteProfile();
+            alert('Profile deleted!');
+            navigate('/');
+        } catch (error) {
+            console.error('Deletion failed:', error);
+            alert('An error occurred while deleting profile. Please try again.');
+        } finally {
+            setDeleting(false);
+        }
+    }
 
     return (
         <div className="profile-container">
@@ -53,8 +71,11 @@ const Profile = ({handleLogout}) => {
                     <p><strong>Username:</strong> {username}</p>
                     <p><strong>Email:</strong> {email}</p>
                 </div>
-                <button disabled={loading} className="logout-button" onClick={logout}>
-                    {loading ? 'Logging out...' : 'Logout'}
+                <button disabled={loggingOut} className="logout-button" onClick={logout}>
+                    {loggingOut ? 'Logging out...' : 'Logout'}
+                </button>
+                <button disabled={deleting} className="logout-button" onClick={deleteProfile}>
+                    {deleting ? 'Deleting...' : 'Delete Profile'}
                 </button>
             </div>
         </div>

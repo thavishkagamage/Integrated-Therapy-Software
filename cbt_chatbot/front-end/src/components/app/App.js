@@ -42,6 +42,16 @@ function App() {
     setIsLoggedIn(false);
   };
 
+  const handleDeleteProfile = async () => {
+    const accesToken = localStorage.getItem('accessToken');
+    await axiosInstance.delete('http://127.0.0.1:8000/api/users/delete-profile/', {
+      headers: { Authorization: `Bearer ${accesToken}` },
+    });
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    setIsLoggedIn(false);
+  };
+
   const handleClearConversations = async () => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -141,7 +151,7 @@ function App() {
               <Route path="/conversations/:id" element={<ConversationDetail />} />
               <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
               <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
-              <Route path="/profile" element={<Profile handleLogout={handleLogout} />} />
+              <Route path="/profile" element={<Profile handleLogout={handleLogout} handleDeleteProfile={handleDeleteProfile} />} />
               <Route path="/goals" element={<Goals />} />
               <Route path="/teams" element={<Teams />} />
             </Routes>
