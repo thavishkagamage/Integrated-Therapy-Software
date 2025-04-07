@@ -75,32 +75,32 @@ TEMPERATURE = 0.7 # how random the system response is, from 0.0 to 1.0, with 1.0
 
 
 
-# def summarizer(conversation_history)->str:
-#     """
-#     Generates a summary of the conversation history using the OpenAI API.
-#     Args:
-#         conversation_history (str): The conversation history to summarize.
-#     Returns:
-#         str: The summary of the conversation history.
-#     """
-#     try:
-#         # Create an OpenAI client with the API key
-#         client = OpenAI(api_key=API_KEY)
+def summarizer(conversation_history)->str:
+    """
+    Generates a summary of the conversation history using the OpenAI API.
+    Args:
+        conversation_history (str): The conversation history to summarize.
+    Returns:
+        str: The summary of the conversation history.
+    """
+    try:
+        # Create an OpenAI client with the API key
+        client = OpenAI(api_key=API_KEY)
 
-#         response = client.chat.completions.create(
-#             model=MODEL,
-#             messages=[
-#                 {"role": "system", "content": "Summarize the conversation. Pull out any user details and summarize the conversation."},
-#                 {"role": "user", "content": conversation_history}
-#             ],
-#             max_tokens=MAX_TOKENS,
-#             temperature=TEMPERATURE
-#         )
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": "Let the user know you will now summarize the conversation. Summarize what they covered in this session, reflecting on key insights they shared. Highlight any patterns they identified, such as recurring negative thoughts, emotional reactions, or behaviors that reinforce depression. You must reiterate out all important or sensitive thoughts, emotions, feelings, or breakthroughs the user made during this session."},
+                {"role": "user", "content": conversation_history}
+            ],
+            max_tokens=MAX_TOKENS,
+            temperature=TEMPERATURE
+        )
 
-#         return response.choices[0].message.content
+        return response.choices[0].message.content
 
-#     except Exception as error_message:
-#         return f"{RED}Error:{RESET} {str(error_message)}"
+    except Exception as error_message:
+        return f"{RED}Error:{RESET} {str(error_message)}"
 
 
 # Function to call OpenAI API
@@ -156,7 +156,7 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
             )
         
         print(f"{RED}AGENT DECISION:{RESET} {agent_decision}\n")
-        print(f'{RED}TOOL OPTIONS:{RESET}' + str(tools) + "\n")
+        # print(f'{RED}TOOL OPTIONS:{RESET}' + str(tools) + "\n")
         # Check if the response contains a tool call
         if response.choices[0].message.tool_calls != None:
             tool_response = handle_response(response.choices[0].message, conversation_id, agenda)
@@ -187,7 +187,8 @@ def get_chat_completion(instructions, conversation_history, tools, conversation_
 
                 # TODO if updated_agenda_statuses is all 2s, handle end of conversation
                 if (all(i == 2 for i in updated_agenda_statuses)):
-                    return "END OF CONVERSATION"
+                    summary = summarizer(conversation_history)
+                    return summary
 
                 # get the keys (actual agenda items) from our outdated agenda as a list
                 agenda_items = list(agenda.keys())
@@ -258,10 +259,12 @@ def chatbot_response(request):
         session_number = data.get('session_number')
         # the current list of agenda items statuses
         agenda_items_status = data.get('agenda_items')
+        # users name to be called in the session
+        first_name = data.get('first_name')
 
         # TODO if updated_agenda_statuses is all 2s, handle end of conversation
-        if (agenda_items_status != {}) and (all(i == 2 for i in agenda_items_status)):
-            return JsonResponse({'message': "END OF CONVERSATION"})
+        # if (agenda_items_status != {}) and (all(i == 2 for i in agenda_items_status)):
+        #     return JsonResponse({'message': "END OF CONVERSATION"})
 
         # This is where we will gather and combine details to pass in as the system prompt to the API
         system_prompt = ''
@@ -270,6 +273,8 @@ def chatbot_response(request):
         guardrails = ""
         most_recent_user_message = ""
         is_free_chat = (session_number == 0) # if session_number is not None else False
+        end_of_conversation = (agenda_items_status != {}) and (all(i == 2 for i in agenda_items_status))
+        users_name_instruction = f"The users name is {first_name}. You may only address them by this name." if first_name != '' else "The user's name is unknown. You may refer to them as 'User' or 'patient'."
 
         # Retrieve the conversation object
         conversation = get_conversation_object(conversation_id)
@@ -294,7 +299,7 @@ def chatbot_response(request):
                 instructions = crisis_instructions_json.get('Conversation Instructions', {}).get('1', '')
                 guardrails = crisis_instructions_json.get('Guardrails', {}).get('1', '')
 
-                system_prompt = instructions + guardrails
+                system_prompt = users_name_instruction + instructions + guardrails
 
             except Exception as e:
                 print(f'{RED}ERROR in crisis mode handling:{RESET} {e}\n')
@@ -309,7 +314,7 @@ def chatbot_response(request):
             guardrails = session_instructions_json.get('Guardrails', {}).get('1', '')
             agenda_instructions = session_instructions_json.get('Agenda Instructions', {}).get('1', '')
 
-            system_prompt = instructions + guardrails + agenda_instructions
+            system_prompt = users_name_instruction + instructions + guardrails + agenda_instructions
 
         # handle normal conversation
         else: 
@@ -349,34 +354,38 @@ def chatbot_response(request):
                 guardrails = session_instructions_json.get('Guardrails', {}).get('1', '')
                 agenda_instructions = session_instructions_json.get('Agenda Instructions', {}).get('1', '')
 
-                # get the titles of the agenda items
-                conversation_agenda_titles = session_instructions_json.get("Conversation Agenda", [])
-                # get the actual agenda item instructions
-                conversation_agenda_instructions = session_instructions_json.get("Current Agenda Item Instructions", [])
-                
-                current_item_instructions = conversation_agenda_instructions[agenda_items_status.index(1)]
-                
-                # Create a dictionary zipping agenda item strings with its corresponding status from the conversation object
-                # EX: {'Welcome the client and...': 'Current', 'Explain what cognitive behavioral therapy is and...': 'Not Started', ...}
-                agenda_dict = zip_agenda_with_status(conversation_agenda_titles, agenda_items_status)
-                current_item_dict = zip_agenda_with_status(current_item_instructions, current_item_status)
-                
-                print(f"{GREEN}AGENDA STATUS:{RESET} " + str(agenda_items_status) + "\n")
-                print(f"{GREEN}CURRENT ITEM STATUS:{RESET} " + str(current_item_status) + "\n")
-                print(f"{GREEN}AGENDA DICT:{RESET} " + str(agenda_dict) + "\n")
-                print(f"{GREEN}CURRENT ITEM DICT:{RESET} " + str(current_item_dict) + "\n")
+                if end_of_conversation:
+                    end_instructions = "The conversation agenda is complete. you may freely continue conversing with the user or end the session here."
+                    system_prompt = users_name_instruction + instructions + guardrails + end_instructions
 
-                # get just the current agenda item title
-                current_agenda_item_title = [key for key, value in agenda_dict.items() if value == 'Current']
-                # get just the current agenda item instruction
-                current_agenda_item_instruction = [key for key, value in current_item_dict.items() if value == 'Current']
+                else:
+                    # get the titles of the agenda items
+                    conversation_agenda_titles = session_instructions_json.get("Conversation Agenda", [])
+                    # get the actual agenda item instructions
+                    conversation_agenda_instructions = session_instructions_json.get("Current Agenda Item Instructions", [])
+                    
+                    current_item_instructions = conversation_agenda_instructions[agenda_items_status.index(1)]
+                    
+                    # Create a dictionary zipping agenda item strings with its corresponding status from the conversation object
+                    # EX: {'Welcome the client and...': 'Current', 'Explain what cognitive behavioral therapy is and...': 'Not Started', ...}
+                    agenda_dict = zip_agenda_with_status(conversation_agenda_titles, agenda_items_status)
+                    current_item_dict = zip_agenda_with_status(current_item_instructions, current_item_status)
+                    
+                    print(f"{GREEN}AGENDA STATUS:{RESET} " + str(agenda_items_status) + "\n")
+                    print(f"{GREEN}CURRENT ITEM STATUS:{RESET} " + str(current_item_status) + "\n")
+                    print(f"{GREEN}AGENDA DICT:{RESET} " + str(agenda_dict) + "\n")
+                    # print(f"{GREEN}CURRENT ITEM DICT:{RESET} " + str(current_item_dict) + "\n")
 
-                # get the tools
-                tools = get_all_tools(current_agenda_item_instruction)
+                    # get just the current agenda item title
+                    current_agenda_item_title = [key for key, value in agenda_dict.items() if value == 'Current']
+                    # get just the current agenda item instruction
+                    current_agenda_item_instruction = [key for key, value in current_item_dict.items() if value == 'Current']
 
-                # combine all strings into one prompt for the api
-                # system_prompt = identity + purpose + behavior + Format + voice + guardrails + background + agenda_instructions
-                system_prompt = instructions + guardrails + agenda_instructions + str(current_item_dict)
+                    # get the tools
+                    tools = get_all_tools(current_agenda_item_instruction)
+
+                    # combine all strings into one prompt for the api
+                    system_prompt = users_name_instruction + instructions + guardrails + agenda_instructions + str(current_item_dict)
 
             except Exception as e:
                 print(f'{RED}ERROR building system prompt:{RESET} {e}\n')
@@ -471,7 +480,7 @@ def chatbot_response(request):
                 
                 # Step 2: Agent decides whether current message needs tool execution or therapeutic response
                 # DO NOT USE for free chat or crisis mode
-                if not is_free_chat:
+                if (not is_free_chat) and (not end_of_conversation):
                     tool_names = [tool for tool in tools if tool['function']['name'] != 'detect_self_harm']
                     decision_prompt = f"""You are an agent coordinator for a CBT therapy chatbot.
                     Your job is to analyze the user's message and decide on the appropriate action.
@@ -541,26 +550,9 @@ def chatbot_response(request):
         bot_response = ""
 
         # just get normal response in crisis mode
-        if conversation.isCrisisModeActive or is_free_chat:
+        if conversation.isCrisisModeActive or is_free_chat or end_of_conversation:
             exit_tool = exit_crisis_mode(most_recent_user_message)
             bot_response = enhanced_agent_mode(system_prompt, conversation_history, exit_tool, conversation_id)
-            # bot_response = get_chat_completion(
-            #     system_prompt,
-            #     conversation_history,
-            #     exit_tool,  # No tools to avoid function calling
-            #     conversation_id,
-            #     temperature=0.7,
-            # )
-        
-        # elif is_free_chat:
-        #     # for free chat, just use the normal get_chat_completion
-        #     bot_response = get_chat_completion(
-        #         system_prompt,
-        #         conversation_history,
-        #         [],  # No tools for free chat
-        #         conversation_id,
-        #         temperature=0.7
-        #     )
         
         # use enhanced agent mode for normal session
         else: 

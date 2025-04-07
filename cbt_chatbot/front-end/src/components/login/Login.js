@@ -27,7 +27,9 @@ const Login = ({ setIsLoggedIn }) => {
             const userResponse = await axios.get('https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net/api/users/me/', {
                 headers: { Authorization: `Bearer ${response.data.access}` }
             });
+            console.log('Login response:', userResponse.data); // For debugging purposes
             localStorage.setItem('userId', userResponse.data.user_id);
+            localStorage.setItem('first_name', userResponse.data.first_name);
 
             setIsLoggedIn(true);
             alert('Login successful!');
