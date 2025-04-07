@@ -2,7 +2,7 @@ import axios from 'axios';
 import { refreshToken } from './auth';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000/api/',
+  baseURL: 'https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net/api/',
 });
 
 axiosInstance.interceptors.request.use(

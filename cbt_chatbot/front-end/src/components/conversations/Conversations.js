@@ -17,7 +17,7 @@ const Conversations = () => {
         return;
       }
       try {
-        const response = await axiosInstance.get('http://localhost:8000/api/conversations/', {
+        const response = await axiosInstance.get('https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net/api/conversations/', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setConversations(response.data);
@@ -57,7 +57,7 @@ const Conversations = () => {
       return;
     }
     try {
-      await axiosInstance.delete(`http://localhost:8000/api/conversations/${conversationId}/`, {
+      await axiosInstance.delete(`https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net/api/conversations/${conversationId}/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setConversations(conversations.filter(conversation => conversation.id !== conversationId));
