@@ -1,5 +1,6 @@
 import React from 'react';
-import '../app/App.css';
+import { Link } from 'react-router-dom';
+import '../app/App.css';  // Make sure this is the correct path to your CSS file
 
 function Home() {
   return (
@@ -18,7 +19,7 @@ function Home() {
           <p className="hero-subtitle">
             Get immediate, affordable, and always-available therapy support through AI-driven sessions.
           </p>
-          <button className="hero-button">Get Started</button>
+          <Link to="/sessions" className="hero-button">Get Started</Link>
         </div>
 
         {/* Right Column: Hero Image */}
@@ -48,121 +49,67 @@ function Home() {
         </div>
       </section>
 
-      {/* MAIN CONTENT */}
       <main className="main-sections">
 
-        {/* TREATMENT GAP */}
+        {/* GET STARTED */}
         <section className="card-section">
-          <h2 className="section-title">Treatment Gap</h2>
+          <h2 className="section-title">Getting Started</h2>
           <p className="section-content">
-            The rising demand for mental health care has outpaced the supply of professionals.
-            Digital, software-based Cognitive Behavioral Therapy (CBT) solutions have emerged to fill this gap
-            by offering affordable, always-available support. However, they often lack the real-life connections
-            crucial for overcoming depression—highlighting the need for an integrated approach that combines
-            CBT with social support and accountability.
+            Follow these steps to begin using TheraThrive:
           </p>
-        </section>
-
-        {/* WHAT IS CBT? & TARGET USER (Side by Side) */}
-        <div className="card-grid">
-          <section className="card-section">
-            <h2 className="section-title">What is CBT?</h2>
-            <p className="section-content">
-              Cognitive Behavioral Therapy (CBT) is a structured, goal-oriented approach that focuses on the present
-              to change negative thought patterns and behaviors. It works by helping therapists and clients identify,
-              challenge, and replace negative automatic thoughts through strategic growth experiences.
-            </p>
-          </section>
-          <section className="card-section">
-            <h2 className="section-title">Target User</h2>
-            <ul className="section-content list">
-              <li>Individuals with Major Depressive Disorder (may not have a formal diagnosis)</li>
-              <li>Technology proficient—using smartphones or laptops</li>
-              <li>Often disconnected from supportive social relationships</li>
-              <li>Quiet, isolated environment at home</li>
-              <li>Ages 12 to 49 years old</li>
-            </ul>
-          </section>
-        </div>
-
-        {/* OUR SOLUTION */}
-        <section className="card-section">
-          <h2 className="section-title">Our Solution</h2>
-          <p className="section-content">
-            TheraThrive integrates computerized CBT with relationship-building support. Users log in to our
-            convenient website to chat with an AI-powered assistant for weekly hour-long therapy sessions.
-            The chatbot leverages a structured agenda, agenda-specific prompts, and specialized tools to deliver
-            effective therapy and foster social accountability.
-          </p>
-        </section>
-
-        {/* TECHNOLOGY & MARKET OPPORTUNITY (Side by Side) */}
-        <div className="card-grid">
-          <section className="card-section">
-            <h2 className="section-title">Technology Used</h2>
-            <ul className="section-content list">
-              <li><strong>Django:</strong> Python back-end framework for API requests</li>
-              <li><strong>React:</strong> Dynamic front-end in JavaScript</li>
-              <li><strong>Postgres:</strong> Reliable database for user data</li>
-              <li><strong>RESTful API:</strong> Seamless front-end/back-end communication</li>
-              <li><strong>OpenAI:</strong> Advanced LLMs powering the virtual therapist</li>
-            </ul>
-          </section>
-          <section className="card-section">
-            <h2 className="section-title">Market Opportunity</h2>
-            <p className="section-content">
-              The U.S. mental health apps market was valued at $6.25 billion in 2023 and is growing at an annual rate of
-              15.2%. With an estimated API usage cost of just $0.015 per 1-hour conversation, TheraThrive is positioned
-              for rapid adoption and scalability.
-            </p>
-            <p className="section-content">
-              Our competitive differentiator: combining CBT with relationship-building support for holistic psychological
-              and social treatment of depression.
-            </p>
-          </section>
-        </div>
-
-        {/* CHALLENGES & FUTURE IMPROVEMENTS (Side by Side) */}
-        <section className="card-section">
-          <h2 className="section-title">Challenges &amp; Future Improvements</h2>
-          <div className="card-grid">
-            <div>
-              <h3 className="sub-title">Challenges Faced</h3>
-              <ul className="section-content list">
-                <li>Tool call misfires (agenda item completion issues)</li>
-                <li>Cross-disciplinary collaboration complexities</li>
-                <li>Prompt engineering to guide AI behavior effectively</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="sub-title">Future Improvements</h3>
-              <ul className="section-content list">
-                <li>Co-creation of conversation agendas with users &amp; chatbot</li>
-                <li>Negative Automatic Thoughts journal feature</li>
-                <li>Time-elapsed prompt input for smoother conversation flow</li>
-                <li>Accountability partner messaging</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* TEAM */}
-        <section className="card-section">
-          <h2 className="section-title">Meet the Team</h2>
           <ul className="section-content list">
-            <li>Alex Gribble (BME)</li>
-            <li>Grant Guernsey (CS)</li>
-            <li>Ricky Roberts (CS)</li>
-            <li>Kyle Woods (EET)</li>
-            <li>Thavishka Gamage (CS)</li>
+            <li>
+              Navigate to the <Link to="/login" className="link-button">Login</Link> page and click <strong>Sign Up</strong>.
+            </li>
+            <li>Create an account using a unique username, email, and password.</li>
+            <li>
+              Once logged in, access the 
+              <Link to="/sessions" className="link-button">Chat</Link>, 
+              <Link to="/conversations" className="link-button">Conversations</Link>, and 
+              <Link to="/goals" className="link-button">Goals</Link> pages from your dashboard.
+            </li>
           </ul>
         </section>
-      </main>
 
-      {/* FOOTER */}
-      <footer className="footer">
-        &copy; {new Date().getFullYear()} TheraThrive Integrated Therapy Software
-      </footer>
+        {/* FIRST SESSION */}
+        <section className="card-section">
+          <h2 className="section-title">Start Your First Session</h2>
+          <p className="section-content">
+            Jump into your first CBT session with our AI therapeutic assistant:
+          </p>
+          <ul className="section-content list">
+            <li>Go to the <Link to="/sessions" className="link-button">Chat</Link> page.</li>
+            <li>Click on <strong>Session 1</strong> to begin.</li>
+            <li>Type your message into the chat box and click <strong>Send</strong>.</li>
+            <li>Follow the prompts to progress through your first CBT experience.</li>
+          </ul>
+        </section>
+
+        {/* PAST CONVERSATIONS */}
+        <section className="card-section">
+          <h2 className="section-title">Review Past Conversations</h2>
+          <p className="section-content">
+            Your session history is always available for review:
+          </p>
+          <ul className="section-content list">
+            <li>Visit the <Link to="/conversations" className="link-button">Conversations</Link> page.</li>
+            <li>View previous chats, delete old sessions, or pick up where you left off.</li>
+          </ul>
+        </section>
+
+        {/* CBT EXPLAINER */}
+        <section className="card-section">
+          <h2 className="section-title">What is CBT?</h2>
+          <p className="section-content">
+            Cognitive Behavioral Therapy (CBT) is a practical, results-focused form of therapy that aims to improve mental well-being
+            by addressing the connections between thoughts, emotions, and behaviors.
+          </p>
+          <p className="section-content">
+            It empowers individuals to identify and challenge negative thought patterns, and replace them with healthier alternatives—using structured, goal-oriented techniques proven to reduce symptoms of depression and anxiety.
+          </p>
+        </section>
+
+      </main>
     </div>
   );
 }

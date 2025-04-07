@@ -20,14 +20,20 @@ const Chatbot = () => {
   const [conversationId, setConversationId] = useState(convoId);
   const [loading, setLoading] = useState(false);
   const [waitingForResponse, setWaitingForResponse] = useState(false);
+  const [showSpinner, setShowSpinner] = useState(false);
   const [conversationFetched, setConversationFetched] = useState(false); // Track if conversation has been fetched
+  const [showAgendaModal, setShowAgendaModal] = useState(false);
   
   // New ref for the chat container
   const chatContainerRef = useRef(null);
-  
   const agendaRef = useRef(null);
 
   useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      navigate('/login'); // Redirect to login if no token found
+    }
+
     const createOrFetchConversation = async () => {
       if (loading || conversationFetched) return;  // Prevent repeated fetching if conversation is already fetched
 
@@ -91,6 +97,17 @@ const Chatbot = () => {
         // Mark conversation as fetched to prevent further calls
         setConversationFetched(true);
 
+        // update agenda component on page load/refresh as well
+        if (agendaRef.current) {
+          // Fetch the updated agenda items for the conversation from the backend
+          const updatedConversation = await axiosInstance.get(`conversations/${conversationId}/`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const updated_status = (updatedConversation.data.agenda_items);
+          
+          agendaRef.current.update(updated_status);
+        }
+
       } catch (error) {
         console.error("Error creating or fetching conversation:", error.response ? error.response.data : error.message);
       } finally {
@@ -115,6 +132,7 @@ const Chatbot = () => {
   const sendMessage = async () => {
     // Set the waiting state to true before processing the message
     setWaitingForResponse(true);
+    setShowSpinner(true);
 
     // Check if user input is not empty (after trimming) and a conversationId exists
     if (userInput.trim() && conversationId) {
@@ -156,7 +174,8 @@ const Chatbot = () => {
             conversation_id: conversationId,
             message: conversationHistory,
             session_number: session_number,
-            agenda_items: agenda_items
+            agenda_items: agenda_items,
+            first_name: localStorage.getItem('first_name') || '',
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -173,15 +192,19 @@ const Chatbot = () => {
         // Use a timeout to display each paragraph one by one
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         const displayParagraphs = async () => {
-          for (const paragraph of paragraphs) {
+          for (let i = 0; i < paragraphs.length; i++) {
             setConversation(prevConversation => [
               ...prevConversation,
-              { text: paragraph, sender: "ai" }
+              { text: paragraphs[i], sender: "ai" }
             ]);
-            await sleep(1000); // Sleep for 1 second
+            if (i === paragraphs.length - 1) {
+              setShowSpinner(false);
+            } else {
+              await sleep(1000);
+            }
           }
         };
-        displayParagraphs();
+        await displayParagraphs();
 
         // Save the user's message to the database
         await axiosInstance.post(
@@ -204,16 +227,23 @@ const Chatbot = () => {
           });
           const updated_status = (updatedConversation.data.agenda_items);
           
-          if (JSON.stringify(updated_status) !== JSON.stringify(agenda_items)) {
-            agendaRef.current.update(updated_status);
-          }
+          agendaRef.current.update(updated_status);
         }
       } catch (error) {
         // Log any errors that occur during the process
         console.error("Error sending message:", error.response ? error.response.data : error.message);
+        // add chat error message
+        setConversation(prev => [
+          ...prev,
+          {
+            text: "Something went wrong. Please try again.",
+            sender: "ai"
+          }
+        ]);
       } finally {
         // Set waiting state to false once processing is complete, regardless of success or error
         setWaitingForResponse(false);
+        setShowSpinner(false);
       }
     }
   };
@@ -233,7 +263,7 @@ const Chatbot = () => {
   }, [conversation]);
 
   return (
-    <>
+    <div className="chat-and-agenda-container">
       <div className="chat-window">
         <div className="chat-messages" ref={chatContainerRef}>
           <span className="start-message"> This is the beginning of your CBT chat session </span>
@@ -245,7 +275,7 @@ const Chatbot = () => {
                 <ReactMarkdown>{message.text}</ReactMarkdown>
               </span>
             ))}
-          {waitingForResponse && (
+          {showSpinner && (
             <div className="loading-container">
               <div className="loading-spinner"></div>
             </div>
@@ -256,15 +286,45 @@ const Chatbot = () => {
             type="text"
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                // If we’re still waiting, do nothing
+                if (waitingForResponse) {
+                  e.preventDefault();
+                } else {
+                  // Otherwise, send the message
+                  sendMessage();
+                }
+              }
+            }}
           />
           <button className="send-button" disabled={waitingForResponse} onClick={sendMessage}>
             {waitingForResponse ? 'Sending...' : 'Send'}
           </button>
         </div>
       </div>
-      <Agenda ref={agendaRef} conversationId={convoId} sessionNumber={sessionId} />
-    </>
+
+      <button 
+        className="view-agenda-btn" 
+        onClick={() => setShowAgendaModal(true)}>
+        View Agenda
+      </button>
+
+      {sessionId !== 0 && (
+        <div className="agenda-container">
+          <Agenda ref={agendaRef} conversationId={convoId} sessionNumber={sessionId} />
+        </div>
+      )}
+
+      {showAgendaModal && (
+        <div className="agenda-modal">
+          <button className="close-agenda-btn" onClick={() => setShowAgendaModal(false)}>
+            Close Agenda
+          </button>
+          <Agenda ref={agendaRef} conversationId={convoId} sessionNumber={sessionId} />
+        </div>
+      )}
+    </div>
   );
 };
 

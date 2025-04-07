@@ -1,5 +1,6 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import axiosInstance from "../utils/axios";
+import "./Agenda.css";
 
 const Agenda = forwardRef(({conversationId, sessionNumber}, ref) => {
 
@@ -64,18 +65,24 @@ const Agenda = forwardRef(({conversationId, sessionNumber}, ref) => {
   }), []); // Empty dependency array means the handle doesn't change
 
   return (
-    <div>
-      {agendaItemsAndStatuses && [...agendaItemsAndStatuses].map(([key, value]) => {
-        const textColor =
-          value === 1 ? 'text-yellow-500' :
-          value === 0 ? 'text-red-500' :
-          value === 2 ? 'text-green-500' : '';
-        return (
-          <li key={key} className={'list-none'}>
-            <span className={textColor}>{key}</span>
-          </li>
-        )
-      })}
+    <div className="agenda-progress-container">
+      {agendaItemsAndStatuses ? (
+        [...agendaItemsAndStatuses].map(([key, value]) => {
+          // Decide the circle color class based on value
+          let colorClass = "";
+          if (value === 2) colorClass = "agenda-dot-completed";
+          else if (value === 1) colorClass = "agenda-dot-inprogress";
+          else if (value === 0) colorClass = "agenda-dot-notstarted";
+  
+          return (
+            <li key={key} className={`agenda-item ${colorClass}`}>
+              <span className="agenda-text">{key}</span>
+            </li>
+          );
+        })
+      ) : (
+        <div>Loading agenda...</div>
+      )}
     </div>
   );
 });

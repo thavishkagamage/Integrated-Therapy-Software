@@ -2,11 +2,26 @@ h1 {
   text-align: center;
 }
 
+.chat-and-agenda-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+  justify-content: space-evenly;
+}
+@media (max-width: 768px) {
+  .chat-and-agenda-container {
+    flex-direction: column; /* stack vertically */
+    align-items: stretch;   /* optional – makes items full-width */
+  }
+}
+
 /* Chat Window */
 .chat-window {
-  width: 90%;
-  max-width: 768px;
-  margin: 25px auto;
+  /* width: 90%; */
+  flex: 3;
+  max-width: 1000px;
+  margin: 25px 0;
   background: var(--accent-color);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   border: 1px solid var(--text-dark);
@@ -26,7 +41,8 @@ h1 {
   padding: 10px 30px;
   display: flex;
   flex-direction: column;
-  height: 850px;
+  /* height: 850px; */
+  height: calc(100vh - 120px); 
   overflow-y: auto;
   background-color: var(--primary-bg);
   border-radius: 20px;
@@ -59,8 +75,8 @@ input {
   padding: 10px;
   outline: none;
   cursor: pointer;
-  width: 100%;
-  max-width: 500px;
+  width: 80%;
+  /* max-width: 500px; */
 }
 
 .send-button {
@@ -84,6 +100,14 @@ input {
   max-width: 70%;
   word-wrap: break-word;
   color: white;
+}
+@media (max-width: 768px) {
+  .message {
+    max-width: 85%; /* Make the chat bubbles wider on mobile */
+  }
+  .chat-messages {
+    padding: 10px 15px; /* Adjust height for mobile */
+  }
 }
 
 .user-message {
@@ -117,16 +141,17 @@ input {
 }
 
 /* Mobile Adjustments */
-@media all and (max-width: 768px) {
+@media (max-width: 768px) {
   .chat-window {
-    width: 95%;
+    width: 100%;
+    margin-bottom: 0
   }
   .input-container {
-    flex-direction: column;
+    /* flex-direction: column; */
     gap: 5px;
   }
   input {
-    width: 100%;
+    width: 90%;
   }
 }
 
@@ -138,4 +163,60 @@ input {
 /* Remove bottom margin for any AI message that is not the last child of its container */
 .chat-messages span.ai-message:not(:last-child) {
   margin-bottom: 1px;
+}
+
+.agenda-container {
+  flex: 1;
+  max-width: 300px;
+  position: sticky;
+  top: 0;
+  z-index: 7;
+}
+
+@media (max-width: 768px) {
+  .agenda-container {
+    display: none;
+  }
+  
+  .view-agenda-btn {
+    display: block;
+    margin: 10px auto;
+    padding: 10px 40px;
+    background-color: var(--highlight-color);
+    color: var(--text-light);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+}
+
+@media (min-width: 769px) {
+  .view-agenda-btn {
+    display: none;
+  }
+}
+
+.agenda-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--primary-bg);
+  z-index: 20;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.close-agenda-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: var(--accent-color);
+  color: var(--text-light);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
 }

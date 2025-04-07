@@ -6,10 +6,15 @@ import axiosInstance from '../utils/axios';
 const Conversations = () => {
   const [conversations, setConversations] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 5;
   const navigate = useNavigate();
 
   useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      navigate('/login'); // Redirect to login if no token found
+    }
+
     const fetchConversations = async () => {
       const token = localStorage.getItem('accessToken');
       if (!token) {
@@ -78,18 +83,16 @@ const Conversations = () => {
 
   return (
     <div className="conversations-container">
-      <h1 className="text-2xl font-bold mb-4">Your Conversations</h1>
+      <h1 className="font-bold mb-4">Your Conversations</h1>
       {conversations.length === 0 ? (
-        <div className="no-conversations">
-          <p>You have no previous conversations.</p>
-        </div>
+        <p className='text-lg font-bold italic'>You have no previous conversations.</p>
       ) : (
         <>
           <ul>
             {currentConversations.map(conversation => (
               <li key={conversation.id} className="conversation-item flex justify-between items-center p-4 border-b">
                 <div className="conversation-title">{conversation.title}</div>
-                <div className="space-x-2">
+                <div className="buttons-container">
                   <button onClick={() => handViewConversation(conversation.id)} className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded">
                     View
                   </button>

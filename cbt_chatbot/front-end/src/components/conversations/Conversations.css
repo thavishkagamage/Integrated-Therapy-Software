@@ -1,5 +1,5 @@
 .conversations-container {
-  padding: 20px;
+  /* padding: 20px; */
 }
 
 /* Conversation List Item */
@@ -48,4 +48,35 @@
 .no-conversations p {
   font-weight: 600;
   color: var(--text-dark);
+}
+
+.sessions-container, .conversations-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.conversation-item {
+  width: 70vw;
+}
+
+@media (max-width: 768px) {
+  .conversation-item {
+    width: 90vw; 
+  }
+  .conversations-container {
+    padding: 10px;
+  }
+}
+
+.conversation-item .buttons-container {
+  display: flex;
+  flex-direction: row; /* default – row on large screens */
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .conversation-item .buttons-container {
+    flex-direction: column; /* stack vertically on mobile */
+    gap: 8px; /* vertical gap between buttons */
+  }
 }
