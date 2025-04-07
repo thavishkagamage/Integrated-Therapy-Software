@@ -285,7 +285,7 @@ button:hover {
 }
 
 /* Mobile Styles */
-@media all and (max-width: 768px) {
+@media (max-width: 768px) {
   .main-content-container {
     flex-direction: column;
   }

@@ -5,6 +5,12 @@
     padding: 0;
 }
 
+@media (max-width: 768px) {
+    .agenda-progress-container {
+        margin-top: 60px; /* Reduce margin on mobile */
+    }
+}
+
 .agenda-item {
     position: relative;
     padding-left: 20px;

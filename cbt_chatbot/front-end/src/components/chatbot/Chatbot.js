@@ -21,10 +21,10 @@ const Chatbot = () => {
   const [loading, setLoading] = useState(false);
   const [waitingForResponse, setWaitingForResponse] = useState(false);
   const [conversationFetched, setConversationFetched] = useState(false); // Track if conversation has been fetched
+  const [showAgendaModal, setShowAgendaModal] = useState(false);
   
   // New ref for the chat container
   const chatContainerRef = useRef(null);
-  
   const agendaRef = useRef(null);
 
   useEffect(() => {
@@ -279,8 +279,23 @@ const Chatbot = () => {
         </div>
       </div>
 
+      <button 
+        className="view-agenda-btn" 
+        onClick={() => setShowAgendaModal(true)}>
+        View Agenda
+      </button>
+
       {sessionId !== 0 && (
         <div className="agenda-container">
+          <Agenda ref={agendaRef} conversationId={convoId} sessionNumber={sessionId} />
+        </div>
+      )}
+
+      {showAgendaModal && (
+        <div className="agenda-modal">
+          <button className="close-agenda-btn" onClick={() => setShowAgendaModal(false)}>
+            Close Agenda
+          </button>
           <Agenda ref={agendaRef} conversationId={convoId} sessionNumber={sessionId} />
         </div>
       )}
