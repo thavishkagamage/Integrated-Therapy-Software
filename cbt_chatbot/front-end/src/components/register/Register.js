@@ -18,20 +18,20 @@ const Register = ({ setIsLoggedIn }) => {
         
         try {
             // Register new user
-            await axios.post('http://127.0.0.1:8000/api/users/register/', {
+            await axios.post('https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net/api/users/register/', {
                 username,
                 email,
                 password,
             });
             // Login new user
-            const response = await axios.post('http://127.0.0.1:8000/api/users/login/', {
+            const response = await axios.post('https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net/api/users/login/', {
                 username,
                 password,
             });
             localStorage.setItem('accessToken', response.data.access);
             localStorage.setItem('refreshToken', response.data.refresh);
             // Fetch user ID
-            const userResponse = await axios.get('http://127.0.0.1:8000/api/users/me/', {
+            const userResponse = await axios.get('https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net/api/users/me/', {
                 headers: { Authorization: `Bearer ${response.data.access}` }
             });
             localStorage.setItem('userId', userResponse.data.user_id);
