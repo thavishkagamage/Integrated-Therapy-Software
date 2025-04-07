@@ -3,6 +3,7 @@ import { refreshToken } from './auth';
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:8000/api/',
+  timeout: 90000, // 90 seconds for safety
 });
 
 axiosInstance.interceptors.request.use(
