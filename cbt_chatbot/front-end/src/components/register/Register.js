@@ -95,6 +95,7 @@ const Register = ({ setIsLoggedIn }) => {
                         type="text"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
+                        maxLength={13}
                         required
                         className="login-input"
                     />
