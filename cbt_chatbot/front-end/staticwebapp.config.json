@@ -42,23 +42,27 @@
       },
       {
         "route": "/sessions/chatbot/*",
-        "allowedRoles": ["authenticated"]
+        "allowedRoles": ["authenticated", "anonymous"]
+      },
+      {
+        "route": "chatbot/*",
+        "allowedRoles": ["authenticated", "anonymous"]
       },
       {
         "route": "/conversations",
-        "allowedRoles": ["authenticated"]
+        "allowedRoles": ["authenticated", "anonymous"]
       },
       {
         "route": "/conversations/*",
-        "allowedRoles": ["authenticated"]
+        "allowedRoles": ["authenticated", "anonymous"]
       },
       {
         "route": "/goals",
-        "allowedRoles": ["authenticated"]
+        "allowedRoles": ["authenticated", "anonymous"]
       },
       {
         "route": "/profile",
-        "allowedRoles": ["authenticated"]
+        "allowedRoles": ["authenticated", "anonymous"]
       }
     ]
   }
