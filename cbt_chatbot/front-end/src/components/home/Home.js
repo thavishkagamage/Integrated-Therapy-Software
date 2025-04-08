@@ -51,6 +51,30 @@ function Home() {
 
       <main className="main-sections">
 
+        <section className="card-section">
+          <h2 className="section-title">What is CBT?</h2>
+          <p className="section-content indent-6">
+            Cognitive Behavioral Therapy (CBT) is a structured, goal-oriented approach that focuses on the present to change negative thought patterns and behaviors. CBT is based on the idea that our thoughts, feelings, and behaviors are all deeply connected. CBT works through all three by enabling therapists and clients to work together to identify, challenge, and replace negative automatic thoughts and behaviors through strategic growth experiences.
+          </p>
+          <p className="section-content indent-6">
+            It empowers individuals to identify and challenge negative thought patterns, and replace them with healthier alternatives—using structured, goal-oriented techniques proven to reduce symptoms of depression and anxiety.
+          </p>
+        </section>
+
+        {/* TheraThrive EXPLAINER */}
+        <section className="card-section">
+          <h2 className="section-title">What is TheraThrive?</h2>
+          <p className="section-content indent-6">
+            Major Depressive Disorder is a serious mental health condition that affects approximately 280 million people globally. Depression is characterized by long-lasting feelings of sadness, hopelessness, and a loss of interest in everyday activities. Arising from a mix of biological, psychological, environmental, and social factors, depression leaves patients lacking motivation to do everyday activities and withdrawing from the people close to them.
+          </p>
+          <p className="section-content indent-6">
+            The rising demand for mental health care has outpaced the supply of professionals. Digital software-based Cognitive Behavioral Therapy (CBT) solutions have emerged to fill this gap by offering affordable, always-available support. However, they lack the real-life connections that are crucial for overcoming depression, highlighting the need for an integrated approach, one that combines CBT with social support and accountability.
+          </p>
+          <p className="section-content indent-6">
+            TheraThrive Integrated Therapy Software combines the benefits of computerized CBT with social support. Users log in to a convenient website to chat with an AI-powered assistant for weekly hour-long therapy sessions. The chatbot uses a structured agenda, agenda-item specific prompts, and tools to provide effective therapy and relationship building support, enabling the treatment of depression from both a psychological and social dimension.
+          </p>
+        </section>
+
         {/* GET STARTED */}
         <section className="card-section">
           <h2 className="section-title">Getting Started</h2>
@@ -95,18 +119,6 @@ function Home() {
             <li>Visit the <Link to="/conversations" className="link-button">Conversations</Link> page.</li>
             <li>View previous chats, delete old sessions, or pick up where you left off.</li>
           </ul>
-        </section>
-
-        {/* CBT EXPLAINER */}
-        <section className="card-section">
-          <h2 className="section-title">What is CBT?</h2>
-          <p className="section-content">
-            Cognitive Behavioral Therapy (CBT) is a practical, results-focused form of therapy that aims to improve mental well-being
-            by addressing the connections between thoughts, emotions, and behaviors.
-          </p>
-          <p className="section-content">
-            It empowers individuals to identify and challenge negative thought patterns, and replace them with healthier alternatives—using structured, goal-oriented techniques proven to reduce symptoms of depression and anxiety.
-          </p>
         </section>
 
       </main>

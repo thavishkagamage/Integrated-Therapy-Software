@@ -100,6 +100,15 @@ header {
     width: 150px;
     height: auto;
   }
+  .hero-section {
+    padding: 2rem 1rem;
+  }
+  .main-sections {
+    padding: 2rem 0;
+  }
+  .card-section {
+    padding: 1rem;
+  }
 }
 
 /* Hide hamburger menu on larger screens */
@@ -374,7 +383,7 @@ button:hover {
   z-index: 1;
 }
 .hero-image img {
-  max-width: 350px;
+  /* max-width: 350px; */
   border-radius: 8px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
@@ -465,7 +474,7 @@ button:hover {
 
 .link-button {
   display: inline-block;
-  margin: 0 4px;
+  margin: 2px 4px;
   padding: 6px 12px;
   background-color: var(--highlight-color); /* Use a real color or CSS variable */
   color: white;
