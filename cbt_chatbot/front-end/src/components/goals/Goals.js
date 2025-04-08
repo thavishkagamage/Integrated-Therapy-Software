@@ -148,7 +148,7 @@ const Goals = () => {
             {goals.map((goal) => (
               <li
                 key={goal.id}
-                className="flex justify-between items-center p-3 border rounded-lg shadow-sm"
+                className="flex justify-between items-center p-3 border rounded-lg shadow-sm font-bold"
                 style={{
                   backgroundColor: customColors.secondaryBg,
                   color: customColors.textDark,
