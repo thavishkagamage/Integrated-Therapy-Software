@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import './Login.css';
 
@@ -17,14 +17,14 @@ const Login = ({ setIsLoggedIn }) => {
 
         try {
             // Login existing user
-            const response = await axios.post('http://127.0.0.1:8000/api/users/login/', {
+            const response = await axios.post('https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net/api/users/login/', {
                 username,
                 password,
             });
             localStorage.setItem('accessToken', response.data.access);
             localStorage.setItem('refreshToken', response.data.refresh);
-            // Fetch user ID AND first name
-            const userResponse = await axios.get('http://127.0.0.1:8000/api/users/me/', {
+            // Fetch user ID
+            const userResponse = await axios.get('https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net/api/users/me/', {
                 headers: { Authorization: `Bearer ${response.data.access}` }
             });
             console.log('Login response:', userResponse.data); // For debugging purposes
@@ -75,7 +75,7 @@ const Login = ({ setIsLoggedIn }) => {
                     {loading ? 'Logging in...' : 'Login'}
                 </button>
 
-                <div className="register-login-link">Don't have an account? <a href="/register">Sign up</a></div>
+                <div className="register-login-link">Don't have an account? <Link to="/register">Sign up</Link></div>
             </form>
         </div>
     );

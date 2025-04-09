@@ -1,0 +1,68 @@
+{
+    "navigationFallback": {
+      "rewrite": "/index.html",
+      "exclude": ["/static/*", "/images/*", "/*.{png,jpg,gif,svg,ico}", "/*.{css,scss,js,json,map}"]
+    },
+    "mimeTypes": {
+      ".json": "text/json",
+      ".css": "text/css",
+      ".js": "text/javascript",
+      ".html": "text/html"
+    },
+    "responseOverrides": {
+      "404": {
+        "rewrite": "/index.html",
+        "statusCode": 200
+      }
+    },
+    "routes": [
+      {
+        "route": "/api/*",
+        "allowedRoles": ["anonymous"]
+      },
+      {
+        "route": "/login",
+        "allowedRoles": ["anonymous"]
+      },
+      {
+        "route": "/register",
+        "allowedRoles": ["anonymous"]
+      },
+      {
+        "route": "/",
+        "allowedRoles": ["anonymous"]
+      },
+      {
+        "route": "/teams",
+        "allowedRoles": ["anonymous"]
+      },
+      {
+        "route": "/sessions",
+        "allowedRoles": ["authenticated", "anonymous"]
+      },
+      {
+        "route": "/sessions/chatbot/*",
+        "allowedRoles": ["authenticated", "anonymous"]
+      },
+      {
+        "route": "chatbot/*",
+        "allowedRoles": ["authenticated", "anonymous"]
+      },
+      {
+        "route": "/conversations",
+        "allowedRoles": ["authenticated", "anonymous"]
+      },
+      {
+        "route": "/conversations/*",
+        "allowedRoles": ["authenticated", "anonymous"]
+      },
+      {
+        "route": "/goals",
+        "allowedRoles": ["authenticated", "anonymous"]
+      },
+      {
+        "route": "/profile",
+        "allowedRoles": ["authenticated", "anonymous"]
+      }
+    ]
+  }

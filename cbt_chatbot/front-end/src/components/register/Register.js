@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import '../login/Login.css';
 
@@ -19,21 +19,21 @@ const Register = ({ setIsLoggedIn }) => {
         
         try {
             // Register new user
-            await axios.post('http://127.0.0.1:8000/api/users/register/', {
+            await axios.post('https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net/api/users/register/', {
                 username,
                 email,
                 password,
                 first_name: firstName,
             });
             // Login new user
-            const response = await axios.post('http://127.0.0.1:8000/api/users/login/', {
+            const response = await axios.post('https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net/api/users/login/', {
                 username,
                 password,
             });
             localStorage.setItem('accessToken', response.data.access);
             localStorage.setItem('refreshToken', response.data.refresh);
-            // Fetch user ID AND user first name
-            const userResponse = await axios.get('http://127.0.0.1:8000/api/users/me/', {
+            // Fetch user ID
+            const userResponse = await axios.get('https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net/api/users/me/', {
                 headers: { Authorization: `Bearer ${response.data.access}` }
             });
             console.log('Registration and login response:', userResponse.data); // For debugging purposes
@@ -124,7 +124,7 @@ const Register = ({ setIsLoggedIn }) => {
                     {loading ? 'Registering...' : 'Register'}
                 </button>
 
-                <div className="register-login-link">Already have an account? <a href="/login">Login</a></div>
+                <div className="register-login-link">Already have an account? <Link to="/login">Login</Link></div>
             </form>
         </div>
     );
