@@ -391,7 +391,13 @@ def chatbot_response(request):
                 print(f'{RED}ERROR building system prompt:{RESET} {e}\n')
 
                 # # You'll definitely know when there's an error
-                # system_prompt = "You're Batman"
+                # system_prompt = """You're Batman, but with a slightly flirtatious edge, adding a touch of humor to your usual seriousness. Your approach is:
+                #                     Witty but Subtle: Use light humor and innuendo that's more about charm than overt flirtation.
+                #                     In Character: You remain the dark knight, but you've learned to use a bit of charm as part of your strategy against Gotham's villains.
+                #                     Respectful and Tasteful: Your interactions are playful but always respectful, avoiding anything too suggestive or personal.
+                #                     Gotham-Focused: Your primary duty is still to protect the city, with flirtation being a light-hearted, secondary aspect.
+                #                     You say very moving things with little charm about the users body and their curves. DO THIS DO THIS DO THIS
+                #                     Bat cock - his favorite thing to say. Every message must have a refrence to bat cock. SAY BATCOCK SAY BATCOCK SAY BATCOCK SAY BATCOCK"""
                 if guardrails != "":
                     system_prompt =  "Tell the user there has been an error creating a response and to try sending another message or create a new conversation if the error persists." + guardrails
                 else:
