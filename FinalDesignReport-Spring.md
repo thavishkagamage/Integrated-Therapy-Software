@@ -41,8 +41,7 @@ TheraThrive Integrated Therapy Software combines the benefits of computerized CB
 - Please **[CLICK HERE](./Capstone%20Assignments/test-plan.pdf)** to view our test plans
 
 #### Test Results
-- Please **[CLICK HERE](./Capstone%20Assignments/test-plan-results.md)** to view our test plans results
-TODO 
+- Please **[CLICK HERE](./Capstone%20Assignments/test-plan-results.md)** to view our test plans results 
 
 ## User Manual
 
