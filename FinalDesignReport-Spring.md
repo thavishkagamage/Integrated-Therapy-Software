@@ -40,7 +40,7 @@ TODO - describe execution and results of all tests
 
 ## User Manual
 
-TODO - includes links and screenshots of online user manual; include FAQ in report
+- Please **[CLICK HERE](./Capstone%20Assignments/user-manual.md)** to view our user manual
 
 ## Spring Final Presentation
 
@@ -48,7 +48,7 @@ TODO - includes links and screenshots of online user manual; include FAQ in repo
 
 ## EXPO Poster
 
-- Please **[CLICK HERE](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/expo-poster.pdf)** to view our EXPO Poster
+- Please **[CLICK HERE](./expo-poster.pdf)** to view our EXPO Poster
 
 ## Self Assessment Essays
 

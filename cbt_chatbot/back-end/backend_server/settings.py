@@ -93,7 +93,7 @@ DATABASES = {
         'NAME': 'postgres',  # Default database name
         'USER': os.getenv('POSTGRES_USER'),  
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),  # Set by POSTGRES_PASSWORD
-        'HOST': os.getenv('DB_IP'),  # Since the database is running on your local machine
+        'HOST': 'localhost',  # Since the database is running on your local machine
         'PORT': '5432',  # Default PostgreSQL port
     }
 }
