@@ -32,7 +32,7 @@ TheraThrive Integrated Therapy Software combines the benefits of computerized CB
 
 ## User Interface Specification
 
-TODO
+- Please **[CLICK HERE](./Capstone%20Assignments/user-interface-specification.md)** to view our UI specification. 
 
 ## Test Plan and Results
 
