@@ -64,7 +64,22 @@ TODO - describe execution and results of all tests
 
 ## Summary of Hours and Justification
 
-TODO
+| Task                           | Thavishka Gamage   | Alex Gribble   | Grant Guernsey   | Richard Roberts   | Kyle Woods     |
+|:-------------------------------|:-------------------|:---------------|:-----------------|:------------------|:---------------|
+| Group Meetings                 | 32 hrs             | 32 hrs         | 32 hrs           | 32 hrs            | 32 hrs         |
+| Front-End/UI Development       | 8 hrs              | 4 hrs          | 12 hrs           | 16 hrs            | 8 hrs          |
+| Back-End Development           | 0 hrs              | 4 hrs          | 25 hrs           | 217 hrs            | 4 hrs          |
+| Documentation & Report Writing | 10 hrs             | 40 hrs         | 10 hrs           | 10 hrs            | 10 hrs         |
+| Prototype Iteration & Testing  | 3 hrs              | 10 hrs         | 8 hrs            | 8 hrs             | 3 hrs          |
+| **Total Time Spent**           | 54 hrs             | 90 hrs         | 87 hrs           | 83 hrs            | 57 hrs         |
+
+### CS Members: 
+
+**Richard:** I developed a large amount of the conversation logic in the backend that guides the user through the conversation agenda. I wrote the tools to switch agenda items and update the conversation status as well as building the crisis mode. I also helped with a lot of the overall frontend conversation design and development. I tested all of these features that use the LLM API manually. 
+
+**Grant:** TODO
+
+**Thavishka:** TODO
 
 ## Summary of Expenses
 
