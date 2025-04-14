@@ -38,10 +38,10 @@ TODO
 
 #### Test Plan
 
-- Please **[CLICK HERE](./Capstone%20Assignments/test-plan.md)** to view our test plans
+- Please **[CLICK HERE](./Capstone%20Assignments/test-plan.pdf)** to view our test plans
 
 #### Test Results
-
+- Please **[CLICK HERE](./Capstone%20Assignments/test-plan-results.md)** to view our test plans results
 TODO 
 
 ## User Manual
