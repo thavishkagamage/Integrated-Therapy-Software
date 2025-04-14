@@ -65,7 +65,7 @@ TODO
 
 ### Final Assessments
 - **[Ricky Roberts](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/roberrf-final-self-assessment.pdf)**
-- **[Grant Guernsey]()** TODO
+- **[Grant Guernsey]((https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/grant-reflection.docx))** TODO
 - **[Thavishka Gamage]()** TODO
 
 ## Summary of Hours and Justification
