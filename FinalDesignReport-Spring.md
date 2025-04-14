@@ -36,7 +36,13 @@ TODO
 
 ## Test Plan and Results
 
-TODO - describe execution and results of all tests
+#### Test Plan
+
+- Please **[CLICK HERE](./Capstone%20Assignments/test-plan.md)** to view our test plans
+
+#### Test Results
+
+TODO 
 
 ## User Manual
 
