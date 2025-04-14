@@ -83,7 +83,7 @@ TODO
 
 **Richard:** I developed a large amount of the conversation logic in the backend that guides the user through the conversation agenda. I wrote the tools to switch agenda items and update the conversation status as well as building the crisis mode. I also helped with a lot of the overall frontend conversation design and development. I tested all of these features that use the LLM API manually. 
 
-**Grant:** TODO
+**Grant:** Over the course of the project, I worked extensively on both the backend and frontend of our CBT (Cognitive Behavioral Therapy) chatbot application. One of my main responsibilities was linking the frontend and backend by creating a RESTful API. I also designed and implemented the database that stores user and conversation data. To accomplish this, I researched different database options and discussed them with the group before settling on PostgreSQL. I built the frontend using JavaScript and Node.js, created the API layer for communication between the frontend and backend, and implemented the backend in Python using Django. This full-stack integration was a critical part of our project, and I learned a lot about web architecture, database management, and cross-language integration in the process.
 
 **Thavishka:** TODO
 
