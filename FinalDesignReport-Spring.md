@@ -65,7 +65,7 @@ TheraThrive Integrated Therapy Software combines the benefits of computerized CB
 ### Final Assessments
 - **[Ricky Roberts](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/roberrf-final-self-assessment.pdf)**
 - **[Grant Guernsey](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/grant-reflection.docx)**
-- **[Thavishka Gamage]()** TODO
+- **[Thavishka Gamage](https://github.com/thavishkagamage/Integrated-Therapy-Software/blob/main/Capstone%20Assignments/thavishka-reflection.pdf)**
 
 ## Summary of Hours and Justification
 
