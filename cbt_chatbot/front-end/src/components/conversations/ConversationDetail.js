@@ -14,7 +14,7 @@ const ConversationDetail = () => {
         return;
       }
       try {
-        const response = await axios.get(`http://localhost:8000/api/conversations/${id}/`, {
+        const response = await axios.get(`https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net/api/conversations/${id}/`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setMessages(response.data.messages);

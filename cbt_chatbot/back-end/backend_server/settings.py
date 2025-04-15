@@ -27,7 +27,24 @@ SECRET_KEY = 'django-insecure-99^+i700aqf0=fxo7zdo4+ojt@3c8ag-m9h9dd6j%1rdkf3xa$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Update ALLOWED_HOSTS to include your Azure App Service domain
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net',
+    # Add any other domains that will access this app
+]
+
+# Set DEBUG to False in production
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+
+# Configure static file handling
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# If you need to serve media files
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 
 # Application definition
 
@@ -62,7 +79,16 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://green-plant-0b9b22a1e.6.azurestaticapps.net",
+    "https://green-plant-0b9b22a1e.6.azurestaticapps.net:3000",
 ]
+
+# Add CSRF trusted origins for production
+CSRF_TRUSTED_ORIGINS = [
+    "https://green-plant-0b9b22a1e.6.azurestaticapps.net",
+    "https://therathrivebackend-dqhsf3gdc0b2dgey.canadacentral-01.azurewebsites.net",
+]
+
 
 ROOT_URLCONF = 'backend_server.urls'
 
@@ -89,8 +115,8 @@ WSGI_APPLICATION = 'backend_server.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',  # Default database name
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'mysql-sendes',  # Default database name
         'USER': os.getenv('POSTGRES_USER'),  
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),  # Set by POSTGRES_PASSWORD
         'HOST': 'localhost',  # Since the database is running on your local machine
@@ -150,3 +176,16 @@ CACHES = {
         'LOCATION': 'cbt-therapy-chatbot',  # Unique identifier for your cache instance, used to identify individual memory stores
     }
 }
+
+# Security settings for production
+if not DEBUG:
+    # HTTPS settings
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # Cookie settings
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
